@@ -47,7 +47,7 @@ export default function DetalleEvento() {
       <View style={styles.contenido}>
         <View style={styles.encabezado}>
           <Text style={styles.categoria}>{evento.categoria.nombre}</Text>
-          <Text style={styles.nombre}>{evento.nombre}</Text>
+          <Text style={theme.texto.titulo}>{evento.nombre}</Text>
           <Text style={styles.fecha}>{formatearFecha(evento.fecha)}</Text>
           <View style={styles.organizador}>
             <Text style={styles.textoOrganizador}>
@@ -62,15 +62,15 @@ export default function DetalleEvento() {
 
         <Seccion titulo="Reseñas del organizador">
           {evento.resenasDelOrganizador.length === 0 ? (
-            <Text style={styles.secundario}>
+            <Text style={theme.texto.secundario}>
               Este organizador todavía no tiene reseñas.
             </Text>
           ) : (
             evento.resenasDelOrganizador.map((resena) => (
               <View key={resena.id} style={styles.resena}>
                 <Estrellas puntuacion={resena.puntuacion} />
-                <Text style={styles.cuerpo}>{resena.detalle}</Text>
-                <Text style={styles.secundario}>
+                <Text style={theme.texto.cuerpo}>{resena.detalle}</Text>
+                <Text style={theme.texto.secundario}>
                   {resena.comprador.nombre} {resena.comprador.apellido} ·{" "}
                   {resena.evento.nombre} · {formatearFechaCorta(resena.fecha)}
                 </Text>
@@ -146,9 +146,9 @@ function BloqueCompra({ evento }: { evento: EventoDetalle }) {
             <View style={styles.datosTipo}>
               <Text style={styles.nombreTipo}>{tipo.nombre}</Text>
               {tipo.descripcion ? (
-                <Text style={styles.secundario}>{tipo.descripcion}</Text>
+                <Text style={theme.texto.secundario}>{tipo.descripcion}</Text>
               ) : null}
-              <Text style={styles.secundario}>
+              <Text style={theme.texto.secundario}>
                 {agotado ? "Agotadas" : `${tipo.disponibles} disponibles`}
               </Text>
             </View>
@@ -164,7 +164,7 @@ function BloqueCompra({ evento }: { evento: EventoDetalle }) {
       ) : (
         <>
           <View style={styles.filaCantidad}>
-            <Text style={styles.cuerpo}>Cantidad</Text>
+            <Text style={theme.texto.cuerpo}>Cantidad</Text>
             <Stepper
               valor={cantidadValida}
               minimo={1}
@@ -173,8 +173,8 @@ function BloqueCompra({ evento }: { evento: EventoDetalle }) {
             />
           </View>
           <View style={styles.filaTotal}>
-            <Text style={styles.cuerpo}>Total</Text>
-            <Text style={styles.total}>
+            <Text style={theme.texto.cuerpo}>Total</Text>
+            <Text style={theme.texto.subtitulo}>
               {formatearPesos(
                 tipoElegido ? tipoElegido.precio * cantidadValida : 0,
               )}
@@ -219,14 +219,8 @@ const styles = StyleSheet.create({
     gap: theme.espacios.xs,
   },
   categoria: {
-    ...theme.texto.chico,
-    color: theme.colores.primario,
-    fontWeight: "600",
+    ...theme.texto.destacado,
     textTransform: "uppercase",
-  },
-  nombre: {
-    ...theme.texto.titulo,
-    color: theme.colores.texto,
   },
   fecha: {
     ...theme.texto.cuerpo,
@@ -238,22 +232,12 @@ const styles = StyleSheet.create({
   },
   textoOrganizador: {
     ...theme.texto.cuerpo,
-    color: theme.colores.texto,
     fontWeight: "500",
   },
   descripcion: {
     ...theme.texto.cuerpo,
-    color: theme.colores.texto,
     marginTop: theme.espacios.m,
     lineHeight: 22,
-  },
-  cuerpo: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.texto,
-  },
-  secundario: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
   tipo: {
     flexDirection: "row",
@@ -277,7 +261,6 @@ const styles = StyleSheet.create({
   },
   nombreTipo: {
     ...theme.texto.cuerpo,
-    color: theme.colores.texto,
     fontWeight: "600",
   },
   precioTipo: {
@@ -299,10 +282,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  total: {
-    ...theme.texto.subtitulo,
-    color: theme.colores.texto,
   },
   botonComprar: {
     backgroundColor: theme.colores.primario,

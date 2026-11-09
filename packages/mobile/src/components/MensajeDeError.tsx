@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
   },
   mensaje: {
     ...theme.texto.cuerpo,
-    color: theme.colores.texto,
     textAlign: "center",
   },
   boton: {

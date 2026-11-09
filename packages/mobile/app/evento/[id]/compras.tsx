@@ -37,14 +37,14 @@ export default function ComprasDelEvento() {
           <Seccion titulo="Disponibilidad">
             {evento.tiposEntrada.map((tipo) => (
               <View key={tipo.id} style={styles.tipo}>
-                <Text style={styles.nombreTipo}>{tipo.nombre}</Text>
+                <Text style={theme.texto.cuerpo}>{tipo.nombre}</Text>
                 <Text style={styles.cupo}>
                   {tipo.disponibles} / {tipo.cupo}
                 </Text>
               </View>
             ))}
           </Seccion>
-          <Text style={styles.tituloLista}>Compras</Text>
+          <Text style={theme.texto.subtitulo}>Compras</Text>
         </View>
       }
       ListEmptyComponent={
@@ -76,17 +76,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  nombreTipo: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.texto,
-  },
   cupo: {
     ...theme.texto.cuerpo,
-    color: theme.colores.texto,
     fontWeight: "600",
-  },
-  tituloLista: {
-    ...theme.texto.subtitulo,
-    color: theme.colores.texto,
   },
 })

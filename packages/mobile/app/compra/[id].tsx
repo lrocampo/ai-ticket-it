@@ -36,7 +36,7 @@ export default function DetalleCompra() {
       <View style={styles.encabezado}>
         <BadgeEstado estado={compra.estado} />
         <Text style={styles.titulo}>{compra.evento.nombre}</Text>
-        <Text style={styles.secundario}>
+        <Text style={theme.texto.secundario}>
           {formatearFecha(compra.evento.fecha)}
         </Text>
         {compra.diasParaElEvento !== null && (
@@ -71,10 +71,10 @@ export default function DetalleCompra() {
           <View key={indice} style={styles.cambio}>
             <BadgeEstado estado={cambio.estado} />
             <View style={styles.datosCambio}>
-              <Text style={styles.cuerpo}>
+              <Text style={theme.texto.cuerpo}>
                 {cambio.quien.nombre} {cambio.quien.apellido}
               </Text>
-              <Text style={styles.secundario}>
+              <Text style={theme.texto.secundario}>
                 {formatearFechaHora(cambio.fechaHora)}
               </Text>
             </View>
@@ -92,8 +92,8 @@ export default function DetalleCompra() {
 function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
     <View style={styles.dato}>
-      <Text style={styles.secundario}>{etiqueta}</Text>
-      <Text style={styles.cuerpo}>{valor}</Text>
+      <Text style={theme.texto.secundario}>{etiqueta}</Text>
+      <Text style={theme.texto.cuerpo}>{valor}</Text>
     </View>
   )
 }
@@ -109,21 +109,12 @@ const styles = StyleSheet.create({
   },
   titulo: {
     ...theme.texto.titulo,
-    color: theme.colores.texto,
     marginTop: theme.espacios.s,
   },
   dias: {
     ...theme.texto.cuerpo,
     color: theme.colores.primario,
     fontWeight: "700",
-  },
-  cuerpo: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.texto,
-  },
-  secundario: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
   dato: {
     flexDirection: "row",

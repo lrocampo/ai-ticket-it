@@ -1,10 +1,11 @@
 import { Ionicons } from "@expo/vector-icons"
-import { Image, Pressable, StyleSheet, Text, View } from "react-native"
+import { Image, StyleSheet, Text, View } from "react-native"
 
 import { theme } from "../theme"
 import type { Evento } from "../types"
 import { formatearFecha, formatearPesos } from "../utils/fechas"
 import { Puntaje } from "./Puntaje"
+import { Tarjeta } from "./Tarjeta"
 
 type Props = {
   evento: Evento
@@ -15,10 +16,7 @@ export function TarjetaEvento({ evento, onPress }: Props) {
   const imagen = evento.multimedia[0]
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.tarjeta, pressed && styles.presionada]}
-      onPress={onPress}
-    >
+    <Tarjeta style={styles.tarjeta} onPress={onPress}>
       {imagen ? (
         <Image source={{ uri: imagen }} style={styles.imagen} />
       ) : (
@@ -32,13 +30,15 @@ export function TarjetaEvento({ evento, onPress }: Props) {
       )}
       <View style={styles.cuerpo}>
         <Text style={styles.categoria}>{evento.categoria.nombre}</Text>
-        <Text style={styles.nombre} numberOfLines={2}>
+        <Text style={theme.texto.subtitulo} numberOfLines={2}>
           {evento.nombre}
         </Text>
-        <Text style={styles.fecha}>{formatearFecha(evento.fecha)}</Text>
+        <Text style={theme.texto.secundario}>
+          {formatearFecha(evento.fecha)}
+        </Text>
         <View style={styles.pie}>
           <View style={styles.organizador}>
-            <Text style={styles.textoOrganizador} numberOfLines={1}>
+            <Text style={theme.texto.chico} numberOfLines={1}>
               {evento.organizador.nombre} {evento.organizador.apellido}
             </Text>
             <Puntaje organizador={evento.organizador} />
@@ -48,19 +48,13 @@ export function TarjetaEvento({ evento, onPress }: Props) {
           </Text>
         </View>
       </View>
-    </Pressable>
+    </Tarjeta>
   )
 }
 
 const styles = StyleSheet.create({
   tarjeta: {
-    backgroundColor: theme.colores.superficie,
-    borderRadius: theme.radios.m,
     overflow: "hidden",
-    ...theme.sombra,
-  },
-  presionada: {
-    opacity: 0.85,
   },
   imagen: {
     width: "100%",
@@ -76,18 +70,8 @@ const styles = StyleSheet.create({
     gap: theme.espacios.xs,
   },
   categoria: {
-    ...theme.texto.chico,
-    color: theme.colores.primario,
-    fontWeight: "600",
+    ...theme.texto.destacado,
     textTransform: "uppercase",
-  },
-  nombre: {
-    ...theme.texto.subtitulo,
-    color: theme.colores.texto,
-  },
-  fecha: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
   pie: {
     flexDirection: "row",
@@ -99,10 +83,6 @@ const styles = StyleSheet.create({
   organizador: {
     flex: 1,
     gap: 2,
-  },
-  textoOrganizador: {
-    ...theme.texto.chico,
-    color: theme.colores.texto,
   },
   precio: {
     ...theme.texto.cuerpo,

@@ -11,13 +11,13 @@ type Props = {
 export function Puntaje({ organizador }: Props) {
   const { puntaje, cantidadResenas } = organizador
   if (puntaje === null) {
-    return <Text style={styles.texto}>sin reseñas</Text>
+    return <Text style={theme.texto.secundario}>sin reseñas</Text>
   }
   const resenas = cantidadResenas === 1 ? "reseña" : "reseñas"
   return (
     <View style={styles.fila}>
       <Ionicons name="star" size={13} color={theme.colores.estrella} />
-      <Text style={styles.texto}>
+      <Text style={theme.texto.secundario}>
         {puntaje.toFixed(1)} · {cantidadResenas} {resenas}
       </Text>
     </View>
@@ -26,8 +26,4 @@ export function Puntaje({ organizador }: Props) {
 
 const styles = StyleSheet.create({
   fila: { flexDirection: "row", alignItems: "center", gap: 3 },
-  texto: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
-  },
 })

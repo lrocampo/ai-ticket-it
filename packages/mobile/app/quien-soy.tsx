@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons"
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native"
+import { FlatList, StyleSheet, Text, View } from "react-native"
 
 import { Cargando } from "../src/components/Cargando"
 import { MensajeDeError } from "../src/components/MensajeDeError"
+import { Tarjeta } from "../src/components/Tarjeta"
 import { useUsuario } from "../src/context/UsuarioContext"
 import { useCarga } from "../src/hooks/useCarga"
 import { listarUsuarios } from "../src/services/api"
@@ -33,10 +34,7 @@ export default function QuienSoy() {
         </Text>
       }
       renderItem={({ item }) => (
-        <Pressable
-          style={({ pressed }) => [styles.fila, pressed && styles.presionada]}
-          onPress={() => elegirUsuario(item)}
-        >
+        <Tarjeta style={styles.fila} onPress={() => elegirUsuario(item)}>
           <View style={styles.avatar}>
             <Text style={styles.iniciales}>
               {item.nombre[0]}
@@ -44,17 +42,17 @@ export default function QuienSoy() {
             </Text>
           </View>
           <View style={styles.datos}>
-            <Text style={styles.nombre}>
+            <Text style={theme.texto.subtitulo}>
               {item.nombre} {item.apellido}
             </Text>
-            <Text style={styles.email}>{item.email}</Text>
+            <Text style={theme.texto.secundario}>{item.email}</Text>
           </View>
           <Ionicons
             name="chevron-forward"
             size={20}
             color={theme.colores.textoSecundario}
           />
-        </Pressable>
+        </Tarjeta>
       )}
     />
   )
@@ -75,12 +73,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.espacios.m,
     padding: theme.espacios.l,
-    backgroundColor: theme.colores.superficie,
-    borderRadius: theme.radios.m,
-    ...theme.sombra,
-  },
-  presionada: {
-    opacity: 0.85,
   },
   avatar: {
     width: 44,
@@ -98,13 +90,5 @@ const styles = StyleSheet.create({
   datos: {
     flex: 1,
     gap: 2,
-  },
-  nombre: {
-    ...theme.texto.subtitulo,
-    color: theme.colores.texto,
-  },
-  email: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
 })

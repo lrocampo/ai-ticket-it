@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 
 import { theme } from "../theme"
 import type { Compra } from "../types"
@@ -8,6 +8,7 @@ import {
   textoDiasRestantes,
 } from "../utils/fechas"
 import { BadgeEstado } from "./BadgeEstado"
+import { Tarjeta } from "./Tarjeta"
 
 type Props = {
   compra: Compra
@@ -24,10 +25,7 @@ export function TarjetaCompra({ compra, vista, onPress }: Props) {
       : `${compra.comprador.nombre} ${compra.comprador.apellido}`
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.tarjeta, pressed && styles.presionada]}
-      onPress={onPress}
-    >
+    <Tarjeta style={styles.tarjeta} onPress={onPress}>
       <View style={styles.encabezado}>
         <Text style={styles.titulo} numberOfLines={2}>
           {titulo}
@@ -35,35 +33,29 @@ export function TarjetaCompra({ compra, vista, onPress }: Props) {
         <BadgeEstado estado={compra.estado} />
       </View>
       {vista === "comprador" && (
-        <Text style={styles.secundario}>
+        <Text style={theme.texto.secundario}>
           {formatearFecha(compra.evento.fecha)}
         </Text>
       )}
       <View style={styles.pie}>
-        <Text style={styles.secundario}>
+        <Text style={theme.texto.secundario}>
           {compra.tipoEntrada.nombre} × {compra.cantidad}
         </Text>
         <Text style={styles.total}>{formatearPesos(compra.total)}</Text>
       </View>
       {vista === "comprador" && compra.diasParaElEvento !== null && (
-        <Text style={styles.dias}>
+        <Text style={theme.texto.destacado}>
           {textoDiasRestantes(compra.diasParaElEvento)}
         </Text>
       )}
-    </Pressable>
+    </Tarjeta>
   )
 }
 
 const styles = StyleSheet.create({
   tarjeta: {
-    backgroundColor: theme.colores.superficie,
-    borderRadius: theme.radios.m,
     padding: theme.espacios.l,
     gap: theme.espacios.xs,
-    ...theme.sombra,
-  },
-  presionada: {
-    opacity: 0.85,
   },
   encabezado: {
     flexDirection: "row",
@@ -73,12 +65,7 @@ const styles = StyleSheet.create({
   },
   titulo: {
     ...theme.texto.subtitulo,
-    color: theme.colores.texto,
     flex: 1,
-  },
-  secundario: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
   pie: {
     flexDirection: "row",
@@ -88,12 +75,6 @@ const styles = StyleSheet.create({
   },
   total: {
     ...theme.texto.cuerpo,
-    color: theme.colores.texto,
     fontWeight: "700",
-  },
-  dias: {
-    ...theme.texto.chico,
-    color: theme.colores.primario,
-    fontWeight: "600",
   },
 })

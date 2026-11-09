@@ -84,7 +84,7 @@ export default function Eventos() {
           ))}
         </ScrollView>
         <View style={styles.orden}>
-          <Text style={styles.etiquetaOrden}>Ordenar por</Text>
+          <Text style={theme.texto.secundario}>Ordenar por</Text>
           {ORDENES.map((opcion) => (
             <Chip
               key={opcion.valor}
@@ -150,7 +150,6 @@ const styles = StyleSheet.create({
     ...theme.texto.cuerpo,
     flex: 1,
     paddingVertical: theme.espacios.m,
-    color: theme.colores.texto,
   },
   chips: {
     gap: theme.espacios.s,
@@ -161,10 +160,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.espacios.s,
     paddingHorizontal: theme.espacios.l,
-  },
-  etiquetaOrden: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
   lista: {
     padding: theme.espacios.l,
