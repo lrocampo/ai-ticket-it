@@ -49,7 +49,7 @@ export default class Compra {
     { comprador, evento, tipoEntrada, cantidad },
     ahora = new Date(),
   ) {
-    if (!(Number.isInteger(cantidad) && cantidad > 0)) {
+    if (!(Number.isSafeInteger(cantidad) && cantidad > 0)) {
       throw new DomainValidationError(
         "La cantidad de entradas debe ser un entero positivo.",
       )

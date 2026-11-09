@@ -45,6 +45,7 @@ describe("TipoEntrada", () => {
     ["cupo cero", { cupo: 0 }],
     ["cupo decimal", { cupo: 2.5 }],
     ["cupo negativo", { cupo: -3 }],
+    ["cupo fuera del rango entero seguro", { cupo: 1e300 }],
     ["sin nombre", { nombre: " " }],
   ])("rechaza %s", (_caso, cambios) => {
     expect(() => crear(cambios)).toThrow(DomainValidationError)

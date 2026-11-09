@@ -65,7 +65,7 @@ describe("Compra", () => {
       expect(compra.historial[0].quien).toBe(comprador)
     })
 
-    test.each([0, -1, 1.5])("rechaza la cantidad %p", (cantidad) => {
+    test.each([0, -1, 1.5, 1e300])("rechaza la cantidad %p", (cantidad) => {
       expect(() => comprar(cantidad)).toThrow(DomainValidationError)
       expect(tipo.disponibles()).toBe(10)
     })
