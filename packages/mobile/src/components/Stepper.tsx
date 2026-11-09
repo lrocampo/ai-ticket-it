@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 import { theme } from "../theme"
 
 const TAMANO = 36
-const MARGEN = (theme.areaTactil - TAMANO) / 2
 
 type Props = {
   valor: number
@@ -21,7 +20,7 @@ export function Stepper({ valor, minimo, maximo, onCambio }: Props) {
     <View style={styles.fila}>
       <Pressable
         style={[styles.boton, !puedeBajar && styles.deshabilitado]}
-        hitSlop={MARGEN}
+        hitSlop={theme.margenTactil(TAMANO)}
         disabled={!puedeBajar}
         onPress={() => onCambio(valor - 1)}
         accessibilityRole="button"
@@ -33,7 +32,7 @@ export function Stepper({ valor, minimo, maximo, onCambio }: Props) {
       <Text style={styles.valor}>{valor}</Text>
       <Pressable
         style={[styles.boton, !puedeSubir && styles.deshabilitado]}
-        hitSlop={MARGEN}
+        hitSlop={theme.margenTactil(TAMANO)}
         disabled={!puedeSubir}
         onPress={() => onCambio(valor + 1)}
         accessibilityRole="button"
@@ -61,7 +60,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colores.primarioSuave,
   },
   deshabilitado: {
-    opacity: 0.4,
+    opacity: theme.opacidad.deshabilitado,
   },
   valor: {
     ...theme.texto.subtitulo,

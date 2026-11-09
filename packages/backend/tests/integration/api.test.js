@@ -145,7 +145,12 @@ describe("catálogo", () => {
       .expect(400)
 
     expect(body.message).toEqual(expect.any(String))
-    expect(body.details[0].path).toEqual(["orden"])
+    expect(body.details).toEqual([
+      {
+        path: ["orden"],
+        message: "El orden tiene que ser precio, fecha o puntaje",
+      },
+    ])
   })
 
   test("GET /eventos/:id trae las reseñas del organizador", async () => {
@@ -208,6 +213,10 @@ describe("catálogo", () => {
     expect(body.details.map((issue) => issue.path[0])).toEqual(
       expect.arrayContaining(["categoriaId", "fecha", "tiposEntrada"]),
     )
+    expect(body.details).toContainEqual({
+      path: ["tiposEntrada"],
+      message: "Hace falta al menos un tipo de entrada",
+    })
   })
 
   test("POST /eventos con tipos de entrada del mismo nombre responde 422", async () => {

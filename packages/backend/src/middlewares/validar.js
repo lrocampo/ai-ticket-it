@@ -4,9 +4,11 @@ export default function validar(schema, origen = "body") {
   return (req, _res, next) => {
     const resultado = schema.safeParse(req[origen])
     if (resultado.error) {
-      return next(
-        new BadRequestError("Datos inválidos", resultado.error.issues),
-      )
+      const detalles = resultado.error.issues.map(({ path, message }) => ({
+        path,
+        message,
+      }))
+      return next(new BadRequestError("Datos inválidos", detalles))
     }
     // En Express 5 req.query es un getter: hay que redefinirlo para pisarlo.
     Object.defineProperty(req, origen, {

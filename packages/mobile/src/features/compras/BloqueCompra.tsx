@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colores.primarioSuave,
   },
   tipoDeshabilitado: {
-    opacity: 0.5,
+    opacity: theme.opacidad.deshabilitado,
   },
   datosTipo: {
     flex: 1,

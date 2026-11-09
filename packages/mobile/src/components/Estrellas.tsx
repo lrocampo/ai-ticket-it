@@ -36,7 +36,7 @@ export function Estrellas({ puntuacion, tamano = 16, onCambio }: Props) {
     )
   }
 
-  const margen = Math.max(0, (theme.areaTactil - tamano) / 2)
+  const margen = theme.margenTactil(tamano)
   return (
     <View
       style={[styles.fila, { gap: margen * 2 }]}

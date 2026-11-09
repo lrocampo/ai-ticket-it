@@ -16,6 +16,12 @@ const colores = {
 // hit area"); los controles más chicos la completan con hitSlop.
 const areaTactil = 44
 
+function margenTactil(tamano: number) {
+  return Math.max(0, (areaTactil - tamano) / 2)
+}
+
+const opacidad = { presionado: 0.85, deshabilitado: 0.5 }
+
 const radios = {
   s: 8,
   m: 12,
@@ -69,6 +75,8 @@ const sombra = {
 export const theme = {
   colores,
   areaTactil,
+  margenTactil,
+  opacidad,
   espacios,
   radios,
   texto,
