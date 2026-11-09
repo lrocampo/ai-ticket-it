@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons"
+import { router } from "expo-router"
 import { Tabs } from "expo-router/js-tabs"
-import { Pressable, StyleSheet, Text } from "react-native"
+import { Pressable, StyleSheet, Text, View } from "react-native"
 
 import { useUsuario, useUsuarioActual } from "../../src/context/UsuarioContext"
 import { theme } from "../../src/theme"
@@ -23,6 +24,19 @@ function BotonCambiarUsuario() {
         size={20}
         color={theme.colores.primario}
       />
+    </Pressable>
+  )
+}
+
+function BotonNuevoEvento() {
+  return (
+    <Pressable
+      style={styles.nuevoEvento}
+      onPress={() => router.push("/evento/nuevo")}
+      accessibilityRole="button"
+      accessibilityLabel="Crear evento"
+    >
+      <Ionicons name="add" size={26} color={theme.colores.primario} />
     </Pressable>
   )
 }
@@ -80,6 +94,12 @@ export default function TabsLayout() {
         name="mis-eventos"
         options={{
           title: "Mis eventos",
+          headerRight: () => (
+            <View style={styles.acciones}>
+              <BotonNuevoEvento />
+              <BotonCambiarUsuario />
+            </View>
+          ),
           tabBarIcon: ({ focused, size }) => (
             <IconoTab nombre="megaphone" focused={focused} size={size} />
           ),
@@ -90,6 +110,13 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  acciones: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  nuevoEvento: {
+    marginRight: theme.espacios.m,
+  },
   boton: {
     flexDirection: "row",
     alignItems: "center",
