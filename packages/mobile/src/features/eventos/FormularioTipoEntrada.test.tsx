@@ -21,6 +21,7 @@ async function tocarQuitar(tipo: TipoEntradaFormulario) {
       tipo={tipo}
       onCambio={jest.fn()}
       onQuitar={onQuitar}
+      error={null}
     />,
   )
   await fireEvent.press(

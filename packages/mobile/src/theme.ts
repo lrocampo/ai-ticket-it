@@ -47,6 +47,7 @@ const texto = {
     fontWeight: "600",
     color: colores.primario,
   },
+  error: { fontSize: 13, lineHeight: 18, color: colores.error },
 } as const
 
 const espacios = {

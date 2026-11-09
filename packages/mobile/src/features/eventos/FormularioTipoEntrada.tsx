@@ -4,7 +4,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 import { Campo } from "../../components/Campo"
 import { theme } from "../../theme"
 import { confirmar } from "../../utils/confirmar"
-import { type TipoEntradaFormulario, tipoTieneDatos } from "./armarNuevoEvento"
+import {
+  type CampoDeTipo,
+  type TipoEntradaFormulario,
+  tipoTieneDatos,
+} from "./armarNuevoEvento"
 
 const ICONO_QUITAR = 20
 
@@ -12,6 +16,7 @@ type Props = {
   tipo: TipoEntradaFormulario
   onCambio: (tipo: TipoEntradaFormulario) => void
   onQuitar: (() => void) | null
+  error: { campo: CampoDeTipo; mensaje: string } | null
 }
 
 async function quitarSiConfirma(
@@ -28,9 +33,18 @@ async function quitarSiConfirma(
   if (confirmado) onQuitar()
 }
 
-export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
+export function FormularioTipoEntrada({
+  tipo,
+  onCambio,
+  onQuitar,
+  error,
+}: Props) {
   function cambiar(campo: keyof TipoEntradaFormulario, valor: string) {
     onCambio({ ...tipo, [campo]: valor })
+  }
+
+  function errorDe(campo: CampoDeTipo) {
+    return error?.campo === campo ? error.mensaje : undefined
   }
 
   return (
@@ -59,6 +73,7 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
         value={tipo.nombre}
         onChangeText={(valor) => cambiar("nombre", valor)}
         placeholder="General"
+        error={errorDe("nombre")}
       />
       <Campo
         etiqueta="Descripción (opcional)"
@@ -73,6 +88,7 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
             onChangeText={(valor) => cambiar("precio", valor)}
             keyboardType="numeric"
             placeholder="15000"
+            error={errorDe("precio")}
           />
         </View>
         <View style={styles.columna}>
@@ -82,6 +98,7 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
             onChangeText={(valor) => cambiar("cupo", valor)}
             keyboardType="numeric"
             placeholder="200"
+            error={errorDe("cupo")}
           />
         </View>
       </View>
