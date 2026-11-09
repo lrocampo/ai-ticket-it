@@ -145,6 +145,13 @@ describe("EventoService", () => {
       ])
     })
 
+    test("deja afuera los eventos que ya ocurrieron", () => {
+      expect(nombres(service.buscar({}, dias(10)))).toEqual([
+        "Jam de jazz",
+        "Recital de Fito Páez",
+      ])
+    })
+
     test("por fecha ascendente por defecto", () => {
       expect(nombres(service.buscar())).toEqual([
         "Obra: La Nona",

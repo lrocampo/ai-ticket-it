@@ -48,10 +48,15 @@ export default class EventoService {
 
   porId = (id) => this.eventos.porId(id)
 
-  buscar = ({ texto, categoriaId, orden = "fecha" } = {}) => {
+  // El catálogo es para comprar: los eventos que ya ocurrieron no aparecen.
+  buscar = (
+    { texto, categoriaId, orden = "fecha" } = {},
+    ahora = new Date(),
+  ) => {
     const buscado = texto ? normalizar(texto) : null
     const eventos = this.eventos.filtrar(
       (evento) =>
+        !evento.yaOcurrio(ahora) &&
         (!categoriaId || evento.categoria.id === categoriaId) &&
         (!buscado ||
           normalizar(`${evento.nombre} ${evento.descripcion}`).includes(

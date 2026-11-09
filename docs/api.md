@@ -61,7 +61,7 @@ Compra = {
 | ------ | ---------------------- | ----------- | --------------------------------------------------- | ------------------------------------------------- |
 | GET    | `/usuarios`            | nadie       |                                                     | `Usuario[]` (para elegir quién soy)               |
 | GET    | `/categorias`          | nadie       |                                                     | `Categoria[]`                                     |
-| GET    | `/eventos`             | cualquiera  | `?texto=&categoriaId=&orden=precio\|fecha\|puntaje` | `Evento[]`                                        |
+| GET    | `/eventos`             | cualquiera  | `?texto=&categoriaId=&orden=precio\|fecha\|puntaje` | `Evento[]`, solo los que todavía no ocurrieron    |
 | GET    | `/eventos/:id`         | cualquiera  |                                                     | `EventoDetalle`                                   |
 | POST   | `/eventos`             | cualquiera  | ver abajo                                           | `201 EventoDetalle`, el organizador es quien pide |
 | GET    | `/eventos/:id/compras` | organizador |                                                     | `{ evento: Evento, compras: Compra[] }`           |
