@@ -69,9 +69,9 @@ export default class CompraService {
 
   #autorizada(usuario, id, accion) {
     const compra = this.compras.porId(id)
-    const { quien, verbo } = Compra.accion(accion)
-    if (compra.rolDe(usuario) !== quien) {
-      throw new NoAutorizado(`Solo el ${quien} puede ${verbo} esta compra.`)
+    const motivo = compra.motivoDeNoAutorizado(usuario, accion)
+    if (motivo) {
+      throw new NoAutorizado(motivo)
     }
     return compra
   }

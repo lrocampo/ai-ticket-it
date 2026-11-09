@@ -66,11 +66,6 @@ const acciones = {
 }
 
 export default class Compra {
-  static accion(nombre) {
-    const { quien, verbo } = acciones[nombre]
-    return { quien, verbo }
-  }
-
   constructor(
     { comprador, evento, tipoEntrada, cantidad },
     ahora = new Date(),
@@ -128,11 +123,19 @@ export default class Compra {
   }
 
   accionesPara(usuario, ahora = new Date()) {
-    const rol = this.rolDe(usuario)
     return Object.keys(acciones).filter(
       (accion) =>
-        acciones[accion].quien === rol && !this.#impedimento(accion, ahora),
+        !this.motivoDeNoAutorizado(usuario, accion) &&
+        !this.#impedimento(accion, ahora),
     )
+  }
+
+  motivoDeNoAutorizado(usuario, accion) {
+    const { quien, verbo } = acciones[accion]
+    if (this.#rolDe(usuario) === quien) {
+      return null
+    }
+    return `Solo el ${quien} puede ${verbo} esta compra.`
   }
 
   resenar(puntuacion, detalle, ahora = new Date()) {
@@ -150,18 +153,8 @@ export default class Compra {
     return this.resena
   }
 
-  rolDe(usuario) {
-    if (this.esComprador(usuario)) {
-      return "comprador"
-    }
-    if (this.evento.esOrganizador(usuario)) {
-      return "organizador"
-    }
-    return null
-  }
-
   esParte(usuario) {
-    return this.rolDe(usuario) !== null
+    return this.#rolDe(usuario) !== null
   }
 
   esComprador(usuario) {
@@ -182,6 +175,16 @@ export default class Compra {
     })
     this.mensajes.push(mensaje)
     return mensaje
+  }
+
+  #rolDe(usuario) {
+    if (this.esComprador(usuario)) {
+      return "comprador"
+    }
+    if (this.evento.esOrganizador(usuario)) {
+      return "organizador"
+    }
+    return null
   }
 
   #impedimento(accion, ahora) {

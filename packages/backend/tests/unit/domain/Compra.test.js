@@ -237,6 +237,26 @@ describe("Compra", () => {
     })
   })
 
+  describe("motivoDeNoAutorizado", () => {
+    test("no tiene motivo cuando pide quien corresponde", () => {
+      const compra = comprar()
+
+      expect(compra.motivoDeNoAutorizado(comprador, "cancelar")).toBeNull()
+      expect(compra.motivoDeNoAutorizado(organizador, "utilizar")).toBeNull()
+    })
+
+    test("explica quién puede cuando pide otro, sin mirar el estado", () => {
+      const compra = comprar()
+
+      expect(compra.motivoDeNoAutorizado(tercero, "confirmarPago")).toBe(
+        "Solo el comprador puede confirmar el pago de esta compra.",
+      )
+      expect(compra.motivoDeNoAutorizado(comprador, "utilizar")).toBe(
+        "Solo el organizador puede utilizar esta compra.",
+      )
+    })
+  })
+
   describe("reseña", () => {
     test("solo una compra utilizada puede reseñarse", () => {
       expect(() => comprar().resenar(5, "Genial", HOY)).toThrow(DomainRuleError)
