@@ -25,12 +25,13 @@ La reseña vive solo en `Compra.resena`; no hay un repositorio de reseñas. `rep
 
 Una compra nace `PENDIENTE` y reserva cupo en el momento de crearse. Las transiciones están en una tabla única en `Compra`, no en condicionales sueltos. Cada transición agrega un `CambioEstadoCompra` al historial. La creación también registra el primer cambio a `PENDIENTE`.
 
-| Acción          | Desde                     | Hacia         | Quién          | Condiciones extra                            |
-| --------------- | ------------------------- | ------------- | -------------- | -------------------------------------------- |
-| `confirmarPago` | `PENDIENTE`               | `CONFIRMADA`  | el comprador   | pago simulado, no hay pasarela               |
-| `utilizar`      | `CONFIRMADA`              | `UTILIZADA`   | el organizador | se usa en la puerta del evento               |
-| `cancelar`      | `PENDIENTE`, `CONFIRMADA` | `CANCELADA`   | el comprador   | el evento no ocurrió todavía; libera el cupo |
-| `reembolsar`    | `CANCELADA`               | `REEMBOLSADA` | el organizador | la compra pasó por `CONFIRMADA` (hubo pago)  |
+| Acción          | Desde                     | Hacia         | Quién          | Condiciones extra                                                             |
+| --------------- | ------------------------- | ------------- | -------------- | ----------------------------------------------------------------------------- |
+| `crear`         | (compra nueva)            | `PENDIENTE`   | el comprador   | el evento no ocurrió, hay cupo y el comprador no es el organizador del evento |
+| `confirmarPago` | `PENDIENTE`               | `CONFIRMADA`  | el comprador   | pago simulado, no hay pasarela                                                |
+| `utilizar`      | `CONFIRMADA`              | `UTILIZADA`   | el organizador | se usa en la puerta del evento                                                |
+| `cancelar`      | `PENDIENTE`, `CONFIRMADA` | `CANCELADA`   | el comprador   | el evento no ocurrió todavía; libera el cupo                                  |
+| `reembolsar`    | `CANCELADA`               | `REEMBOLSADA` | el organizador | la compra pasó por `CONFIRMADA` (hubo pago)                                   |
 
 Una transición desde un estado no listado lanza `DomainRuleError`. Una acción hecha por quien no corresponde lanza `NoAutorizado` en la capa de servicios, porque el dominio no sabe quién está pidiendo.
 

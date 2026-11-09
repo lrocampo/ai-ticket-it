@@ -12,14 +12,14 @@ No hay login. El cliente manda el header `x-usuario-id` con el id del usuario qu
 { "message": "texto para mostrar", "details": [] }
 ```
 
-| Código | Cuándo                                                             |
-| ------ | ------------------------------------------------------------------ |
-| 400    | body o query inválidos (zod); `details` lista los campos           |
-| 401    | falta `x-usuario-id` o no corresponde a un usuario                 |
-| 403    | el usuario no es quien puede hacer la acción                       |
-| 404    | entidad inexistente                                                |
-| 409    | regla de negocio (sin cupo, transición inválida, reseña duplicada) |
-| 422    | validación de dominio (valores fuera de rango)                     |
+| Código | Cuándo                                                                                                     |
+| ------ | ---------------------------------------------------------------------------------------------------------- |
+| 400    | body o query inválidos (zod); `details` lista los campos                                                   |
+| 401    | falta `x-usuario-id` o no corresponde a un usuario                                                         |
+| 403    | el usuario no es quien puede hacer la acción                                                               |
+| 404    | entidad inexistente                                                                                        |
+| 409    | regla de negocio (sin cupo, transición inválida, reseña duplicada, el organizador compra su propio evento) |
+| 422    | validación de dominio (valores fuera de rango)                                                             |
 
 ## Formas
 

@@ -350,6 +350,14 @@ describe("compras", () => {
     ])
   })
 
+  test("el organizador no puede comprar su propio evento: 409", async () => {
+    await request(app)
+      .post("/compras")
+      .set(como(organizador))
+      .send({ eventoId: evento.id, tipoEntradaId: general.id, cantidad: 1 })
+      .expect(409)
+  })
+
   test("sin cupo responde 409 y no crea la compra", async () => {
     const mias = await request(app).get("/compras").set(como(comprador))
 

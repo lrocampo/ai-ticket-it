@@ -57,6 +57,11 @@ export default class Compra {
     if (evento.yaOcurrio(ahora)) {
       throw new DomainRuleError("El evento ya ocurrió.")
     }
+    if (evento.esOrganizador(comprador)) {
+      throw new DomainRuleError(
+        "El organizador no puede comprar entradas de su propio evento.",
+      )
+    }
     tipoEntrada.reservar(cantidad)
     this.comprador = comprador
     this.evento = evento

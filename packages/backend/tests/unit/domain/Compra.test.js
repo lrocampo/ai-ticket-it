@@ -75,6 +75,22 @@ describe("Compra", () => {
       expect(tipo.disponibles()).toBe(10)
     })
 
+    test("el organizador no puede comprar su propio evento", () => {
+      expect(
+        () =>
+          new Compra(
+            {
+              comprador: organizador,
+              evento: recital,
+              tipoEntrada: tipo,
+              cantidad: 1,
+            },
+            HOY,
+          ),
+      ).toThrow(DomainRuleError)
+      expect(tipo.disponibles()).toBe(10)
+    })
+
     test("falla si el evento ya ocurrió", () => {
       expect(
         () =>
