@@ -3,6 +3,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 
 import { theme } from "../theme"
 
+const TAMANO = 36
+const MARGEN = (theme.areaTactil - TAMANO) / 2
+
 type Props = {
   valor: number
   minimo: number
@@ -18,18 +21,24 @@ export function Stepper({ valor, minimo, maximo, onCambio }: Props) {
     <View style={styles.fila}>
       <Pressable
         style={[styles.boton, !puedeBajar && styles.deshabilitado]}
+        hitSlop={MARGEN}
         disabled={!puedeBajar}
         onPress={() => onCambio(valor - 1)}
+        accessibilityRole="button"
         accessibilityLabel="Restar uno"
+        accessibilityState={{ disabled: !puedeBajar }}
       >
         <Ionicons name="remove" size={20} color={theme.colores.primario} />
       </Pressable>
       <Text style={styles.valor}>{valor}</Text>
       <Pressable
         style={[styles.boton, !puedeSubir && styles.deshabilitado]}
+        hitSlop={MARGEN}
         disabled={!puedeSubir}
         onPress={() => onCambio(valor + 1)}
+        accessibilityRole="button"
         accessibilityLabel="Sumar uno"
+        accessibilityState={{ disabled: !puedeSubir }}
       >
         <Ionicons name="add" size={20} color={theme.colores.primario} />
       </Pressable>
@@ -44,8 +53,8 @@ const styles = StyleSheet.create({
     gap: theme.espacios.m,
   },
   boton: {
-    width: 36,
-    height: 36,
+    width: TAMANO,
+    height: TAMANO,
     borderRadius: theme.radios.pill,
     alignItems: "center",
     justifyContent: "center",
@@ -58,5 +67,6 @@ const styles = StyleSheet.create({
     ...theme.texto.subtitulo,
     minWidth: 28,
     textAlign: "center",
+    fontVariant: ["tabular-nums"],
   },
 })

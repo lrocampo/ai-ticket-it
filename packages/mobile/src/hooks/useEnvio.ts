@@ -3,10 +3,10 @@ import { Alert } from "react-native"
 
 import { mensajeDe } from "../services/api"
 
-export function useEnvio(tituloDelError = "No se pudo") {
+export function useEnvio() {
   const [enviando, setEnviando] = useState(false)
 
-  async function enviar(pedido: () => Promise<void>) {
+  async function enviar(tituloDelError: string, pedido: () => Promise<void>) {
     setEnviando(true)
     try {
       await pedido()

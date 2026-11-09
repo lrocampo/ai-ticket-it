@@ -24,6 +24,10 @@ export default function MisEventos() {
             <EstadoVacio
               icono="megaphone-outline"
               mensaje="Todavía no organizás eventos"
+              accion={{
+                etiqueta: "Crear evento",
+                onPress: () => router.push("/evento/nuevo"),
+              }}
             />
           }
           renderItem={({ item }) => (

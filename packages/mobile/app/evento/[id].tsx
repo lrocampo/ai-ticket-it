@@ -18,7 +18,10 @@ export default function DetalleEvento() {
   return (
     <Cargable carga={carga}>
       {(evento) => (
-        <ScrollView contentContainerStyle={styles.pantalla}>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={styles.pantalla}
+        >
           <Stack.Screen options={{ title: evento.nombre }} />
           {evento.multimedia[0] && (
             <Image
@@ -105,7 +108,6 @@ const styles = StyleSheet.create({
   descripcion: {
     ...theme.texto.cuerpo,
     marginTop: theme.espacios.m,
-    lineHeight: 22,
   },
   resena: {
     gap: theme.espacios.xs,

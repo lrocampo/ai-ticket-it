@@ -21,7 +21,7 @@ export function ChatDeCompra({ compra, onCompraActualizada }: Props) {
   const puedeEnviar = texto.trim() !== "" && !enviando
 
   function enviarTexto() {
-    enviar(async () => {
+    enviar("No se pudo enviar el mensaje", async () => {
       onCompraActualizada(await enviarMensaje(compra.id, texto.trim()))
       setTexto("")
     })
@@ -56,6 +56,7 @@ export function ChatDeCompra({ compra, onCompraActualizada }: Props) {
           value={texto}
           onChangeText={setTexto}
           placeholder="Escribí un mensaje"
+          accessibilityLabel="Mensaje"
           placeholderTextColor={theme.colores.textoSecundario}
           multiline
         />
@@ -116,8 +117,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   hora: {
-    fontSize: 11,
-    color: theme.colores.textoSecundario,
+    ...theme.texto.secundario,
     alignSelf: "flex-end",
   },
 })

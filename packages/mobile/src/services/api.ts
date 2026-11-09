@@ -38,23 +38,94 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Un issue de zod tal como lo manda el backend en `details`.
+type DetalleDeValidacion = {
+  path: (string | number)[]
+  message: string
+  code?: string
+  expected?: string
+  format?: string
+  origin?: string
+}
+
 type CuerpoDeError = {
   message?: string
-  details?: { path: (string | number)[]; message: string }[]
+  details?: DetalleDeValidacion[]
 }
 
 export function mensajeDe(error: unknown): string {
   if (isAxiosError<CuerpoDeError>(error)) {
     const cuerpo = error.response?.data
     if (cuerpo?.message) {
-      const problemas = (cuerpo.details ?? []).map(
-        (detalle) => `${detalle.path.join(".")}: ${detalle.message}`,
-      )
+      const problemas = (cuerpo.details ?? []).map(explicarDetalle)
       return [cuerpo.message, ...problemas].join("\n")
     }
-    if (!error.response) return "No pudimos conectarnos con el servidor."
+    if (!error.response) {
+      return "No hay conexión con el servidor. Revisá la conexión y volvé a intentar."
+    }
   }
   return "Algo salió mal. Probá de nuevo."
+}
+
+const CAMPOS: Partial<Record<string, string>> = {
+  nombre: "Nombre",
+  descripcion: "Descripción",
+  categoriaId: "Categoría",
+  fecha: "Fecha",
+  eventoId: "Evento",
+  tipoEntradaId: "Tipo de entrada",
+  cantidad: "Cantidad",
+  texto: "Mensaje",
+  puntuacion: "Puntuación",
+  detalle: "Comentario",
+}
+
+const CAMPOS_DE_TIPO: Partial<Record<string, string>> = {
+  nombre: "Nombre",
+  precio: "Precio",
+  cupo: "Cupo",
+}
+
+function nombreDelCampo(path: DetalleDeValidacion["path"]): string | null {
+  const [campo, indice, subcampo] = path
+  if (typeof indice === "number") {
+    if (campo === "multimedia" && path.length === 2) {
+      return `Imagen ${indice + 1}`
+    }
+    const deTipo = typeof subcampo === "string" && CAMPOS_DE_TIPO[subcampo]
+    if (campo === "tiposEntrada" && path.length === 3 && deTipo) {
+      return `${deTipo} del tipo de entrada ${indice + 1}`
+    }
+    return null
+  }
+  if (path.length !== 1 || typeof campo !== "string") return null
+  return CAMPOS[campo] ?? null
+}
+
+function problemaDe(detalle: DetalleDeValidacion): string | null {
+  const { code, expected, format, origin } = detalle
+  if (code === "invalid_format" && format === "url") {
+    return "tiene que ser una URL http o https"
+  }
+  if (code === "invalid_format" && format === "datetime") {
+    return "tiene que ser una fecha válida"
+  }
+  if (code === "invalid_type" && expected === "number") {
+    return "tiene que ser un número"
+  }
+  if (
+    code === "invalid_type" ||
+    (code === "too_small" && origin === "string")
+  ) {
+    return "es obligatorio"
+  }
+  return null
+}
+
+function explicarDetalle(detalle: DetalleDeValidacion): string {
+  const campo = nombreDelCampo(detalle.path) ?? detalle.path.join(".")
+  const problema = problemaDe(detalle)
+  return problema ? `${campo} ${problema}` : `${campo}: ${detalle.message}`
 }
 
 export async function listarUsuarios() {

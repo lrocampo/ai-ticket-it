@@ -17,6 +17,7 @@ export default function ComprasDelEvento() {
     <Cargable carga={carga}>
       {({ evento, compras }) => (
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           data={compras}
           keyExtractor={(compra) => compra.id}
           contentContainerStyle={styles.lista}
@@ -72,5 +73,6 @@ const styles = StyleSheet.create({
   cupo: {
     ...theme.texto.cuerpo,
     fontWeight: "600",
+    fontVariant: ["tabular-nums"],
   },
 })

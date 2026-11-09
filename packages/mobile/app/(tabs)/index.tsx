@@ -18,13 +18,22 @@ import { useCarga } from "../../src/hooks/useCarga"
 import { useDemorado } from "../../src/hooks/useDemorado"
 import { listarCategorias, listarEventos } from "../../src/services/api"
 import { theme } from "../../src/theme"
-import type { OrdenEventos } from "../../src/types"
+import type { Categoria, OrdenEventos } from "../../src/types"
 
 const ORDENES: { valor: OrdenEventos; etiqueta: string }[] = [
   { valor: "fecha", etiqueta: "Fecha" },
   { valor: "precio", etiqueta: "Precio" },
   { valor: "puntaje", etiqueta: "Puntaje" },
 ]
+
+function sinResultados(texto: string, categoria: Categoria | undefined) {
+  if (texto && categoria) {
+    return `No hay eventos de ${categoria.nombre} para «${texto}»`
+  }
+  if (texto) return `No hay eventos para «${texto}»`
+  if (categoria) return `No hay eventos de ${categoria.nombre}`
+  return "Todavía no hay eventos publicados"
+}
 
 export default function Eventos() {
   const [texto, setTexto] = useState("")
@@ -37,6 +46,14 @@ export default function Eventos() {
     () => listarEventos({ texto: textoBuscado, categoriaId, orden }),
     [textoBuscado, categoriaId, orden],
   )
+  const categoriaElegida = categorias.datos?.find((c) => c.id === categoriaId)
+  const buscado = textoBuscado.trim()
+  const hayFiltros = buscado !== "" || categoriaId !== null
+
+  function limpiarFiltros() {
+    setTexto("")
+    setCategoriaId(null)
+  }
 
   return (
     <View style={styles.pantalla}>
@@ -52,6 +69,7 @@ export default function Eventos() {
             value={texto}
             onChangeText={setTexto}
             placeholder="Buscá un evento"
+            accessibilityLabel="Buscar eventos"
             placeholderTextColor={theme.colores.textoSecundario}
             returnKeyType="search"
             autoCorrect={false}
@@ -100,7 +118,14 @@ export default function Eventos() {
             refreshing={eventos.refrescando}
             onRefresh={eventos.refrescar}
             ListEmptyComponent={
-              <EstadoVacio mensaje="No encontramos eventos" />
+              <EstadoVacio
+                mensaje={sinResultados(buscado, categoriaElegida)}
+                accion={
+                  hayFiltros
+                    ? { etiqueta: "Limpiar filtros", onPress: limpiarFiltros }
+                    : undefined
+                }
+              />
             }
             renderItem={({ item }) => (
               <TarjetaEvento
@@ -135,10 +160,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colores.superficie,
     borderRadius: theme.radios.m,
     borderWidth: 1,
-    borderColor: theme.colores.borde,
+    borderColor: theme.colores.bordeControl,
   },
   input: {
-    ...theme.texto.cuerpo,
+    fontSize: theme.input.fontSize,
+    color: theme.input.color,
     flex: 1,
     paddingVertical: theme.espacios.m,
   },

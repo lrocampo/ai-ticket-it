@@ -22,7 +22,7 @@ test("marca enviando mientras corre el pedido", async () => {
 
   let envio!: Promise<void>
   await act(async () => {
-    envio = result.current.enviar(() => pedido.promesa)
+    envio = result.current.enviar("No se pudo", () => pedido.promesa)
   })
   expect(result.current.enviando).toBe(true)
 
@@ -49,12 +49,16 @@ test("si el pedido falla, muestra el mensaje del servidor", async () => {
       config,
     },
   )
-  const { result } = await renderHook(() => useEnvio("No pudimos comprar"))
+  const { result } = await renderHook(() => useEnvio())
 
-  await act(() => result.current.enviar(() => Promise.reject(error)))
+  await act(() =>
+    result.current.enviar("No se pudo hacer la compra", () =>
+      Promise.reject(error),
+    ),
+  )
 
   expect(alerta).toHaveBeenCalledWith(
-    "No pudimos comprar",
+    "No se pudo hacer la compra",
     "No quedan entradas.",
   )
   expect(result.current.enviando).toBe(false)

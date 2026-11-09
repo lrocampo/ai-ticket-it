@@ -37,7 +37,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const motivo = motivoParaNoComprar(evento, usuario)
   const [tipoElegidoId, setTipoElegidoId] = useState<string | null>(null)
   const [cantidad, setCantidad] = useState(1)
-  const { enviando: comprando, enviar } = useEnvio("No pudimos hacer la compra")
+  const { enviando: comprando, enviar } = useEnvio()
 
   const tipoElegido = tipoConCupo(evento, tipoElegidoId)
   const cantidadValida = acotarAlCupo(cantidad, tipoElegido)
@@ -49,7 +49,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
 
   function comprar() {
     if (!tipoElegido) return
-    enviar(async () => {
+    enviar("No se pudo hacer la compra", async () => {
       await crearCompra({
         eventoId: evento.id,
         tipoEntradaId: tipoElegido.id,
@@ -92,7 +92,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
               {tipo.descripcion ? (
                 <Text style={theme.texto.secundario}>{tipo.descripcion}</Text>
               ) : null}
-              <Text style={theme.texto.secundario}>
+              <Text style={styles.disponibles}>
                 {agotado ? "Agotadas" : `${tipo.disponibles} disponibles`}
               </Text>
             </View>
@@ -116,7 +116,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
           </View>
           <View style={styles.filaTotal}>
             <Text style={theme.texto.cuerpo}>Total</Text>
-            <Text style={theme.texto.subtitulo}>
+            <Text style={styles.total}>
               {formatearPesos(
                 tipoElegido ? tipoElegido.precio * cantidadValida : 0,
               )}
@@ -164,10 +164,19 @@ const styles = StyleSheet.create({
     ...theme.texto.cuerpo,
     fontWeight: "600",
   },
+  disponibles: {
+    ...theme.texto.secundario,
+    fontVariant: ["tabular-nums"],
+  },
   precioTipo: {
     ...theme.texto.cuerpo,
     color: theme.colores.primario,
     fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  total: {
+    ...theme.texto.subtitulo,
+    fontVariant: ["tabular-nums"],
   },
   aviso: {
     ...theme.texto.cuerpo,

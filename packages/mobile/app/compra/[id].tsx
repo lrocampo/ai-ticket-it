@@ -27,6 +27,7 @@ export default function DetalleCompra() {
     <Cargable carga={carga}>
       {(compra) => (
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={styles.pantalla}
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets
@@ -87,7 +88,6 @@ export default function DetalleCompra() {
           <Seccion titulo="Historial">
             {compra.historial.map((cambio, indice) => (
               <View key={indice} style={styles.cambio}>
-                <BadgeEstado estado={cambio.estado} />
                 <View style={styles.datosCambio}>
                   <Text style={theme.texto.cuerpo}>
                     {cambio.quien.nombre} {cambio.quien.apellido}
@@ -96,6 +96,7 @@ export default function DetalleCompra() {
                     {formatearFechaHora(cambio.fechaHora)}
                   </Text>
                 </View>
+                <BadgeEstado estado={cambio.estado} />
               </View>
             ))}
           </Seccion>
@@ -116,7 +117,7 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
     <View style={styles.dato}>
       <Text style={theme.texto.secundario}>{etiqueta}</Text>
-      <Text style={theme.texto.cuerpo}>{valor}</Text>
+      <Text style={styles.valor}>{valor}</Text>
     </View>
   )
 }
@@ -138,14 +139,20 @@ const styles = StyleSheet.create({
     ...theme.texto.cuerpo,
     color: theme.colores.primario,
     fontWeight: "700",
+    fontVariant: ["tabular-nums"],
   },
   dato: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: theme.espacios.m,
   },
+  valor: {
+    ...theme.texto.cuerpo,
+    fontVariant: ["tabular-nums"],
+  },
   cambio: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     gap: theme.espacios.m,
   },

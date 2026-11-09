@@ -88,5 +88,6 @@ const styles = StyleSheet.create({
     ...theme.texto.cuerpo,
     color: theme.colores.primario,
     fontWeight: "700",
+    fontVariant: ["tabular-nums"],
   },
 })

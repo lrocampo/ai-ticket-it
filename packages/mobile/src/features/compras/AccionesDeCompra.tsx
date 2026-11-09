@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, View } from "react-native"
+import { StyleSheet, View } from "react-native"
 
 import { Boton, type Tono } from "../../components/Boton"
 import { useEnvio } from "../../hooks/useEnvio"
@@ -10,6 +10,7 @@ import {
 } from "../../services/api"
 import { theme } from "../../theme"
 import type { Accion, Compra } from "../../types"
+import { confirmar } from "../../utils/confirmar"
 import { formatearPesos } from "../../utils/fechas"
 
 type AccionConBoton = Exclude<Accion, "resenar">
@@ -18,6 +19,7 @@ const ACCIONES: Record<
   AccionConBoton,
   {
     etiqueta: string
+    error: string
     tono: Tono
     confirmacion: (compra: Compra) => string
     ejecutar: (id: string) => Promise<Compra>
@@ -25,6 +27,7 @@ const ACCIONES: Record<
 > = {
   confirmarPago: {
     etiqueta: "Confirmar pago",
+    error: "No se pudo confirmar el pago",
     tono: "primario",
     confirmacion: (compra) =>
       `Pagar ${formatearPesos(compra.total)}. El pago es simulado, no se cobra nada.`,
@@ -32,18 +35,21 @@ const ACCIONES: Record<
   },
   utilizar: {
     etiqueta: "Marcar como utilizada",
+    error: "No se pudo marcar como utilizada",
     tono: "primario",
     confirmacion: () => "Marcar la entrada como utilizada.",
     ejecutar: utilizarCompra,
   },
   cancelar: {
     etiqueta: "Cancelar compra",
+    error: "No se pudo cancelar la compra",
     tono: "peligro",
     confirmacion: () => "La compra queda cancelada y se libera el cupo.",
     ejecutar: cancelarCompra,
   },
   reembolsar: {
     etiqueta: "Registrar reembolso",
+    error: "No se pudo registrar el reembolso",
     tono: "secundario",
     confirmacion: (compra) =>
       `Registrar el reembolso de ${formatearPesos(compra.total)}.`,
@@ -53,19 +59,6 @@ const ACCIONES: Record<
 
 function tieneBoton(accion: Accion): accion is AccionConBoton {
   return accion !== "resenar"
-}
-
-function confirmar(titulo: string, mensaje: string, tono: Tono) {
-  return new Promise<boolean>((resolve) => {
-    Alert.alert(titulo, mensaje, [
-      { text: "Volver", style: "cancel", onPress: () => resolve(false) },
-      {
-        text: titulo,
-        style: tono === "peligro" ? "destructive" : "default",
-        onPress: () => resolve(true),
-      },
-    ])
-  })
 }
 
 type Props = {
@@ -80,9 +73,13 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
   if (acciones.length === 0) return null
 
   function hacer(accion: AccionConBoton) {
-    const { etiqueta, tono, confirmacion, ejecutar } = ACCIONES[accion]
-    enviar(async () => {
-      const confirmada = await confirmar(etiqueta, confirmacion(compra), tono)
+    const { etiqueta, error, tono, confirmacion, ejecutar } = ACCIONES[accion]
+    enviar(error, async () => {
+      const confirmada = await confirmar(
+        etiqueta,
+        confirmacion(compra),
+        tono === "peligro",
+      )
       if (confirmada) onCompraActualizada(await ejecutar(compra.id))
     })
   }

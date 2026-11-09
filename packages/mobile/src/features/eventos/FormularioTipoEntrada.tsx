@@ -3,17 +3,48 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 
 import { Campo } from "../../components/Campo"
 import { theme } from "../../theme"
-import type { TipoEntradaFormulario } from "./armarNuevoEvento"
+import { confirmar } from "../../utils/confirmar"
+import {
+  type CampoDeTipo,
+  type TipoEntradaFormulario,
+  tipoTieneDatos,
+} from "./armarNuevoEvento"
+
+const ICONO_QUITAR = 20
 
 type Props = {
   tipo: TipoEntradaFormulario
   onCambio: (tipo: TipoEntradaFormulario) => void
   onQuitar: (() => void) | null
+  error: { campo: CampoDeTipo; mensaje: string } | null
 }
 
-export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
+async function quitarSiConfirma(
+  tipo: TipoEntradaFormulario,
+  onQuitar: () => void,
+) {
+  const confirmado =
+    !tipoTieneDatos(tipo) ||
+    (await confirmar(
+      "Quitar tipo de entrada",
+      `Se borra lo que cargaste en «${tipo.nombre.trim() || "este tipo"}».`,
+      true,
+    ))
+  if (confirmado) onQuitar()
+}
+
+export function FormularioTipoEntrada({
+  tipo,
+  onCambio,
+  onQuitar,
+  error,
+}: Props) {
   function cambiar(campo: keyof TipoEntradaFormulario, valor: string) {
     onCambio({ ...tipo, [campo]: valor })
+  }
+
+  function errorDe(campo: CampoDeTipo) {
+    return error?.campo === campo ? error.mensaje : undefined
   }
 
   return (
@@ -24,14 +55,14 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
         </Text>
         {onQuitar && (
           <Pressable
-            onPress={onQuitar}
-            hitSlop={8}
+            onPress={() => quitarSiConfirma(tipo, onQuitar)}
+            hitSlop={(theme.areaTactil - ICONO_QUITAR) / 2}
             accessibilityRole="button"
             accessibilityLabel="Quitar tipo de entrada"
           >
             <Ionicons
               name="trash-outline"
-              size={20}
+              size={ICONO_QUITAR}
               color={theme.colores.error}
             />
           </Pressable>
@@ -42,6 +73,7 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
         value={tipo.nombre}
         onChangeText={(valor) => cambiar("nombre", valor)}
         placeholder="General"
+        error={errorDe("nombre")}
       />
       <Campo
         etiqueta="Descripción (opcional)"
@@ -56,6 +88,7 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
             onChangeText={(valor) => cambiar("precio", valor)}
             keyboardType="numeric"
             placeholder="15000"
+            error={errorDe("precio")}
           />
         </View>
         <View style={styles.columna}>
@@ -65,6 +98,7 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
             onChangeText={(valor) => cambiar("cupo", valor)}
             keyboardType="numeric"
             placeholder="200"
+            error={errorDe("cupo")}
           />
         </View>
       </View>

@@ -16,12 +16,26 @@ export type FormularioEvento = {
   tiposEntrada: TipoEntradaFormulario[]
 }
 
+export type CampoDeTipo = "nombre" | "precio" | "cupo"
+
+export type CampoDelEvento =
+  | "nombre"
+  | "descripcion"
+  | "categoriaId"
+  | "fecha"
+  | "multimedia"
+  | { tipo: number; campo: CampoDeTipo }
+
+export type ErrorDelFormulario = { campo: CampoDelEvento; mensaje: string }
+
 export const TIPO_VACIO: TipoEntradaFormulario = {
   nombre: "",
   descripcion: "",
   precio: "",
   cupo: "",
 }
+
+const NOMBRE_SUGERIDO = "General"
 
 export function formularioVacio(): FormularioEvento {
   const fecha = new Date()
@@ -33,31 +47,68 @@ export function formularioVacio(): FormularioEvento {
     categoriaId: null,
     fecha,
     imagen: "",
-    tiposEntrada: [{ ...TIPO_VACIO, nombre: "General" }],
+    tiposEntrada: [{ ...TIPO_VACIO, nombre: NOMBRE_SUGERIDO }],
   }
+}
+
+export function tipoTieneDatos(tipo: TipoEntradaFormulario) {
+  const nombre = tipo.nombre.trim()
+  return (
+    (nombre !== "" && nombre !== NOMBRE_SUGERIDO) ||
+    [tipo.descripcion, tipo.precio, tipo.cupo].some(
+      (campo) => campo.trim() !== "",
+    )
+  )
+}
+
+export function formularioTieneDatos(formulario: FormularioEvento) {
+  const { nombre, descripcion, categoriaId, imagen, tiposEntrada } = formulario
+  return (
+    [nombre, descripcion, imagen].some((campo) => campo.trim() !== "") ||
+    categoriaId !== null ||
+    tiposEntrada.some(tipoTieneDatos)
+  )
+}
+
+function falta(campo: CampoDelEvento, mensaje: string) {
+  return { error: { campo, mensaje } }
 }
 
 export function armarNuevoEvento(
   formulario: FormularioEvento,
-): { evento: NuevoEvento } | { error: string } {
-  const { nombre, descripcion, categoriaId, fecha, imagen, tiposEntrada } =
-    formulario
-  if (nombre.trim() === "") return { error: "Ponele un nombre al evento." }
-  if (descripcion.trim() === "") return { error: "Escribí una descripción." }
-  if (categoriaId === null) return { error: "Elegí una categoría." }
-  if (tiposEntrada.length === 0 || !tiposEntrada.every(estaCompleto)) {
-    return {
-      error: "Completá nombre, precio y cupo de cada tipo de entrada.",
-    }
+  ahora = new Date(),
+): { evento: NuevoEvento } | { error: ErrorDelFormulario } {
+  const { nombre, descripcion, categoriaId, fecha, tiposEntrada } = formulario
+  const imagen = formulario.imagen.trim()
+  if (nombre.trim() === "") {
+    return falta("nombre", "Ponele un nombre al evento.")
+  }
+  if (descripcion.trim() === "") {
+    return falta("descripcion", "Escribí una descripción.")
+  }
+  if (categoriaId === null) return falta("categoriaId", "Elegí una categoría.")
+  if (fecha <= ahora) {
+    return falta("fecha", "Elegí una fecha que todavía no pasó.")
+  }
+  if (imagen !== "" && !/^https?:\/\/\S+$/i.test(imagen)) {
+    return falta("multimedia", "Tiene que empezar con http:// o https://.")
   }
 
   const tipos: NuevoEvento["tiposEntrada"] = []
-  for (const tipo of tiposEntrada) {
+  for (const [indice, tipo] of tiposEntrada.entries()) {
+    const enTipo = (campo: CampoDeTipo) => ({ tipo: indice, campo })
     const nombreTipo = tipo.nombre.trim()
+    if (nombreTipo === "") {
+      return falta(enTipo("nombre"), "Ponele un nombre a este tipo de entrada.")
+    }
     const precio = aNumero(tipo.precio)
-    if (precio === null) return { error: noEsNumero("precio", nombreTipo) }
+    if (precio === null) {
+      return falta(enTipo("precio"), errorDeNumero("precio", tipo.precio))
+    }
     const cupo = aNumero(tipo.cupo)
-    if (cupo === null) return { error: noEsNumero("cupo", nombreTipo) }
+    if (cupo === null) {
+      return falta(enTipo("cupo"), errorDeNumero("cupo", tipo.cupo))
+    }
     tipos.push({
       nombre: nombreTipo,
       descripcion: tipo.descripcion.trim(),
@@ -72,16 +123,10 @@ export function armarNuevoEvento(
       descripcion: descripcion.trim(),
       categoriaId,
       fecha: fecha.toISOString(),
-      multimedia: imagen.trim() === "" ? [] : [imagen.trim()],
+      multimedia: imagen === "" ? [] : [imagen],
       tiposEntrada: tipos,
     },
   }
-}
-
-function estaCompleto(tipo: TipoEntradaFormulario) {
-  return [tipo.nombre, tipo.precio, tipo.cupo].every(
-    (campo) => campo.trim() !== "",
-  )
 }
 
 // En Argentina el punto separa miles, así que "15.000" es ambiguo: antes que
@@ -94,6 +139,7 @@ function aNumero(texto: string): number | null {
 
 const EJEMPLOS = { precio: "15000 o 1500,50", cupo: "200" }
 
-function noEsNumero(campo: keyof typeof EJEMPLOS, tipo: string) {
-  return `El ${campo} de ${tipo} no es un número válido. Escribilo sin puntos de miles, por ejemplo ${EJEMPLOS[campo]}.`
+function errorDeNumero(campo: keyof typeof EJEMPLOS, texto: string) {
+  if (texto.trim() === "") return `Completá el ${campo}.`
+  return `No es un número válido. Escribilo sin puntos de miles, por ejemplo ${EJEMPLOS[campo]}.`
 }
