@@ -56,7 +56,6 @@ const styles = StyleSheet.create({
   },
   valor: {
     ...theme.texto.subtitulo,
-    color: theme.colores.texto,
     minWidth: 28,
     textAlign: "center",
   },

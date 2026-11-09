@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native"
 
-import { useUsuario } from "../../context/UsuarioContext"
+import { useUsuarioActual } from "../../context/UsuarioContext"
 import { theme } from "../../theme"
 import type { Compra } from "../../types"
 import { formatearFechaHora } from "../../utils/fechas"
@@ -11,24 +11,24 @@ type Props = {
 }
 
 export function ChatDeCompra({ compra }: Props) {
-  const { usuario } = useUsuario()
+  const usuario = useUsuarioActual()
 
   return (
     <View style={styles.contenedor}>
       {compra.mensajes.length === 0 ? (
-        <Text style={styles.vacio}>Todavía no hay mensajes.</Text>
+        <Text style={theme.texto.secundario}>Todavía no hay mensajes.</Text>
       ) : (
         compra.mensajes.map((mensaje) => {
-          const esMio = mensaje.usuario.id === usuario?.id
+          const esMio = mensaje.usuario.id === usuario.id
           return (
             <View
               key={mensaje.id}
               style={[styles.burbuja, esMio ? styles.mia : styles.ajena]}
             >
-              <Text style={styles.autor}>
+              <Text style={theme.texto.destacado}>
                 {esMio ? "Vos" : mensaje.usuario.nombre}
               </Text>
-              <Text style={styles.texto}>{mensaje.texto}</Text>
+              <Text style={theme.texto.cuerpo}>{mensaje.texto}</Text>
               <Text style={styles.hora}>
                 {formatearFechaHora(mensaje.enviado)}
               </Text>
@@ -44,10 +44,6 @@ const styles = StyleSheet.create({
   contenedor: {
     gap: theme.espacios.s,
   },
-  vacio: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
-  },
   burbuja: {
     maxWidth: "85%",
     padding: theme.espacios.m,
@@ -61,15 +57,6 @@ const styles = StyleSheet.create({
   ajena: {
     alignSelf: "flex-start",
     backgroundColor: theme.colores.fondo,
-  },
-  autor: {
-    ...theme.texto.chico,
-    color: theme.colores.primario,
-    fontWeight: "600",
-  },
-  texto: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.texto,
   },
   hora: {
     fontSize: 11,

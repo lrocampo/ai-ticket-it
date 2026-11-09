@@ -79,6 +79,7 @@ export type Compra = {
   comprador: Usuario
   evento: { id: string; nombre: string; fecha: string; organizador: Usuario }
   tipoEntrada: { id: string; nombre: string; precio: number }
+  // null salvo que esté CONFIRMADA y el evento todavía no haya pasado.
   diasParaElEvento: number | null
   puedeCancelarse: boolean
   puedeResenarse: boolean
@@ -95,9 +96,9 @@ export type ComprasDeEvento = {
 export type OrdenEventos = "precio" | "fecha" | "puntaje"
 
 export type FiltrosEventos = {
-  texto?: string
-  categoriaId?: string
-  orden?: OrdenEventos
+  texto: string
+  categoriaId: string | null
+  orden: OrdenEventos
 }
 
 export type NuevaCompra = {

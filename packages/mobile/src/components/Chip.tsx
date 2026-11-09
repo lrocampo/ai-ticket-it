@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
   },
   texto: {
     ...theme.texto.chico,
-    color: theme.colores.texto,
     fontWeight: "500",
   },
   textoActivo: {

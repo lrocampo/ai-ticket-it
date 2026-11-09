@@ -2,8 +2,7 @@ import { useLocalSearchParams } from "expo-router"
 import { ScrollView, StyleSheet, Text, View } from "react-native"
 
 import { BadgeEstado } from "../../src/components/BadgeEstado"
-import { Cargando } from "../../src/components/Cargando"
-import { MensajeDeError } from "../../src/components/MensajeDeError"
+import { Cargable } from "../../src/components/Cargable"
 import { Seccion } from "../../src/components/Seccion"
 import { AccionesDeCompra } from "../../src/features/compras/AccionesDeCompra"
 import { ChatDeCompra } from "../../src/features/compras/ChatDeCompra"
@@ -19,81 +18,81 @@ import {
 
 export default function DetalleCompra() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const { datos, setDatos, error, recargar } = useCarga(
-    () => obtenerCompra(id),
-    [id],
-  )
-
-  if (error && !datos) {
-    return <MensajeDeError mensaje={error} onReintentar={recargar} />
-  }
-  if (!datos) return <Cargando />
-
-  const compra = datos
+  const carga = useCarga(() => obtenerCompra(id), [id])
 
   return (
-    <ScrollView contentContainerStyle={styles.pantalla}>
-      <View style={styles.encabezado}>
-        <BadgeEstado estado={compra.estado} />
-        <Text style={styles.titulo}>{compra.evento.nombre}</Text>
-        <Text style={styles.secundario}>
-          {formatearFecha(compra.evento.fecha)}
-        </Text>
-        {compra.diasParaElEvento !== null && (
-          <Text style={styles.dias}>
-            {textoDiasRestantes(compra.diasParaElEvento)}
-          </Text>
-        )}
-      </View>
-
-      <Seccion titulo="Datos de la compra">
-        <Dato etiqueta="Entrada" valor={compra.tipoEntrada.nombre} />
-        <Dato
-          etiqueta="Precio unitario"
-          valor={formatearPesos(compra.tipoEntrada.precio)}
-        />
-        <Dato etiqueta="Cantidad" valor={String(compra.cantidad)} />
-        <Dato etiqueta="Total" valor={formatearPesos(compra.total)} />
-        <Dato
-          etiqueta="Comprador"
-          valor={`${compra.comprador.nombre} ${compra.comprador.apellido}`}
-        />
-        <Dato
-          etiqueta="Organizador"
-          valor={`${compra.evento.organizador.nombre} ${compra.evento.organizador.apellido}`}
-        />
-      </Seccion>
-
-      <AccionesDeCompra compra={compra} onCompraActualizada={setDatos} />
-
-      <Seccion titulo="Historial">
-        {compra.historial.map((cambio, indice) => (
-          <View key={indice} style={styles.cambio}>
-            <BadgeEstado estado={cambio.estado} />
-            <View style={styles.datosCambio}>
-              <Text style={styles.cuerpo}>
-                {cambio.quien.nombre} {cambio.quien.apellido}
+    <Cargable carga={carga}>
+      {(compra) => (
+        <ScrollView contentContainerStyle={styles.pantalla}>
+          <View style={styles.encabezado}>
+            <BadgeEstado estado={compra.estado} />
+            <Text style={styles.titulo}>{compra.evento.nombre}</Text>
+            <Text style={theme.texto.secundario}>
+              {formatearFecha(compra.evento.fecha)}
+            </Text>
+            {compra.diasParaElEvento !== null && (
+              <Text style={styles.dias}>
+                {textoDiasRestantes(compra.diasParaElEvento)}
               </Text>
-              <Text style={styles.secundario}>
-                {formatearFechaHora(cambio.fechaHora)}
-              </Text>
-            </View>
+            )}
           </View>
-        ))}
-      </Seccion>
 
-      <Seccion titulo="Mensajes">
-        <ChatDeCompra compra={compra} onCompraActualizada={setDatos} />
-      </Seccion>
-    </ScrollView>
+          <Seccion titulo="Datos de la compra">
+            <Dato etiqueta="Entrada" valor={compra.tipoEntrada.nombre} />
+            <Dato
+              etiqueta="Precio unitario"
+              valor={formatearPesos(compra.tipoEntrada.precio)}
+            />
+            <Dato etiqueta="Cantidad" valor={String(compra.cantidad)} />
+            <Dato etiqueta="Total" valor={formatearPesos(compra.total)} />
+            <Dato
+              etiqueta="Comprador"
+              valor={`${compra.comprador.nombre} ${compra.comprador.apellido}`}
+            />
+            <Dato
+              etiqueta="Organizador"
+              valor={`${compra.evento.organizador.nombre} ${compra.evento.organizador.apellido}`}
+            />
+          </Seccion>
+
+          <AccionesDeCompra
+            compra={compra}
+            onCompraActualizada={carga.setDatos}
+          />
+
+          <Seccion titulo="Historial">
+            {compra.historial.map((cambio, indice) => (
+              <View key={indice} style={styles.cambio}>
+                <BadgeEstado estado={cambio.estado} />
+                <View style={styles.datosCambio}>
+                  <Text style={theme.texto.cuerpo}>
+                    {cambio.quien.nombre} {cambio.quien.apellido}
+                  </Text>
+                  <Text style={theme.texto.secundario}>
+                    {formatearFechaHora(cambio.fechaHora)}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </Seccion>
+
+          <Seccion titulo="Mensajes">
+            <ChatDeCompra
+              compra={compra}
+              onCompraActualizada={carga.setDatos}
+            />
+          </Seccion>
+        </ScrollView>
+      )}
+    </Cargable>
   )
 }
 
 function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
     <View style={styles.dato}>
-      <Text style={styles.secundario}>{etiqueta}</Text>
-      <Text style={styles.cuerpo}>{valor}</Text>
+      <Text style={theme.texto.secundario}>{etiqueta}</Text>
+      <Text style={theme.texto.cuerpo}>{valor}</Text>
     </View>
   )
 }
@@ -109,21 +108,12 @@ const styles = StyleSheet.create({
   },
   titulo: {
     ...theme.texto.titulo,
-    color: theme.colores.texto,
     marginTop: theme.espacios.s,
   },
   dias: {
     ...theme.texto.cuerpo,
     color: theme.colores.primario,
     fontWeight: "700",
-  },
-  cuerpo: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.texto,
-  },
-  secundario: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
   dato: {
     flexDirection: "row",

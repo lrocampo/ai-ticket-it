@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons"
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native"
+import { FlatList, StyleSheet, Text, View } from "react-native"
 
-import { Cargando } from "../src/components/Cargando"
-import { MensajeDeError } from "../src/components/MensajeDeError"
+import { Cargable } from "../src/components/Cargable"
+import { Tarjeta } from "../src/components/Tarjeta"
 import { useUsuario } from "../src/context/UsuarioContext"
 import { useCarga } from "../src/hooks/useCarga"
 import { listarUsuarios } from "../src/services/api"
@@ -10,53 +10,46 @@ import { theme } from "../src/theme"
 
 export default function QuienSoy() {
   const { elegirUsuario } = useUsuario()
-  const { datos, error, recargar, refrescando, refrescar } = useCarga(
-    listarUsuarios,
-    [],
-  )
-
-  if (error && !datos) {
-    return <MensajeDeError mensaje={error} onReintentar={recargar} />
-  }
-  if (!datos) return <Cargando />
+  const usuarios = useCarga(listarUsuarios, [])
 
   return (
-    <FlatList
-      data={datos}
-      keyExtractor={(usuario) => usuario.id}
-      contentContainerStyle={styles.lista}
-      refreshing={refrescando}
-      onRefresh={refrescar}
-      ListHeaderComponent={
-        <Text style={styles.intro}>
-          Elegí quién sos para ver tus compras y tus eventos.
-        </Text>
-      }
-      renderItem={({ item }) => (
-        <Pressable
-          style={({ pressed }) => [styles.fila, pressed && styles.presionada]}
-          onPress={() => elegirUsuario(item)}
-        >
-          <View style={styles.avatar}>
-            <Text style={styles.iniciales}>
-              {item.nombre[0]}
-              {item.apellido[0]}
+    <Cargable carga={usuarios}>
+      {(datos) => (
+        <FlatList
+          data={datos}
+          keyExtractor={(usuario) => usuario.id}
+          contentContainerStyle={styles.lista}
+          refreshing={usuarios.refrescando}
+          onRefresh={usuarios.refrescar}
+          ListHeaderComponent={
+            <Text style={styles.intro}>
+              Elegí quién sos para ver tus compras y tus eventos.
             </Text>
-          </View>
-          <View style={styles.datos}>
-            <Text style={styles.nombre}>
-              {item.nombre} {item.apellido}
-            </Text>
-            <Text style={styles.email}>{item.email}</Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={theme.colores.textoSecundario}
-          />
-        </Pressable>
+          }
+          renderItem={({ item }) => (
+            <Tarjeta style={styles.fila} onPress={() => elegirUsuario(item)}>
+              <View style={styles.avatar}>
+                <Text style={styles.iniciales}>
+                  {item.nombre[0]}
+                  {item.apellido[0]}
+                </Text>
+              </View>
+              <View style={styles.datos}>
+                <Text style={theme.texto.subtitulo}>
+                  {item.nombre} {item.apellido}
+                </Text>
+                <Text style={theme.texto.secundario}>{item.email}</Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={theme.colores.textoSecundario}
+              />
+            </Tarjeta>
+          )}
+        />
       )}
-    />
+    </Cargable>
   )
 }
 
@@ -75,12 +68,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.espacios.m,
     padding: theme.espacios.l,
-    backgroundColor: theme.colores.superficie,
-    borderRadius: theme.radios.m,
-    ...theme.sombra,
-  },
-  presionada: {
-    opacity: 0.85,
   },
   avatar: {
     width: 44,
@@ -98,13 +85,5 @@ const styles = StyleSheet.create({
   datos: {
     flex: 1,
     gap: 2,
-  },
-  nombre: {
-    ...theme.texto.subtitulo,
-    color: theme.colores.texto,
-  },
-  email: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
 })

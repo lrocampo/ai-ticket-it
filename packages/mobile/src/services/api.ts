@@ -16,10 +16,11 @@ import type {
 
 // Expo sirve el bundle desde la IP de la Mac; el backend corre en esa misma
 // máquina, así que desde el teléfono se llega por ahí y no por localhost.
+// EXPO_PUBLIC_API_URL la pisa para --tunnel o un backend en otro puerto.
 function urlDelBackend(): string {
   const hostUri = Constants.expoConfig?.hostUri
   const host = hostUri ? hostUri.split(":")[0] : "localhost"
-  return `http://${host}:3000`
+  return process.env.EXPO_PUBLIC_API_URL ?? `http://${host}:3000`
 }
 
 const api = axios.create({ baseURL: urlDelBackend(), timeout: 10000 })
@@ -37,12 +38,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-api.interceptors.response.use(
-  (respuesta) => respuesta,
-  (error: unknown) => Promise.reject(new Error(mensajeDeError(error))),
-)
-
-function mensajeDeError(error: unknown): string {
+export function mensajeDe(error: unknown): string {
   if (isAxiosError<{ message?: string }>(error)) {
     if (error.response?.data?.message) return error.response.data.message
     if (!error.response) return "No pudimos conectarnos con el servidor."
@@ -58,11 +54,15 @@ export async function listarCategorias() {
   return (await api.get<Categoria[]>("/categorias")).data
 }
 
-export async function listarEventos(filtros: FiltrosEventos = {}) {
+export async function listarEventos({
+  texto,
+  categoriaId,
+  orden,
+}: FiltrosEventos) {
   const params = {
-    texto: filtros.texto || undefined,
-    categoriaId: filtros.categoriaId || undefined,
-    orden: filtros.orden,
+    texto: texto || undefined,
+    categoriaId: categoriaId ?? undefined,
+    orden,
   }
   return (await api.get<Evento[]>("/eventos", { params })).data
 }

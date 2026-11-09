@@ -2,11 +2,12 @@ import { Ionicons } from "@expo/vector-icons"
 import { Tabs } from "expo-router/js-tabs"
 import { Pressable, StyleSheet, Text } from "react-native"
 
-import { useUsuario } from "../../src/context/UsuarioContext"
+import { useUsuario, useUsuarioActual } from "../../src/context/UsuarioContext"
 import { theme } from "../../src/theme"
 
 function BotonCambiarUsuario() {
-  const { usuario, salir } = useUsuario()
+  const usuario = useUsuarioActual()
+  const { salir } = useUsuario()
 
   return (
     <Pressable
@@ -15,7 +16,7 @@ function BotonCambiarUsuario() {
       accessibilityLabel="Cambiar de usuario"
     >
       <Text style={styles.nombre} numberOfLines={1}>
-        {usuario?.nombre}
+        {usuario.nombre}
       </Text>
       <Ionicons
         name="swap-horizontal"

@@ -11,7 +11,7 @@ type Props = {
 export function Seccion({ titulo, children }: Props) {
   return (
     <View style={styles.seccion}>
-      <Text style={styles.titulo}>{titulo}</Text>
+      <Text style={theme.texto.subtitulo}>{titulo}</Text>
       {children}
     </View>
   )
@@ -19,14 +19,8 @@ export function Seccion({ titulo, children }: Props) {
 
 const styles = StyleSheet.create({
   seccion: {
-    backgroundColor: theme.colores.superficie,
-    borderRadius: theme.radios.m,
+    ...theme.tarjeta,
     padding: theme.espacios.l,
     gap: theme.espacios.m,
-    ...theme.sombra,
-  },
-  titulo: {
-    ...theme.texto.subtitulo,
-    color: theme.colores.texto,
   },
 })

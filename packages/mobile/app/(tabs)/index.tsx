@@ -10,10 +10,9 @@ import {
   View,
 } from "react-native"
 
-import { Cargando } from "../../src/components/Cargando"
+import { Cargable } from "../../src/components/Cargable"
 import { Chip } from "../../src/components/Chip"
 import { EstadoVacio } from "../../src/components/EstadoVacio"
-import { MensajeDeError } from "../../src/components/MensajeDeError"
 import { TarjetaEvento } from "../../src/components/TarjetaEvento"
 import { useCarga } from "../../src/hooks/useCarga"
 import { useDemorado } from "../../src/hooks/useDemorado"
@@ -35,12 +34,7 @@ export default function Eventos() {
 
   const categorias = useCarga(listarCategorias, [])
   const eventos = useCarga(
-    () =>
-      listarEventos({
-        texto: textoBuscado,
-        categoriaId: categoriaId ?? undefined,
-        orden,
-      }),
+    () => listarEventos({ texto: textoBuscado, categoriaId, orden }),
     [textoBuscado, categoriaId, orden],
   )
 
@@ -84,7 +78,7 @@ export default function Eventos() {
           ))}
         </ScrollView>
         <View style={styles.orden}>
-          <Text style={styles.etiquetaOrden}>Ordenar por</Text>
+          <Text style={theme.texto.secundario}>Ordenar por</Text>
           {ORDENES.map((opcion) => (
             <Chip
               key={opcion.valor}
@@ -96,30 +90,27 @@ export default function Eventos() {
         </View>
       </View>
 
-      {eventos.error && !eventos.datos ? (
-        <MensajeDeError
-          mensaje={eventos.error}
-          onReintentar={eventos.recargar}
-        />
-      ) : !eventos.datos ? (
-        <Cargando />
-      ) : (
-        <FlatList
-          data={eventos.datos}
-          keyExtractor={(evento) => evento.id}
-          contentContainerStyle={styles.lista}
-          keyboardShouldPersistTaps="handled"
-          refreshing={eventos.refrescando}
-          onRefresh={eventos.refrescar}
-          ListEmptyComponent={<EstadoVacio mensaje="No encontramos eventos" />}
-          renderItem={({ item }) => (
-            <TarjetaEvento
-              evento={item}
-              onPress={() => router.push(`/evento/${item.id}`)}
-            />
-          )}
-        />
-      )}
+      <Cargable carga={eventos}>
+        {(datos) => (
+          <FlatList
+            data={datos}
+            keyExtractor={(evento) => evento.id}
+            contentContainerStyle={styles.lista}
+            keyboardShouldPersistTaps="handled"
+            refreshing={eventos.refrescando}
+            onRefresh={eventos.refrescar}
+            ListEmptyComponent={
+              <EstadoVacio mensaje="No encontramos eventos" />
+            }
+            renderItem={({ item }) => (
+              <TarjetaEvento
+                evento={item}
+                onPress={() => router.push(`/evento/${item.id}`)}
+              />
+            )}
+          />
+        )}
+      </Cargable>
     </View>
   )
 }
@@ -150,7 +141,6 @@ const styles = StyleSheet.create({
     ...theme.texto.cuerpo,
     flex: 1,
     paddingVertical: theme.espacios.m,
-    color: theme.colores.texto,
   },
   chips: {
     gap: theme.espacios.s,
@@ -161,10 +151,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.espacios.s,
     paddingHorizontal: theme.espacios.l,
-  },
-  etiquetaOrden: {
-    ...theme.texto.chico,
-    color: theme.colores.textoSecundario,
   },
   lista: {
     padding: theme.espacios.l,
