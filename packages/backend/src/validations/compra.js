@@ -1,22 +1,18 @@
 import { z } from "zod"
 
-export const compraSchema = z
-  .object({
-    eventoId: z.string().min(1),
-    tipoEntradaId: z.string().min(1),
-    cantidad: z.number(),
-  })
-  .strict()
+import { objetoEstricto, textoObligatorio } from "./comunes.js"
 
-export const mensajeSchema = z
-  .object({
-    texto: z.string().trim().min(1),
-  })
-  .strict()
+export const compraSchema = objetoEstricto({
+  eventoId: textoObligatorio("Hace falta el evento"),
+  tipoEntradaId: textoObligatorio("Hace falta el tipo de entrada"),
+  cantidad: z.number({ error: "La cantidad tiene que ser un número" }),
+})
 
-export const resenaSchema = z
-  .object({
-    puntuacion: z.number(),
-    detalle: z.string().trim().min(1),
-  })
-  .strict()
+export const mensajeSchema = objetoEstricto({
+  texto: textoObligatorio("El mensaje no puede estar vacío"),
+})
+
+export const resenaSchema = objetoEstricto({
+  puntuacion: z.number({ error: "La puntuación tiene que ser un número" }),
+  detalle: textoObligatorio("El comentario no puede estar vacío"),
+})
