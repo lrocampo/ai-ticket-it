@@ -38,8 +38,7 @@ Una transición desde un estado no listado lanza `DomainRuleError`. Una acción 
 Derivados que expone la compra:
 
 - `diasParaElEvento(ahora)`: solo cuando está `CONFIRMADA` y el evento todavía no ocurrió; si no, es `null`. Nunca es negativo.
-- `puedeCancelarse(ahora)`: estado `PENDIENTE` o `CONFIRMADA` y el evento no ocurrió.
-- `puedeResenarse()`: estado `UTILIZADA` y todavía no tiene reseña.
+- `accionesPara(usuario, ahora)`: las acciones de la tabla que ese usuario puede ejecutar ahora: las transiciones cuyo "quién" es él, cuyo estado de origen es el actual y cuya condición extra se cumple, más `resenar` si es el comprador, la compra está `UTILIZADA` y no tiene reseña. La columna "Quién" de la tabla vive una sola vez, en la tabla, y la usan tanto `accionesPara` como la autorización del servicio.
 - `resenar(puntuacion, detalle)`: crea la reseña una sola vez. El enunciado pide puntaje y comentario escrito, así que las dos cosas son obligatorias.
 - `enviarMensaje(usuario, texto)`: solo el comprador o el organizador del evento.
 

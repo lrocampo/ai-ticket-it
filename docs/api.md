@@ -43,8 +43,7 @@ Compra = {
   evento: { id, nombre, fecha: ISO, organizador: Usuario },
   tipoEntrada: { id, nombre, precio },
   diasParaElEvento: number | null,   // solo CONFIRMADA con evento futuro
-  puedeCancelarse: boolean,
-  puedeResenarse: boolean,
+  acciones: Accion[],                // las que puede hacer AHORA quien pide
   historial: CambioEstado[],
   mensajes: Mensaje[],
   resena: Resena | null
@@ -52,6 +51,8 @@ Compra = {
 ```
 
 `estado` es uno de `PENDIENTE`, `CONFIRMADA`, `UTILIZADA`, `CANCELADA`, `REEMBOLSADA`.
+
+`Accion` es uno de `confirmarPago`, `utilizar`, `cancelar`, `reembolsar`, `resenar`. `acciones` se calcula para el usuario del header: son las acciones que ese usuario puede ejecutar sobre esa compra en su estado actual, según la tabla de `docs/dominio.md`. La app muestra un botón (o el formulario de reseña) por cada una y no vuelve a evaluar las reglas. Si el usuario intenta una acción que no está en la lista, el backend responde 403 o 409 igual.
 
 ## Rutas
 
