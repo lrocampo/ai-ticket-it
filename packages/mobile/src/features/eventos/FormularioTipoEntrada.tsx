@@ -5,6 +5,8 @@ import { Campo } from "../../components/Campo"
 import { theme } from "../../theme"
 import type { TipoEntradaFormulario } from "./armarNuevoEvento"
 
+const ICONO_QUITAR = 20
+
 type Props = {
   tipo: TipoEntradaFormulario
   onCambio: (tipo: TipoEntradaFormulario) => void
@@ -25,13 +27,13 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
         {onQuitar && (
           <Pressable
             onPress={onQuitar}
-            hitSlop={8}
+            hitSlop={(theme.areaTactil - ICONO_QUITAR) / 2}
             accessibilityRole="button"
             accessibilityLabel="Quitar tipo de entrada"
           >
             <Ionicons
               name="trash-outline"
-              size={20}
+              size={ICONO_QUITAR}
               color={theme.colores.error}
             />
           </Pressable>

@@ -31,7 +31,7 @@ function Navegacion() {
             headerLeft: () => (
               <Pressable
                 onPress={() => router.back()}
-                hitSlop={8}
+                hitSlop={12}
                 accessibilityRole="button"
               >
                 <Text style={styles.cancelar}>Cancelar</Text>

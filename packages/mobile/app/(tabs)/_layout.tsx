@@ -6,6 +6,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useUsuario, useUsuarioActual } from "../../src/context/UsuarioContext"
 import { theme } from "../../src/theme"
 
+const ICONO_NUEVO = 26
+const ICONO_USUARIO = 20
+const MARGEN_USUARIO = (theme.areaTactil - ICONO_USUARIO) / 2
+
 function BotonCambiarUsuario() {
   const usuario = useUsuarioActual()
   const { salir } = useUsuario()
@@ -14,6 +18,7 @@ function BotonCambiarUsuario() {
     <Pressable
       style={styles.boton}
       onPress={salir}
+      hitSlop={{ top: MARGEN_USUARIO, bottom: MARGEN_USUARIO }}
       accessibilityRole="button"
       accessibilityLabel={`${usuario.nombre}, cambiar de usuario`}
     >
@@ -22,7 +27,7 @@ function BotonCambiarUsuario() {
       </Text>
       <Ionicons
         name="swap-horizontal"
-        size={20}
+        size={ICONO_USUARIO}
         color={theme.colores.primario}
       />
     </Pressable>
@@ -34,10 +39,11 @@ function BotonNuevoEvento() {
     <Pressable
       style={styles.nuevoEvento}
       onPress={() => router.push("/evento/nuevo")}
+      hitSlop={(theme.areaTactil - ICONO_NUEVO) / 2}
       accessibilityRole="button"
       accessibilityLabel="Crear evento"
     >
-      <Ionicons name="add" size={26} color={theme.colores.primario} />
+      <Ionicons name="add" size={ICONO_NUEVO} color={theme.colores.primario} />
     </Pressable>
   )
 }
