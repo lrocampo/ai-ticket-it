@@ -16,6 +16,27 @@ export type FormularioEvento = {
   tiposEntrada: TipoEntradaFormulario[]
 }
 
+export const TIPO_VACIO: TipoEntradaFormulario = {
+  nombre: "",
+  descripcion: "",
+  precio: "",
+  cupo: "",
+}
+
+export function formularioVacio(): FormularioEvento {
+  const fecha = new Date()
+  fecha.setDate(fecha.getDate() + 1)
+  fecha.setHours(21, 0, 0, 0)
+  return {
+    nombre: "",
+    descripcion: "",
+    categoriaId: null,
+    fecha,
+    imagen: "",
+    tiposEntrada: [{ ...TIPO_VACIO, nombre: "General" }],
+  }
+}
+
 export function armarNuevoEvento(
   formulario: FormularioEvento,
 ): { evento: NuevoEvento } | { error: string } {
