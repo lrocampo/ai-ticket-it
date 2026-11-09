@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, View } from "react-native"
+import { StyleSheet, View } from "react-native"
 
 import { Boton, type Tono } from "../../components/Boton"
 import { useEnvio } from "../../hooks/useEnvio"
@@ -10,6 +10,7 @@ import {
 } from "../../services/api"
 import { theme } from "../../theme"
 import type { Accion, Compra } from "../../types"
+import { confirmar } from "../../utils/confirmar"
 import { formatearPesos } from "../../utils/fechas"
 
 type AccionConBoton = Exclude<Accion, "resenar">
@@ -60,19 +61,6 @@ function tieneBoton(accion: Accion): accion is AccionConBoton {
   return accion !== "resenar"
 }
 
-function confirmar(titulo: string, mensaje: string, tono: Tono) {
-  return new Promise<boolean>((resolve) => {
-    Alert.alert(titulo, mensaje, [
-      { text: "Volver", style: "cancel", onPress: () => resolve(false) },
-      {
-        text: titulo,
-        style: tono === "peligro" ? "destructive" : "default",
-        onPress: () => resolve(true),
-      },
-    ])
-  })
-}
-
 type Props = {
   compra: Compra
   onCompraActualizada: (compra: Compra) => void
@@ -87,7 +75,11 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
   function hacer(accion: AccionConBoton) {
     const { etiqueta, error, tono, confirmacion, ejecutar } = ACCIONES[accion]
     enviar(error, async () => {
-      const confirmada = await confirmar(etiqueta, confirmacion(compra), tono)
+      const confirmada = await confirmar(
+        etiqueta,
+        confirmacion(compra),
+        tono === "peligro",
+      )
       if (confirmada) onCompraActualizada(await ejecutar(compra.id))
     })
   }

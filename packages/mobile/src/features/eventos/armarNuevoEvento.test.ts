@@ -1,4 +1,10 @@
-import { armarNuevoEvento, type FormularioEvento } from "./armarNuevoEvento"
+import {
+  armarNuevoEvento,
+  type FormularioEvento,
+  formularioTieneDatos,
+  formularioVacio,
+  TIPO_VACIO,
+} from "./armarNuevoEvento"
 
 const fecha = new Date("2026-12-20T21:00:00.000Z")
 
@@ -109,4 +115,29 @@ test("pide nombre, precio y cupo en cada tipo de entrada", () => {
   expect(resultado).toEqual({
     error: "Completá nombre, precio y cupo de cada tipo de entrada.",
   })
+})
+
+test("el formulario recién abierto no tiene nada que descartar", () => {
+  const vacio = formularioVacio()
+
+  expect(formularioTieneDatos(vacio)).toBe(false)
+  expect(
+    formularioTieneDatos({
+      ...vacio,
+      tiposEntrada: [...vacio.tiposEntrada, TIPO_VACIO],
+    }),
+  ).toBe(false)
+})
+
+test.each<[string, Partial<FormularioEvento>]>([
+  ["un nombre", { nombre: "Recital" }],
+  ["una categoría", { categoriaId: "musica" }],
+  ["una URL", { imagen: "https://" }],
+  [
+    "un precio en un tipo",
+    { tiposEntrada: [{ ...TIPO_VACIO, nombre: "General", precio: "100" }] },
+  ],
+  ["un tipo renombrado", { tiposEntrada: [{ ...TIPO_VACIO, nombre: "VIP" }] }],
+])("con %s hay algo que descartar", (_, cambios) => {
+  expect(formularioTieneDatos({ ...formularioVacio(), ...cambios })).toBe(true)
 })

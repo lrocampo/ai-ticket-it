@@ -23,6 +23,8 @@ export const TIPO_VACIO: TipoEntradaFormulario = {
   cupo: "",
 }
 
+const NOMBRE_SUGERIDO = "General"
+
 export function formularioVacio(): FormularioEvento {
   const fecha = new Date()
   fecha.setDate(fecha.getDate() + 1)
@@ -33,8 +35,27 @@ export function formularioVacio(): FormularioEvento {
     categoriaId: null,
     fecha,
     imagen: "",
-    tiposEntrada: [{ ...TIPO_VACIO, nombre: "General" }],
+    tiposEntrada: [{ ...TIPO_VACIO, nombre: NOMBRE_SUGERIDO }],
   }
+}
+
+export function tipoTieneDatos(tipo: TipoEntradaFormulario) {
+  const nombre = tipo.nombre.trim()
+  return (
+    (nombre !== "" && nombre !== NOMBRE_SUGERIDO) ||
+    [tipo.descripcion, tipo.precio, tipo.cupo].some(
+      (campo) => campo.trim() !== "",
+    )
+  )
+}
+
+export function formularioTieneDatos(formulario: FormularioEvento) {
+  const { nombre, descripcion, categoriaId, imagen, tiposEntrada } = formulario
+  return (
+    [nombre, descripcion, imagen].some((campo) => campo.trim() !== "") ||
+    categoriaId !== null ||
+    tiposEntrada.some(tipoTieneDatos)
+  )
 }
 
 export function armarNuevoEvento(

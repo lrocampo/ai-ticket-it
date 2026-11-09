@@ -1,6 +1,5 @@
-import { router, Stack } from "expo-router"
+import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
-import { Pressable, StyleSheet, Text } from "react-native"
 
 import { Cargando } from "../src/components/Cargando"
 import { UsuarioProvider, useUsuario } from "../src/context/UsuarioContext"
@@ -25,19 +24,7 @@ function Navegacion() {
         <Stack.Screen name="evento/[id]" options={{ title: "Evento" }} />
         <Stack.Screen
           name="evento/nuevo"
-          options={{
-            title: "Nuevo evento",
-            presentation: "modal",
-            headerLeft: () => (
-              <Pressable
-                onPress={() => router.back()}
-                hitSlop={12}
-                accessibilityRole="button"
-              >
-                <Text style={styles.cancelar}>Cancelar</Text>
-              </Pressable>
-            ),
-          }}
+          options={{ title: "Nuevo evento", presentation: "modal" }}
         />
         <Stack.Screen
           name="evento/[id]/compras"
@@ -60,10 +47,3 @@ export default function RootLayout() {
     </UsuarioProvider>
   )
 }
-
-const styles = StyleSheet.create({
-  cancelar: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.primario,
-  },
-})

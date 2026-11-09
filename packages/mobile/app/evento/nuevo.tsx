@@ -1,9 +1,10 @@
 import DateTimePicker from "@react-native-community/datetimepicker"
-import { router } from "expo-router"
+import { router, Stack, usePreventRemove } from "expo-router"
 import { useState } from "react"
 import {
   Alert,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,6 +19,7 @@ import { Seccion } from "../../src/components/Seccion"
 import {
   armarNuevoEvento,
   type FormularioEvento,
+  formularioTieneDatos,
   formularioVacio,
   TIPO_VACIO,
   type TipoEntradaFormulario,
@@ -27,6 +29,7 @@ import { useCarga } from "../../src/hooks/useCarga"
 import { useEnvio } from "../../src/hooks/useEnvio"
 import { crearEvento, listarCategorias } from "../../src/services/api"
 import { theme } from "../../src/theme"
+import { confirmar } from "../../src/utils/confirmar"
 import { formatearFecha } from "../../src/utils/fechas"
 
 export default function CrearEvento() {
@@ -36,7 +39,21 @@ export default function CrearEvento() {
   const [pickerAbierto, setPickerAbierto] = useState<"fecha" | "hora" | null>(
     null,
   )
+  const [creado, setCreado] = useState(false)
   const { tiposEntrada } = formulario
+
+  // Cubre el Cancelar, el gesto de bajar el modal y el botón atrás de Android.
+  const permitirSalir = usePreventRemove(
+    formularioTieneDatos(formulario) && !creado,
+    async ({ repeat }) => {
+      const descartar = await confirmar(
+        "Descartar el evento",
+        "Se pierde todo lo que cargaste.",
+        true,
+      )
+      if (descartar) repeat()
+    },
+  )
 
   function actualizar<K extends keyof FormularioEvento>(
     campo: K,
@@ -67,131 +84,152 @@ export default function CrearEvento() {
     }
     enviar("No se pudo crear el evento", async () => {
       const evento = await crearEvento(resultado.evento)
+      setCreado(true)
+      permitirSalir()
       router.replace(`/evento/${evento.id}`)
     })
   }
 
   return (
-    <Cargable carga={categorias}>
-      {(listaDeCategorias) => (
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={styles.pantalla}
-          keyboardShouldPersistTaps="handled"
-          automaticallyAdjustKeyboardInsets
-        >
-          <Seccion titulo="El evento">
-            <Campo
-              etiqueta="Nombre"
-              value={formulario.nombre}
-              onChangeText={(nombre) => actualizar("nombre", nombre)}
-              placeholder="Recital en el Luna Park"
-            />
-            <Campo
-              etiqueta="Descripción"
-              value={formulario.descripcion}
-              onChangeText={(descripcion) =>
-                actualizar("descripcion", descripcion)
-              }
-              placeholder="Contá de qué se trata"
-              multiline
-            />
-            <Text style={theme.texto.destacado}>Categoría</Text>
-            <View style={styles.chips}>
-              {listaDeCategorias.map((categoria) => (
-                <Chip
-                  key={categoria.id}
-                  texto={categoria.nombre}
-                  activo={formulario.categoriaId === categoria.id}
-                  onPress={() => actualizar("categoriaId", categoria.id)}
+    <>
+      <Stack.Screen
+        options={{
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={12}
+              accessibilityRole="button"
+            >
+              <Text style={styles.cancelar}>Cancelar</Text>
+            </Pressable>
+          ),
+        }}
+      />
+      <Cargable carga={categorias}>
+        {(listaDeCategorias) => (
+          <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={styles.pantalla}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets
+          >
+            <Seccion titulo="El evento">
+              <Campo
+                etiqueta="Nombre"
+                value={formulario.nombre}
+                onChangeText={(nombre) => actualizar("nombre", nombre)}
+                placeholder="Recital en el Luna Park"
+              />
+              <Campo
+                etiqueta="Descripción"
+                value={formulario.descripcion}
+                onChangeText={(descripcion) =>
+                  actualizar("descripcion", descripcion)
+                }
+                placeholder="Contá de qué se trata"
+                multiline
+              />
+              <Text style={theme.texto.destacado}>Categoría</Text>
+              <View style={styles.chips}>
+                {listaDeCategorias.map((categoria) => (
+                  <Chip
+                    key={categoria.id}
+                    texto={categoria.nombre}
+                    activo={formulario.categoriaId === categoria.id}
+                    onPress={() => actualizar("categoriaId", categoria.id)}
+                  />
+                ))}
+              </View>
+              <Campo
+                etiqueta="URL de una imagen (opcional)"
+                value={formulario.imagen}
+                onChangeText={(imagen) => actualizar("imagen", imagen)}
+                placeholder="https://"
+                keyboardType="url"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </Seccion>
+
+            <Seccion titulo="Fecha y hora">
+              <Text style={theme.texto.cuerpo}>
+                {formatearFecha(formulario.fecha.toISOString())}
+              </Text>
+              {Platform.OS === "ios" ? (
+                <DateTimePicker
+                  value={formulario.fecha}
+                  mode="datetime"
+                  display="spinner"
+                  locale="es-AR"
+                  minimumDate={new Date()}
+                  onValueChange={(_, fecha) => actualizar("fecha", fecha)}
+                />
+              ) : (
+                <>
+                  <Boton
+                    texto="Elegir fecha"
+                    tono="secundario"
+                    onPress={() => setPickerAbierto("fecha")}
+                  />
+                  <Boton
+                    texto="Elegir hora"
+                    tono="secundario"
+                    onPress={() => setPickerAbierto("hora")}
+                  />
+                  {pickerAbierto && (
+                    <DateTimePicker
+                      value={formulario.fecha}
+                      mode={pickerAbierto === "fecha" ? "date" : "time"}
+                      is24Hour
+                      minimumDate={new Date()}
+                      onValueChange={(_, fecha) => {
+                        setPickerAbierto(null)
+                        actualizar("fecha", fecha)
+                      }}
+                      onDismiss={() => setPickerAbierto(null)}
+                    />
+                  )}
+                </>
+              )}
+            </Seccion>
+
+            <Seccion titulo="Entradas">
+              {tiposEntrada.map((tipo, indice) => (
+                <FormularioTipoEntrada
+                  key={indice}
+                  tipo={tipo}
+                  onCambio={(cambiado) => cambiarTipo(indice, cambiado)}
+                  onQuitar={
+                    tiposEntrada.length > 1 ? () => quitarTipo(indice) : null
+                  }
                 />
               ))}
-            </View>
-            <Campo
-              etiqueta="URL de una imagen (opcional)"
-              value={formulario.imagen}
-              onChangeText={(imagen) => actualizar("imagen", imagen)}
-              placeholder="https://"
-              keyboardType="url"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </Seccion>
-
-          <Seccion titulo="Fecha y hora">
-            <Text style={theme.texto.cuerpo}>
-              {formatearFecha(formulario.fecha.toISOString())}
-            </Text>
-            {Platform.OS === "ios" ? (
-              <DateTimePicker
-                value={formulario.fecha}
-                mode="datetime"
-                display="spinner"
-                locale="es-AR"
-                minimumDate={new Date()}
-                onValueChange={(_, fecha) => actualizar("fecha", fecha)}
-              />
-            ) : (
-              <>
-                <Boton
-                  texto="Elegir fecha"
-                  tono="secundario"
-                  onPress={() => setPickerAbierto("fecha")}
-                />
-                <Boton
-                  texto="Elegir hora"
-                  tono="secundario"
-                  onPress={() => setPickerAbierto("hora")}
-                />
-                {pickerAbierto && (
-                  <DateTimePicker
-                    value={formulario.fecha}
-                    mode={pickerAbierto === "fecha" ? "date" : "time"}
-                    is24Hour
-                    minimumDate={new Date()}
-                    onValueChange={(_, fecha) => {
-                      setPickerAbierto(null)
-                      actualizar("fecha", fecha)
-                    }}
-                    onDismiss={() => setPickerAbierto(null)}
-                  />
-                )}
-              </>
-            )}
-          </Seccion>
-
-          <Seccion titulo="Entradas">
-            {tiposEntrada.map((tipo, indice) => (
-              <FormularioTipoEntrada
-                key={indice}
-                tipo={tipo}
-                onCambio={(cambiado) => cambiarTipo(indice, cambiado)}
-                onQuitar={
-                  tiposEntrada.length > 1 ? () => quitarTipo(indice) : null
+              <Boton
+                texto="Agregar tipo de entrada"
+                tono="secundario"
+                onPress={() =>
+                  actualizar("tiposEntrada", [...tiposEntrada, TIPO_VACIO])
                 }
               />
-            ))}
-            <Boton
-              texto="Agregar tipo de entrada"
-              tono="secundario"
-              onPress={() =>
-                actualizar("tiposEntrada", [...tiposEntrada, TIPO_VACIO])
-              }
-            />
-          </Seccion>
+            </Seccion>
 
-          <Boton
-            texto={creando ? "Creando…" : "Crear evento"}
-            deshabilitado={creando}
-            onPress={crear}
-          />
-        </ScrollView>
-      )}
-    </Cargable>
+            <Boton
+              texto={creando ? "Creando…" : "Crear evento"}
+              deshabilitado={creando}
+              onPress={crear}
+            />
+          </ScrollView>
+        )}
+      </Cargable>
+    </>
   )
 }
 
 const styles = StyleSheet.create({
+  cancelar: {
+    ...theme.texto.cuerpo,
+    color: theme.colores.primario,
+  },
   pantalla: {
     padding: theme.espacios.l,
     paddingBottom: theme.espacios.xl * 2,

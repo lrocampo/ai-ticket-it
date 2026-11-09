@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native"
 
 import { Campo } from "../../components/Campo"
 import { theme } from "../../theme"
-import type { TipoEntradaFormulario } from "./armarNuevoEvento"
+import { confirmar } from "../../utils/confirmar"
+import { type TipoEntradaFormulario, tipoTieneDatos } from "./armarNuevoEvento"
 
 const ICONO_QUITAR = 20
 
@@ -11,6 +12,20 @@ type Props = {
   tipo: TipoEntradaFormulario
   onCambio: (tipo: TipoEntradaFormulario) => void
   onQuitar: (() => void) | null
+}
+
+async function quitarSiConfirma(
+  tipo: TipoEntradaFormulario,
+  onQuitar: () => void,
+) {
+  const confirmado =
+    !tipoTieneDatos(tipo) ||
+    (await confirmar(
+      "Quitar tipo de entrada",
+      `Se borra lo que cargaste en «${tipo.nombre.trim() || "este tipo"}».`,
+      true,
+    ))
+  if (confirmado) onQuitar()
 }
 
 export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
@@ -26,7 +41,7 @@ export function FormularioTipoEntrada({ tipo, onCambio, onQuitar }: Props) {
         </Text>
         {onQuitar && (
           <Pressable
-            onPress={onQuitar}
+            onPress={() => quitarSiConfirma(tipo, onQuitar)}
             hitSlop={(theme.areaTactil - ICONO_QUITAR) / 2}
             accessibilityRole="button"
             accessibilityLabel="Quitar tipo de entrada"
