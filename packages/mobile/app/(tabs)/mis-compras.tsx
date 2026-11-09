@@ -24,6 +24,10 @@ export default function MisCompras() {
             <EstadoVacio
               icono="ticket-outline"
               mensaje="Todavía no compraste entradas"
+              accion={{
+                etiqueta: "Ver eventos",
+                onPress: () => router.navigate("/"),
+              }}
             />
           }
           renderItem={({ item }) => (
