@@ -1,6 +1,5 @@
 import { DomainValidationError } from "./errors/DomainErrors.js"
-
-const MILISEGUNDOS_POR_DIA = 24 * 60 * 60 * 1000
+import { MILISEGUNDOS_POR_DIA } from "../utils/fechas.js"
 
 export default class Evento {
   constructor(

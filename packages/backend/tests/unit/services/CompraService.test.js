@@ -21,9 +21,9 @@ describe("CompraService", () => {
   beforeEach(() => {
     repositorios = crearRepositorios()
     service = new CompraService(repositorios.compras, repositorios.eventos)
-    compradora = usuario("Compradora")
-    organizador = usuario("Organizador")
-    ajeno = usuario("Ajeno")
+    compradora = repositorios.usuarios.guardar(usuario("Compradora"))
+    organizador = repositorios.usuarios.guardar(usuario("Organizador"))
+    ajeno = repositorios.usuarios.guardar(usuario("Ajeno"))
     recital = repositorios.eventos.guardar(
       evento({ organizador, tiposEntrada: [tipoEntrada({ cupo: 5 })] }),
     )

@@ -5,7 +5,9 @@ import {
   DomainRuleError,
   DomainValidationError,
 } from "../../../src/domain/errors/DomainErrors.js"
-import { HOY, dias, evento, usuario } from "../../fixtures.js"
+import crearRepositorios from "../../../src/repositories/crearRepositorios.js"
+import { sumarDias } from "../../../src/utils/fechas.js"
+import { HOY, evento, usuario } from "../../fixtures.js"
 
 const { PENDIENTE, CONFIRMADA, UTILIZADA, CANCELADA, REEMBOLSADA } =
   EstadoCompra
@@ -17,8 +19,9 @@ describe("Compra", () => {
   let tipo
 
   beforeEach(() => {
-    comprador = usuario("Compradora")
-    organizador = usuario("Organizador")
+    const { usuarios } = crearRepositorios()
+    comprador = usuarios.guardar(usuario("Compradora"))
+    organizador = usuarios.guardar(usuario("Organizador"))
     recital = evento({ organizador })
     tipo = recital.tiposEntrada[0]
   })
@@ -77,7 +80,7 @@ describe("Compra", () => {
         () =>
           new Compra(
             { comprador, evento: recital, tipoEntrada: tipo, cantidad: 1 },
-            dias(11),
+            sumarDias(HOY, 11),
           ),
       ).toThrow(DomainRuleError)
     })
@@ -96,13 +99,13 @@ describe("Compra", () => {
         const compra = llevarA[desde]()
         const quien = usuario("Quien")
 
-        compra[accion](quien, dias(1))
+        compra[accion](quien, sumarDias(HOY, 1))
 
         expect(compra.estado).toBe(hacia)
         const ultimo = compra.historial.at(-1)
         expect(ultimo.estado).toBe(hacia)
         expect(ultimo.quien).toBe(quien)
-        expect(ultimo.fechaHora).toEqual(dias(1))
+        expect(ultimo.fechaHora).toEqual(sumarDias(HOY, 1))
       },
     )
 
@@ -151,7 +154,7 @@ describe("Compra", () => {
     test("no se cancela si el evento ya ocurrió", () => {
       const compra = llevarA[CONFIRMADA]()
 
-      expect(() => compra.cancelar(comprador, dias(11))).toThrow(
+      expect(() => compra.cancelar(comprador, sumarDias(HOY, 11))).toThrow(
         DomainRuleError,
       )
       expect(compra.estado).toBe(CONFIRMADA)
@@ -185,7 +188,9 @@ describe("Compra", () => {
     })
 
     test("puedeCancelarse es falso cuando el evento ya ocurrió", () => {
-      expect(llevarA[CONFIRMADA]().puedeCancelarse(dias(11))).toBe(false)
+      expect(llevarA[CONFIRMADA]().puedeCancelarse(sumarDias(HOY, 11))).toBe(
+        false,
+      )
     })
   })
 
@@ -201,14 +206,14 @@ describe("Compra", () => {
     test("crea la reseña con comprador y evento, y después no admite otra", () => {
       const compra = llevarA[UTILIZADA]()
 
-      const resena = compra.resenar(4, "Muy bueno", dias(1))
+      const resena = compra.resenar(4, "Muy bueno", sumarDias(HOY, 1))
 
       expect(compra.resena).toBe(resena)
       expect(resena.comprador).toBe(comprador)
       expect(resena.evento).toBe(recital)
       expect(resena.puntuacion).toBe(4)
       expect(compra.puedeResenarse()).toBe(false)
-      expect(() => compra.resenar(5, "Otra vez", dias(2))).toThrow(
+      expect(() => compra.resenar(5, "Otra vez", sumarDias(HOY, 2))).toThrow(
         DomainRuleError,
       )
       expect(compra.resena).toBe(resena)
@@ -229,7 +234,7 @@ describe("Compra", () => {
       const compra = comprar()
 
       compra.enviarMensaje(comprador, "¿Hay estacionamiento?", HOY)
-      compra.enviarMensaje(organizador, "Sí, en la esquina.", dias(1))
+      compra.enviarMensaje(organizador, "Sí, en la esquina.", sumarDias(HOY, 1))
 
       expect(compra.mensajes.map((m) => [m.id, m.usuario, m.texto])).toEqual([
         ["1", comprador, "¿Hay estacionamiento?"],
