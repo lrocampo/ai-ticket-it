@@ -1,13 +1,11 @@
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { router, Stack, usePreventRemove } from "expo-router"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import {
   AccessibilityInfo,
-  type LayoutChangeEvent,
   Platform,
   Pressable,
   ScrollView,
-  type ScrollViewInstance,
   StyleSheet,
   Text,
   View,
@@ -36,12 +34,6 @@ import { theme } from "../../src/theme"
 import { confirmar } from "../../src/utils/confirmar"
 import { formatearFecha } from "../../src/utils/fechas"
 
-// Deja a la vista el header transparente de iOS y un poco de contexto arriba
-// del campo con error.
-const MARGEN_SOBRE_EL_ERROR = 72
-
-type Bloque = "evento" | "fecha" | "entradas"
-
 export default function CrearEvento() {
   const categorias = useCarga(listarCategorias, [])
   const [formulario, setFormulario] = useState(formularioVacio)
@@ -51,9 +43,6 @@ export default function CrearEvento() {
   )
   const [creado, setCreado] = useState(false)
   const [error, setError] = useState<ErrorDelFormulario | null>(null)
-  const scroll = useRef<ScrollViewInstance>(null)
-  const posiciones = useRef<Partial<Record<Bloque, number>>>({})
-  const posicionesDeTipos = useRef<number[]>([])
   const { tiposEntrada } = formulario
 
   const permitirSalir = usePreventRemove(
@@ -84,25 +73,9 @@ export default function CrearEvento() {
     return error?.campo === "tipo" && error.indice === indice ? error : null
   }
 
-  function guardarPosicion(bloque: Bloque) {
-    return (evento: LayoutChangeEvent) => {
-      posiciones.current[bloque] = evento.nativeEvent.layout.y
-    }
-  }
-
-  function posicionDe(error: ErrorDelFormulario) {
-    const { evento = 0, fecha = 0, entradas = 0 } = posiciones.current
-    if (error.campo === "tipo") {
-      return entradas + (posicionesDeTipos.current[error.indice] ?? 0)
-    }
-    return error.campo === "fecha" ? fecha : evento
-  }
-
   function mostrarError(nuevo: ErrorDelFormulario) {
     setError(nuevo)
     AccessibilityInfo.announceForAccessibility(nuevo.mensaje)
-    const y = posicionDe(nuevo) - MARGEN_SOBRE_EL_ERROR
-    scroll.current?.scrollTo({ y: Math.max(0, y), animated: true })
   }
 
   function cambiarTipo(indice: number, tipo: TipoEntradaFormulario) {
@@ -151,139 +124,126 @@ export default function CrearEvento() {
       <Cargable carga={categorias}>
         {(listaDeCategorias) => (
           <ScrollView
-            ref={scroll}
             contentInsetAdjustmentBehavior="automatic"
             contentContainerStyle={styles.pantalla}
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets
           >
-            <View onLayout={guardarPosicion("evento")}>
-              <Seccion titulo="El evento">
-                <Campo
-                  etiqueta="Nombre"
-                  value={formulario.nombre}
-                  onChangeText={(nombre) => actualizar("nombre", nombre)}
-                  placeholder="Recital en el Luna Park"
-                  error={errorDe("nombre")}
-                />
-                <Campo
-                  etiqueta="Descripción"
-                  value={formulario.descripcion}
-                  onChangeText={(descripcion) =>
-                    actualizar("descripcion", descripcion)
-                  }
-                  placeholder="Contá de qué se trata"
-                  multiline
-                  error={errorDe("descripcion")}
-                />
-                <Text style={theme.texto.destacado}>Categoría</Text>
-                <View style={styles.chips}>
-                  {listaDeCategorias.map((categoria) => (
-                    <Chip
-                      key={categoria.id}
-                      texto={categoria.nombre}
-                      activo={formulario.categoriaId === categoria.id}
-                      onPress={() => actualizar("categoriaId", categoria.id)}
-                    />
-                  ))}
-                </View>
-                {errorDe("categoriaId") && (
-                  <Text style={theme.texto.error}>
-                    {errorDe("categoriaId")}
-                  </Text>
-                )}
-                <Campo
-                  etiqueta="URL de una imagen (opcional)"
-                  value={formulario.imagen}
-                  onChangeText={(imagen) => actualizar("imagen", imagen)}
-                  placeholder="https://"
-                  keyboardType="url"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  error={errorDe("imagen")}
-                />
-              </Seccion>
-            </View>
-
-            <View onLayout={guardarPosicion("fecha")}>
-              <Seccion titulo="Fecha y hora">
-                <Text style={theme.texto.cuerpo}>
-                  {formatearFecha(formulario.fecha.toISOString())}
-                </Text>
-                {Platform.OS === "ios" ? (
-                  <DateTimePicker
-                    value={formulario.fecha}
-                    mode="datetime"
-                    display="spinner"
-                    locale="es-AR"
-                    minimumDate={new Date()}
-                    onValueChange={(_, fecha) => actualizar("fecha", fecha)}
+            <Seccion titulo="El evento">
+              <Campo
+                etiqueta="Nombre"
+                value={formulario.nombre}
+                onChangeText={(nombre) => actualizar("nombre", nombre)}
+                placeholder="Recital en el Luna Park"
+                error={errorDe("nombre")}
+              />
+              <Campo
+                etiqueta="Descripción"
+                value={formulario.descripcion}
+                onChangeText={(descripcion) =>
+                  actualizar("descripcion", descripcion)
+                }
+                placeholder="Contá de qué se trata"
+                multiline
+                error={errorDe("descripcion")}
+              />
+              <Text style={theme.texto.destacado}>Categoría</Text>
+              <View style={styles.chips}>
+                {listaDeCategorias.map((categoria) => (
+                  <Chip
+                    key={categoria.id}
+                    texto={categoria.nombre}
+                    activo={formulario.categoriaId === categoria.id}
+                    onPress={() => actualizar("categoriaId", categoria.id)}
                   />
-                ) : (
-                  <>
-                    <Boton
-                      texto="Elegir fecha"
-                      tono="secundario"
-                      onPress={() => setPickerAbierto("fecha")}
-                    />
-                    <Boton
-                      texto="Elegir hora"
-                      tono="secundario"
-                      onPress={() => setPickerAbierto("hora")}
-                    />
-                    {pickerAbierto && (
-                      <DateTimePicker
-                        value={formulario.fecha}
-                        mode={pickerAbierto === "fecha" ? "date" : "time"}
-                        is24Hour
-                        minimumDate={new Date()}
-                        onValueChange={(_, fecha) => {
-                          setPickerAbierto(null)
-                          actualizar("fecha", fecha)
-                        }}
-                        onDismiss={() => setPickerAbierto(null)}
-                      />
-                    )}
-                  </>
-                )}
-                {errorDe("fecha") && (
-                  <Text style={theme.texto.error}>{errorDe("fecha")}</Text>
-                )}
-              </Seccion>
-            </View>
-
-            <View onLayout={guardarPosicion("entradas")}>
-              <Seccion titulo="Entradas">
-                {tiposEntrada.map((tipo, indice) => (
-                  <View
-                    key={indice}
-                    onLayout={(evento) => {
-                      posicionesDeTipos.current[indice] =
-                        evento.nativeEvent.layout.y
-                    }}
-                  >
-                    <FormularioTipoEntrada
-                      tipo={tipo}
-                      onCambio={(cambiado) => cambiarTipo(indice, cambiado)}
-                      onQuitar={
-                        tiposEntrada.length > 1
-                          ? () => quitarTipo(indice)
-                          : null
-                      }
-                      error={errorDelTipo(indice)}
-                    />
-                  </View>
                 ))}
-                <Boton
-                  texto="Agregar tipo de entrada"
-                  tono="secundario"
-                  onPress={() =>
-                    actualizar("tiposEntrada", [...tiposEntrada, TIPO_VACIO])
-                  }
-                />
-              </Seccion>
-            </View>
+              </View>
+              {errorDe("categoriaId") && (
+                <Text style={theme.texto.error}>{errorDe("categoriaId")}</Text>
+              )}
+              <Campo
+                etiqueta="URL de una imagen (opcional)"
+                value={formulario.imagen}
+                onChangeText={(imagen) => actualizar("imagen", imagen)}
+                placeholder="https://"
+                keyboardType="url"
+                autoCapitalize="none"
+                autoCorrect={false}
+                error={errorDe("imagen")}
+              />
+            </Seccion>
 
+            <Seccion titulo="Fecha y hora">
+              <Text style={theme.texto.cuerpo}>
+                {formatearFecha(formulario.fecha.toISOString())}
+              </Text>
+              {Platform.OS === "ios" ? (
+                <DateTimePicker
+                  value={formulario.fecha}
+                  mode="datetime"
+                  display="spinner"
+                  locale="es-AR"
+                  minimumDate={new Date()}
+                  onValueChange={(_, fecha) => actualizar("fecha", fecha)}
+                />
+              ) : (
+                <>
+                  <Boton
+                    texto="Elegir fecha"
+                    tono="secundario"
+                    onPress={() => setPickerAbierto("fecha")}
+                  />
+                  <Boton
+                    texto="Elegir hora"
+                    tono="secundario"
+                    onPress={() => setPickerAbierto("hora")}
+                  />
+                  {pickerAbierto && (
+                    <DateTimePicker
+                      value={formulario.fecha}
+                      mode={pickerAbierto === "fecha" ? "date" : "time"}
+                      is24Hour
+                      minimumDate={new Date()}
+                      onValueChange={(_, fecha) => {
+                        setPickerAbierto(null)
+                        actualizar("fecha", fecha)
+                      }}
+                      onDismiss={() => setPickerAbierto(null)}
+                    />
+                  )}
+                </>
+              )}
+              {errorDe("fecha") && (
+                <Text style={theme.texto.error}>{errorDe("fecha")}</Text>
+              )}
+            </Seccion>
+
+            <Seccion titulo="Entradas">
+              {tiposEntrada.map((tipo, indice) => (
+                <FormularioTipoEntrada
+                  key={indice}
+                  tipo={tipo}
+                  onCambio={(cambiado) => cambiarTipo(indice, cambiado)}
+                  onQuitar={
+                    tiposEntrada.length > 1 ? () => quitarTipo(indice) : null
+                  }
+                  error={errorDelTipo(indice)}
+                />
+              ))}
+              <Boton
+                texto="Agregar tipo de entrada"
+                tono="secundario"
+                onPress={() =>
+                  actualizar("tiposEntrada", [...tiposEntrada, TIPO_VACIO])
+                }
+              />
+            </Seccion>
+
+            {error && (
+              <Text style={theme.texto.error}>
+                {resumenDelError(error, tiposEntrada)}
+              </Text>
+            )}
             <Boton
               texto={creando ? "Creando…" : "Crear evento"}
               deshabilitado={creando}
@@ -294,6 +254,15 @@ export default function CrearEvento() {
       </Cargable>
     </>
   )
+}
+
+function resumenDelError(
+  error: ErrorDelFormulario,
+  tipos: TipoEntradaFormulario[],
+) {
+  if (error.campo !== "tipo") return error.mensaje
+  const nombre = tipos[error.indice]?.nombre.trim()
+  return nombre ? `«${nombre}»: ${error.mensaje}` : error.mensaje
 }
 
 const styles = StyleSheet.create({
