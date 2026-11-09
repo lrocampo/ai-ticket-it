@@ -26,7 +26,11 @@ export default function DetalleCompra() {
   return (
     <Cargable carga={carga}>
       {(compra) => (
-        <ScrollView contentContainerStyle={styles.pantalla}>
+        <ScrollView
+          contentContainerStyle={styles.pantalla}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets
+        >
           <View style={styles.encabezado}>
             <BadgeEstado estado={compra.estado} />
             <Text style={styles.titulo}>{compra.evento.nombre}</Text>

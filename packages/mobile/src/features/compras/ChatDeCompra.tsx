@@ -1,6 +1,16 @@
-import { StyleSheet, Text, View } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import { useState } from "react"
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native"
 
 import { useUsuarioActual } from "../../context/UsuarioContext"
+import { enviarMensaje, mensajeDe } from "../../services/api"
 import { theme } from "../../theme"
 import type { Compra } from "../../types"
 import { formatearFechaHora } from "../../utils/fechas"
@@ -10,8 +20,23 @@ type Props = {
   onCompraActualizada: (compra: Compra) => void
 }
 
-export function ChatDeCompra({ compra }: Props) {
+export function ChatDeCompra({ compra, onCompraActualizada }: Props) {
   const usuario = useUsuarioActual()
+  const [texto, setTexto] = useState("")
+  const [enviando, setEnviando] = useState(false)
+  const puedeEnviar = texto.trim() !== "" && !enviando
+
+  async function enviar() {
+    setEnviando(true)
+    try {
+      onCompraActualizada(await enviarMensaje(compra.id, texto.trim()))
+      setTexto("")
+    } catch (e) {
+      Alert.alert("No se pudo", mensajeDe(e))
+    } finally {
+      setEnviando(false)
+    }
+  }
 
   return (
     <View style={styles.contenedor}>
@@ -36,6 +61,26 @@ export function ChatDeCompra({ compra }: Props) {
           )
         })
       )}
+      <View style={styles.redaccion}>
+        <TextInput
+          style={styles.input}
+          value={texto}
+          onChangeText={setTexto}
+          placeholder="Escribí un mensaje"
+          placeholderTextColor={theme.colores.textoSecundario}
+          multiline
+        />
+        <Pressable
+          style={[styles.enviar, !puedeEnviar && styles.deshabilitado]}
+          disabled={!puedeEnviar}
+          onPress={enviar}
+          accessibilityRole="button"
+          accessibilityLabel="Enviar mensaje"
+          accessibilityState={{ disabled: !puedeEnviar }}
+        >
+          <Ionicons name="send" size={18} color={theme.colores.sobrePrimario} />
+        </Pressable>
+      </View>
     </View>
   )
 }
@@ -57,6 +102,34 @@ const styles = StyleSheet.create({
   ajena: {
     alignSelf: "flex-start",
     backgroundColor: theme.colores.fondo,
+  },
+  redaccion: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: theme.espacios.s,
+    marginTop: theme.espacios.s,
+  },
+  input: {
+    ...theme.texto.cuerpo,
+    flex: 1,
+    maxHeight: 120,
+    paddingHorizontal: theme.espacios.m,
+    paddingTop: theme.espacios.s,
+    paddingBottom: theme.espacios.s,
+    borderRadius: theme.radios.m,
+    borderWidth: 1,
+    borderColor: theme.colores.borde,
+  },
+  enviar: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radios.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colores.primario,
+  },
+  deshabilitado: {
+    opacity: 0.4,
   },
   hora: {
     fontSize: 11,
