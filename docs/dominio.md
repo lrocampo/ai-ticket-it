@@ -33,12 +33,12 @@ Una compra nace `PENDIENTE` y reserva cupo en el momento de crearse. Las transic
 | `cancelar`      | `PENDIENTE`, `CONFIRMADA` | `CANCELADA`   | el comprador   | el evento no ocurrió todavía; libera el cupo                                  |
 | `reembolsar`    | `CANCELADA`               | `REEMBOLSADA` | el organizador | la compra pasó por `CONFIRMADA` (hubo pago)                                   |
 
-Una transición desde un estado no listado lanza `DomainRuleError`. Una acción hecha por quien no corresponde lanza `NoAutorizado` en la capa de servicios, porque el dominio no sabe quién está pidiendo.
+Una transición desde un estado no listado lanza `DomainRuleError`. El dominio también responde quién puede hacer qué: `accionesPara(usuario)` lista las acciones que ese usuario tiene disponibles y `motivoDeNoAutorizado(usuario, accion)` devuelve el motivo por el que no puede, o `null`. La capa de servicios solo traduce ese motivo a `NoAutorizado`.
 
 Derivados que expone la compra:
 
 - `diasParaElEvento(ahora)`: solo cuando está `CONFIRMADA` y el evento todavía no ocurrió; si no, es `null`. Nunca es negativo.
-- `accionesPara(usuario, ahora)`: las acciones de la tabla que ese usuario puede ejecutar ahora: las transiciones cuyo "quién" es él, cuyo estado de origen es el actual y cuya condición extra se cumple, más `resenar` si es el comprador, la compra está `UTILIZADA` y no tiene reseña. La columna "Quién" de la tabla vive una sola vez, en la tabla, y la usan tanto `accionesPara` como la autorización del servicio.
+- `accionesPara(usuario, ahora)`: las acciones de la tabla que ese usuario puede ejecutar ahora: las transiciones cuyo "quién" es él, cuyo estado de origen es el actual y cuya condición extra se cumple, más `resenar` si es el comprador, la compra está `UTILIZADA` y no tiene reseña. La columna "Quién" de la tabla vive una sola vez, en la tabla, y la lee `motivoDeNoAutorizado`, que usan tanto `accionesPara` como la autorización del servicio.
 - `resenar(puntuacion, detalle)`: crea la reseña una sola vez. El enunciado pide puntaje y comentario escrito, así que las dos cosas son obligatorias.
 - `enviarMensaje(usuario, texto)`: solo el comprador o el organizador del evento.
 
