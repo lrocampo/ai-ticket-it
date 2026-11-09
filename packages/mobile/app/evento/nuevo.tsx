@@ -76,15 +76,12 @@ export default function CrearEvento() {
     setError(null)
   }
 
-  function errorDe(campo: Exclude<CampoDelEvento, object>) {
+  function errorDe(campo: CampoDelEvento) {
     return error?.campo === campo ? error.mensaje : undefined
   }
 
   function errorDelTipo(indice: number) {
-    if (typeof error?.campo !== "object" || error.campo.tipo !== indice) {
-      return null
-    }
-    return { campo: error.campo.campo, mensaje: error.mensaje }
+    return error?.campo === "tipo" && error.indice === indice ? error : null
   }
 
   function guardarPosicion(bloque: Bloque) {
@@ -93,18 +90,18 @@ export default function CrearEvento() {
     }
   }
 
-  function posicionDe(campo: CampoDelEvento) {
+  function posicionDe(error: ErrorDelFormulario) {
     const { evento = 0, fecha = 0, entradas = 0 } = posiciones.current
-    if (typeof campo === "object") {
-      return entradas + (posicionesDeTipos.current[campo.tipo] ?? 0)
+    if (error.campo === "tipo") {
+      return entradas + (posicionesDeTipos.current[error.indice] ?? 0)
     }
-    return campo === "fecha" ? fecha : evento
+    return error.campo === "fecha" ? fecha : evento
   }
 
   function mostrarError(nuevo: ErrorDelFormulario) {
     setError(nuevo)
     AccessibilityInfo.announceForAccessibility(nuevo.mensaje)
-    const y = posicionDe(nuevo.campo) - MARGEN_SOBRE_EL_ERROR
+    const y = posicionDe(nuevo) - MARGEN_SOBRE_EL_ERROR
     scroll.current?.scrollTo({ y: Math.max(0, y), animated: true })
   }
 
@@ -203,7 +200,7 @@ export default function CrearEvento() {
                   keyboardType="url"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  error={errorDe("multimedia")}
+                  error={errorDe("imagen")}
                 />
               </Seccion>
             </View>

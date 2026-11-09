@@ -16,17 +16,18 @@ export type FormularioEvento = {
   tiposEntrada: TipoEntradaFormulario[]
 }
 
-export type CampoDeTipo = "nombre" | "precio" | "cupo"
+export type CampoDelEvento = Exclude<keyof FormularioEvento, "tiposEntrada">
 
-export type CampoDelEvento =
-  | "nombre"
-  | "descripcion"
-  | "categoriaId"
-  | "fecha"
-  | "multimedia"
-  | { tipo: number; campo: CampoDeTipo }
+export type ErrorDelTipo = {
+  campo: "tipo"
+  indice: number
+  campoDelTipo: keyof TipoEntradaFormulario
+  mensaje: string
+}
 
-export type ErrorDelFormulario = { campo: CampoDelEvento; mensaje: string }
+export type ErrorDelFormulario =
+  | { campo: CampoDelEvento; mensaje: string }
+  | ErrorDelTipo
 
 export const TIPO_VACIO: TipoEntradaFormulario = {
   nombre: "",
@@ -74,6 +75,14 @@ function falta(campo: CampoDelEvento, mensaje: string) {
   return { error: { campo, mensaje } }
 }
 
+function faltaEnTipo(
+  indice: number,
+  campoDelTipo: ErrorDelTipo["campoDelTipo"],
+  mensaje: string,
+): { error: ErrorDelTipo } {
+  return { error: { campo: "tipo", indice, campoDelTipo, mensaje } }
+}
+
 export function armarNuevoEvento(
   formulario: FormularioEvento,
   ahora = new Date(),
@@ -91,23 +100,29 @@ export function armarNuevoEvento(
     return falta("fecha", "Elegí una fecha que todavía no pasó.")
   }
   if (imagen !== "" && !/^https?:\/\/\S+$/i.test(imagen)) {
-    return falta("multimedia", "Tiene que empezar con http:// o https://.")
+    return falta(
+      "imagen",
+      "La URL de la imagen tiene que empezar con http:// o https://.",
+    )
   }
 
   const tipos: NuevoEvento["tiposEntrada"] = []
   for (const [indice, tipo] of tiposEntrada.entries()) {
-    const enTipo = (campo: CampoDeTipo) => ({ tipo: indice, campo })
     const nombreTipo = tipo.nombre.trim()
     if (nombreTipo === "") {
-      return falta(enTipo("nombre"), "Ponele un nombre a este tipo de entrada.")
+      return faltaEnTipo(
+        indice,
+        "nombre",
+        "Ponele un nombre a este tipo de entrada.",
+      )
     }
     const precio = aNumero(tipo.precio)
     if (precio === null) {
-      return falta(enTipo("precio"), errorDeNumero("precio", tipo.precio))
+      return faltaEnTipo(indice, "precio", errorDeNumero("precio", tipo.precio))
     }
     const cupo = aNumero(tipo.cupo)
     if (cupo === null) {
-      return falta(enTipo("cupo"), errorDeNumero("cupo", tipo.cupo))
+      return faltaEnTipo(indice, "cupo", errorDeNumero("cupo", tipo.cupo))
     }
     tipos.push({
       nombre: nombreTipo,

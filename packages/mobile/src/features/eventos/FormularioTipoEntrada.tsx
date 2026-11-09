@@ -5,7 +5,7 @@ import { Campo } from "../../components/Campo"
 import { theme } from "../../theme"
 import { confirmar } from "../../utils/confirmar"
 import {
-  type CampoDeTipo,
+  type ErrorDelTipo,
   type TipoEntradaFormulario,
   tipoTieneDatos,
 } from "./armarNuevoEvento"
@@ -16,7 +16,7 @@ type Props = {
   tipo: TipoEntradaFormulario
   onCambio: (tipo: TipoEntradaFormulario) => void
   onQuitar: (() => void) | null
-  error: { campo: CampoDeTipo; mensaje: string } | null
+  error: ErrorDelTipo | null
 }
 
 async function quitarSiConfirma(
@@ -43,8 +43,8 @@ export function FormularioTipoEntrada({
     onCambio({ ...tipo, [campo]: valor })
   }
 
-  function errorDe(campo: CampoDeTipo) {
-    return error?.campo === campo ? error.mensaje : undefined
+  function errorDe(campo: keyof TipoEntradaFormulario) {
+    return error?.campoDelTipo === campo ? error.mensaje : undefined
   }
 
   return (

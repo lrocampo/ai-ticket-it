@@ -71,7 +71,9 @@ function armar(formulario: FormularioEvento) {
 
 const precioInvalido = {
   error: {
-    campo: { tipo: 0, campo: "precio" },
+    campo: "tipo",
+    indice: 0,
+    campoDelTipo: "precio",
     mensaje:
       "No es un número válido. Escribilo sin puntos de miles, por ejemplo 15000 o 1500,50.",
   },
@@ -87,7 +89,9 @@ test.each(["15.000", "1,000", "1.000,50", "abc", "-1", "1e3", "1,5,0"])(
 test("un cupo que no es un número pide corregirlo", () => {
   expect(armar(conTipo("15000", "doscientos"))).toEqual({
     error: {
-      campo: { tipo: 0, campo: "cupo" },
+      campo: "tipo",
+      indice: 0,
+      campoDelTipo: "cupo",
       mensaje:
         "No es un número válido. Escribilo sin puntos de miles, por ejemplo 200.",
     },
@@ -103,7 +107,9 @@ test("un cupo con decimales viaja tal cual para que lo rechace el dominio", () =
 test("un precio vacío pide completarlo", () => {
   expect(armar(conTipo(""))).toEqual({
     error: {
-      campo: { tipo: 0, campo: "precio" },
+      campo: "tipo",
+      indice: 0,
+      campoDelTipo: "precio",
       mensaje: "Completá el precio.",
     },
   })
@@ -114,11 +120,7 @@ test.each<[string, Partial<FormularioEvento>, unknown]>([
   ["la descripción", { descripcion: "" }, "descripcion"],
   ["la categoría", { categoriaId: null }, "categoriaId"],
   ["una fecha que ya pasó", { fecha: ahora }, "fecha"],
-  [
-    "una URL que no es http",
-    { imagen: "ftp://ejemplo.com/a.jpg" },
-    "multimedia",
-  ],
+  ["una URL que no es http", { imagen: "ftp://ejemplo.com/a.jpg" }, "imagen"],
 ])("señala %s como el campo a corregir", (_, cambios, campo) => {
   expect(armar(formulario(cambios))).toMatchObject({ error: { campo } })
 })
@@ -136,7 +138,9 @@ test("señala el tipo de entrada y el campo que falta", () => {
 
   expect(resultado).toEqual({
     error: {
-      campo: { tipo: 1, campo: "precio" },
+      campo: "tipo",
+      indice: 1,
+      campoDelTipo: "precio",
       mensaje: "Completá el precio.",
     },
   })
@@ -151,7 +155,9 @@ test("un tipo sin nombre pide ponerle uno", () => {
 
   expect(resultado).toEqual({
     error: {
-      campo: { tipo: 0, campo: "nombre" },
+      campo: "tipo",
+      indice: 0,
+      campoDelTipo: "nombre",
       mensaje: "Ponele un nombre a este tipo de entrada.",
     },
   })
