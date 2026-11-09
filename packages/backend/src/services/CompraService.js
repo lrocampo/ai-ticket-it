@@ -32,25 +32,25 @@ export default class CompraService {
   }
 
   confirmarPago = (usuario, id, ahora) => {
-    const compra = this.#delComprador(usuario, id, "confirmar el pago de")
+    const compra = this.#autorizada(usuario, id, "confirmarPago")
     compra.confirmarPago(usuario, ahora)
     return compra
   }
 
   utilizar = (usuario, id, ahora) => {
-    const compra = this.#delOrganizador(usuario, id, "utilizar")
+    const compra = this.#autorizada(usuario, id, "utilizar")
     compra.utilizar(usuario, ahora)
     return compra
   }
 
   cancelar = (usuario, id, ahora) => {
-    const compra = this.#delComprador(usuario, id, "cancelar")
+    const compra = this.#autorizada(usuario, id, "cancelar")
     compra.cancelar(usuario, ahora)
     return compra
   }
 
   reembolsar = (usuario, id, ahora) => {
-    const compra = this.#delOrganizador(usuario, id, "reembolsar")
+    const compra = this.#autorizada(usuario, id, "reembolsar")
     compra.reembolsar(usuario, ahora)
     return compra
   }
@@ -62,23 +62,16 @@ export default class CompraService {
   }
 
   resenar = (usuario, id, { puntuacion, detalle }, ahora) => {
-    const compra = this.#delComprador(usuario, id, "reseñar")
+    const compra = this.#autorizada(usuario, id, "resenar")
     compra.resenar(puntuacion, detalle, ahora)
     return compra
   }
 
-  #delComprador(usuario, id, accion) {
+  #autorizada(usuario, id, accion) {
     const compra = this.compras.porId(id)
-    if (!compra.esComprador(usuario)) {
-      throw new NoAutorizado(`Solo el comprador puede ${accion} esta compra.`)
-    }
-    return compra
-  }
-
-  #delOrganizador(usuario, id, accion) {
-    const compra = this.compras.porId(id)
-    if (!compra.evento.esOrganizador(usuario)) {
-      throw new NoAutorizado(`Solo el organizador puede ${accion} esta compra.`)
+    const { quien, verbo } = Compra.accion(accion)
+    if (compra.rolDe(usuario) !== quien) {
+      throw new NoAutorizado(`Solo el ${quien} puede ${verbo} esta compra.`)
     }
     return compra
   }
