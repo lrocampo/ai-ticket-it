@@ -20,7 +20,7 @@ export function FormularioResena({ compra, onCompraActualizada }: Props) {
   const completa = puntuacion > 0 && detalle.trim() !== ""
 
   function enviarResena() {
-    enviar(async () => {
+    enviar("No se pudo guardar la reseña", async () => {
       const resena = { puntuacion, detalle: detalle.trim() }
       onCompraActualizada(await resenarCompra(compra.id, resena))
     })

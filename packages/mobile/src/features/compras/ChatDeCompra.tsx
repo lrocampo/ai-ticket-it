@@ -21,7 +21,7 @@ export function ChatDeCompra({ compra, onCompraActualizada }: Props) {
   const puedeEnviar = texto.trim() !== "" && !enviando
 
   function enviarTexto() {
-    enviar(async () => {
+    enviar("No se pudo enviar el mensaje", async () => {
       onCompraActualizada(await enviarMensaje(compra.id, texto.trim()))
       setTexto("")
     })

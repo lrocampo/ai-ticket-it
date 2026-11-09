@@ -18,6 +18,7 @@ const ACCIONES: Record<
   AccionConBoton,
   {
     etiqueta: string
+    error: string
     tono: Tono
     confirmacion: (compra: Compra) => string
     ejecutar: (id: string) => Promise<Compra>
@@ -25,6 +26,7 @@ const ACCIONES: Record<
 > = {
   confirmarPago: {
     etiqueta: "Confirmar pago",
+    error: "No se pudo confirmar el pago",
     tono: "primario",
     confirmacion: (compra) =>
       `Pagar ${formatearPesos(compra.total)}. El pago es simulado, no se cobra nada.`,
@@ -32,18 +34,21 @@ const ACCIONES: Record<
   },
   utilizar: {
     etiqueta: "Marcar como utilizada",
+    error: "No se pudo marcar como utilizada",
     tono: "primario",
     confirmacion: () => "Marcar la entrada como utilizada.",
     ejecutar: utilizarCompra,
   },
   cancelar: {
     etiqueta: "Cancelar compra",
+    error: "No se pudo cancelar la compra",
     tono: "peligro",
     confirmacion: () => "La compra queda cancelada y se libera el cupo.",
     ejecutar: cancelarCompra,
   },
   reembolsar: {
     etiqueta: "Registrar reembolso",
+    error: "No se pudo registrar el reembolso",
     tono: "secundario",
     confirmacion: (compra) =>
       `Registrar el reembolso de ${formatearPesos(compra.total)}.`,
@@ -80,8 +85,8 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
   if (acciones.length === 0) return null
 
   function hacer(accion: AccionConBoton) {
-    const { etiqueta, tono, confirmacion, ejecutar } = ACCIONES[accion]
-    enviar(async () => {
+    const { etiqueta, error, tono, confirmacion, ejecutar } = ACCIONES[accion]
+    enviar(error, async () => {
       const confirmada = await confirmar(etiqueta, confirmacion(compra), tono)
       if (confirmada) onCompraActualizada(await ejecutar(compra.id))
     })

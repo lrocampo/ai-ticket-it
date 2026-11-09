@@ -37,7 +37,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const motivo = motivoParaNoComprar(evento, usuario)
   const [tipoElegidoId, setTipoElegidoId] = useState<string | null>(null)
   const [cantidad, setCantidad] = useState(1)
-  const { enviando: comprando, enviar } = useEnvio("No pudimos hacer la compra")
+  const { enviando: comprando, enviar } = useEnvio()
 
   const tipoElegido = tipoConCupo(evento, tipoElegidoId)
   const cantidadValida = acotarAlCupo(cantidad, tipoElegido)
@@ -49,7 +49,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
 
   function comprar() {
     if (!tipoElegido) return
-    enviar(async () => {
+    enviar("No se pudo hacer la compra", async () => {
       await crearCompra({
         eventoId: evento.id,
         tipoEntradaId: tipoElegido.id,

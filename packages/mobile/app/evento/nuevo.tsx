@@ -32,7 +32,7 @@ import { formatearFecha } from "../../src/utils/fechas"
 export default function CrearEvento() {
   const categorias = useCarga(listarCategorias, [])
   const [formulario, setFormulario] = useState(formularioVacio)
-  const { enviando: creando, enviar } = useEnvio("No se pudo crear el evento")
+  const { enviando: creando, enviar } = useEnvio()
   const [pickerAbierto, setPickerAbierto] = useState<"fecha" | "hora" | null>(
     null,
   )
@@ -65,7 +65,7 @@ export default function CrearEvento() {
       Alert.alert("Falta completar", resultado.error)
       return
     }
-    enviar(async () => {
+    enviar("No se pudo crear el evento", async () => {
       const evento = await crearEvento(resultado.evento)
       router.replace(`/evento/${evento.id}`)
     })
