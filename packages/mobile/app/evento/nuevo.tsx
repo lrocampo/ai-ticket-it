@@ -17,17 +17,14 @@ import {
 } from "../../src/features/eventos/armarNuevoEvento"
 import { FormularioTipoEntrada } from "../../src/features/eventos/FormularioTipoEntrada"
 import { useCarga } from "../../src/hooks/useCarga"
-import {
-  crearEvento,
-  listarCategorias,
-  mensajeDe,
-} from "../../src/services/api"
+import { useEnvio } from "../../src/hooks/useEnvio"
+import { crearEvento, listarCategorias } from "../../src/services/api"
 import { theme } from "../../src/theme"
 
 export default function CrearEvento() {
   const categorias = useCarga(listarCategorias, [])
   const [formulario, setFormulario] = useState(formularioVacio)
-  const [creando, setCreando] = useState(false)
+  const { enviando: creando, enviar } = useEnvio("No se pudo crear el evento")
   const { tiposEntrada } = formulario
 
   function actualizar<K extends keyof FormularioEvento>(
@@ -51,20 +48,16 @@ export default function CrearEvento() {
     )
   }
 
-  async function crear() {
+  function crear() {
     const resultado = armarNuevoEvento(formulario)
     if ("error" in resultado) {
       Alert.alert("Falta completar", resultado.error)
       return
     }
-    setCreando(true)
-    try {
+    enviar(async () => {
       const evento = await crearEvento(resultado.evento)
       router.replace(`/evento/${evento.id}`)
-    } catch (e) {
-      Alert.alert("No se pudo crear el evento", mensajeDe(e))
-      setCreando(false)
-    }
+    })
   }
 
   return (

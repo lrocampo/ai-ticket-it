@@ -1,11 +1,10 @@
-import { useState } from "react"
 import { Alert, StyleSheet, View } from "react-native"
 
 import { Boton, type Tono } from "../../components/Boton"
+import { useEnvio } from "../../hooks/useEnvio"
 import {
   cancelarCompra,
   confirmarPago,
-  mensajeDe,
   reembolsarCompra,
   utilizarCompra,
 } from "../../services/api"
@@ -62,20 +61,15 @@ type Props = {
 }
 
 export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
-  const [enCurso, setEnCurso] = useState(false)
+  const { enviando, enviar } = useEnvio()
   const acciones = compra.acciones.filter(tieneBoton)
 
   if (acciones.length === 0) return null
 
-  async function ejecutar(accion: AccionConBoton) {
-    setEnCurso(true)
-    try {
+  function ejecutar(accion: AccionConBoton) {
+    enviar(async () => {
       onCompraActualizada(await ACCIONES[accion].ejecutar(compra.id))
-    } catch (e) {
-      Alert.alert("No se pudo", mensajeDe(e))
-    } finally {
-      setEnCurso(false)
-    }
+    })
   }
 
   function pedirConfirmacion(accion: AccionConBoton) {
@@ -97,7 +91,7 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
           key={accion}
           texto={ACCIONES[accion].etiqueta}
           tono={ACCIONES[accion].tono}
-          deshabilitado={enCurso}
+          deshabilitado={enviando}
           onPress={() => pedirConfirmacion(accion)}
         />
       ))}

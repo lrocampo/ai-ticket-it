@@ -1,16 +1,10 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native"
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native"
 
 import { useUsuarioActual } from "../../context/UsuarioContext"
-import { enviarMensaje, mensajeDe } from "../../services/api"
+import { useEnvio } from "../../hooks/useEnvio"
+import { enviarMensaje } from "../../services/api"
 import { theme } from "../../theme"
 import type { Compra } from "../../types"
 import { formatearFechaHora } from "../../utils/fechas"
@@ -23,19 +17,14 @@ type Props = {
 export function ChatDeCompra({ compra, onCompraActualizada }: Props) {
   const usuario = useUsuarioActual()
   const [texto, setTexto] = useState("")
-  const [enviando, setEnviando] = useState(false)
+  const { enviando, enviar } = useEnvio()
   const puedeEnviar = texto.trim() !== "" && !enviando
 
-  async function enviar() {
-    setEnviando(true)
-    try {
+  function enviarTexto() {
+    enviar(async () => {
       onCompraActualizada(await enviarMensaje(compra.id, texto.trim()))
       setTexto("")
-    } catch (e) {
-      Alert.alert("No se pudo", mensajeDe(e))
-    } finally {
-      setEnviando(false)
-    }
+    })
   }
 
   return (
@@ -73,7 +62,7 @@ export function ChatDeCompra({ compra, onCompraActualizada }: Props) {
         <Pressable
           style={[styles.enviar, !puedeEnviar && styles.deshabilitado]}
           disabled={!puedeEnviar}
-          onPress={enviar}
+          onPress={enviarTexto}
           accessibilityRole="button"
           accessibilityLabel="Enviar mensaje"
           accessibilityState={{ disabled: !puedeEnviar }}
