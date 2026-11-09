@@ -26,70 +26,21 @@ function datosInvalidos(...details: unknown[]) {
   return respuestaDelServidor(400, { message: "Datos inválidos", details })
 }
 
-test("traduce cada detalle de validación al campo y al problema", () => {
+test("muestra cada detalle de validación debajo del mensaje", () => {
   const error = datosInvalidos(
     {
-      expected: "number",
-      code: "invalid_type",
       path: ["tiposEntrada", 1, "precio"],
-      message: "Invalid input: expected number, received null",
+      message: "El precio tiene que ser un número",
     },
-    {
-      code: "invalid_format",
-      format: "url",
-      path: ["multimedia", 0],
-      message: "Invalid URL",
-    },
-    {
-      origin: "string",
-      code: "too_small",
-      minimum: 1,
-      path: ["nombre"],
-      message: "Too small: expected string to have >=1 characters",
-    },
-    {
-      code: "invalid_format",
-      format: "datetime",
-      path: ["fecha"],
-      message: "Invalid ISO datetime",
-    },
-    {
-      expected: "string",
-      code: "invalid_type",
-      path: ["categoriaId"],
-      message: "Invalid input: expected string, received undefined",
-    },
+    { path: ["nombre"], message: "El nombre no puede estar vacío" },
+    { path: [], message: "No se esperaba el campo otro" },
   )
 
   expect(mensajeDe(error)).toBe(
     "Datos inválidos\n" +
-      "Precio del tipo de entrada 2 tiene que ser un número\n" +
-      "Imagen 1 tiene que ser una URL http o https\n" +
-      "Nombre es obligatorio\n" +
-      "Fecha tiene que ser una fecha válida\n" +
-      "Categoría es obligatorio",
-  )
-})
-
-test("un campo o un problema que no conoce lo muestra como viene", () => {
-  const error = datosInvalidos(
-    {
-      code: "too_small",
-      origin: "array",
-      path: ["tiposEntrada"],
-      message: "Too small: expected array to have >=1 items",
-    },
-    {
-      code: "custom",
-      path: ["puntuacion"],
-      message: "Tiene que estar entre 1 y 5",
-    },
-  )
-
-  expect(mensajeDe(error)).toBe(
-    "Datos inválidos\n" +
-      "tiposEntrada: Too small: expected array to have >=1 items\n" +
-      "Puntuación: Tiene que estar entre 1 y 5",
+      "tiposEntrada.1.precio: El precio tiene que ser un número\n" +
+      "nombre: El nombre no puede estar vacío\n" +
+      "No se esperaba el campo otro",
   )
 })
 
