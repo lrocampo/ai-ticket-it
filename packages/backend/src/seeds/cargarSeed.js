@@ -172,6 +172,21 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
         ["Acompañante", 2000, 500, "Acceso a la zona de largada"],
       ]),
     }),
+    // Tomás organiza solo este y nadie lo reseñó: queda al final del orden
+    // por puntaje.
+    ajedrez: evento({
+      nombre: "Torneo de ajedrez relámpago",
+      descripcion:
+        "Partidas de tres minutos a sistema suizo en el club de Villa del Parque. Abierto a todos los niveles.",
+      categoria: categoria.Deportes,
+      fecha: enDias(20, 10),
+      organizador: tomas,
+      semilla: "ajedrez-relampago",
+      tiposEntrada: tipos([
+        ["Jugador", 3000, 64, "Inscripción al torneo"],
+        ["Espectador", 0, 100, "Acceso a la sala"],
+      ]),
+    }),
   }
 
   // Eventos pasados: se crean con una fecha anterior a la del evento, y las

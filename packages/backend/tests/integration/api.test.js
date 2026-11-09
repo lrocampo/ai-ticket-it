@@ -97,14 +97,45 @@ describe("catálogo", () => {
     expect(fechas).toEqual([...fechas].sort())
   })
 
-  test("GET /eventos?orden=puntaje deja los mejores organizadores primero", async () => {
+  test("GET /eventos?orden=puntaje deja los mejores organizadores primero y los sin reseñas al final", async () => {
     const { body } = await request(app)
       .get("/eventos?orden=puntaje")
       .set(como(nicolas))
       .expect(200)
 
     const puntajes = body.map((evento) => evento.organizador.puntaje)
-    expect(puntajes).toEqual([...puntajes].sort((a, b) => b - a))
+    const conPuntaje = puntajes.filter((puntaje) => puntaje !== null)
+    const sinPuntaje = puntajes.filter((puntaje) => puntaje === null)
+    expect(conPuntaje.length).toBeGreaterThan(0)
+    expect(sinPuntaje.length).toBeGreaterThan(0)
+    expect(puntajes).toEqual([
+      ...[...conPuntaje].sort((a, b) => b - a),
+      ...sinPuntaje,
+    ])
+    expect(body.at(-1).organizador.puntaje).toBeNull()
+    expect(
+      body
+        .filter((evento) => evento.organizador.puntaje === null)
+        .map((evento) => evento.id),
+    ).toContain(seed.eventos.ajedrez.id)
+  })
+
+  test("GET /eventos busca sin distinguir tildes", async () => {
+    for (const texto of ["marat%C3%B3n", "maraton", "MARATON"]) {
+      const { body } = await request(app)
+        .get(`/eventos?texto=${texto}`)
+        .set(como(nicolas))
+        .expect(200)
+      expect(body.map((evento) => evento.id)).toEqual([seed.eventos.maraton.id])
+    }
+  })
+
+  test("GET /eventos con una categoría inexistente devuelve []", async () => {
+    const { body } = await request(app)
+      .get("/eventos?categoriaId=999")
+      .set(como(nicolas))
+      .expect(200)
+    expect(body).toEqual([])
   })
 
   test("GET /eventos?orden=otro responde 400 con details", async () => {
@@ -178,6 +209,22 @@ describe("catálogo", () => {
     expect(body.details.map((issue) => issue.path[0])).toEqual(
       expect.arrayContaining(["categoriaId", "fecha", "tiposEntrada"]),
     )
+  })
+
+  test("POST /eventos con tipos de entrada del mismo nombre responde 422", async () => {
+    await request(app)
+      .post("/eventos")
+      .set(como(valentina))
+      .send({
+        nombre: "Repetido",
+        categoriaId: seed.categorias.Conferencias.id,
+        fecha: "2030-01-01T21:00:00.000Z",
+        tiposEntrada: [
+          { nombre: "General", precio: 10, cupo: 5 },
+          { nombre: "general", precio: 20, cupo: 5 },
+        ],
+      })
+      .expect(422)
   })
 
   test("POST /eventos con una URL que no es http(s) responde 400", async () => {
@@ -478,12 +525,34 @@ describe("compras", () => {
     )
   })
 
-  test("una cantidad decimal responde 422", async () => {
+  test.each([1.5, 0])("una cantidad %p responde 422", async (cantidad) => {
     await request(app)
       .post("/compras")
       .set(como(comprador))
-      .send({ eventoId: evento.id, tipoEntradaId: general.id, cantidad: 1.5 })
+      .send({ eventoId: evento.id, tipoEntradaId: general.id, cantidad })
       .expect(422)
+  })
+
+  test("una cantidad que no es número responde 400", async () => {
+    const { body } = await request(app)
+      .post("/compras")
+      .set(como(comprador))
+      .send({ eventoId: evento.id, tipoEntradaId: general.id, cantidad: "2" })
+      .expect(400)
+    expect(body.details.map((issue) => issue.path)).toEqual([["cantidad"]])
+  })
+
+  test("comprar para un evento que ya ocurrió responde 409", async () => {
+    const pasado = seed.eventos.indie
+    await request(app)
+      .post("/compras")
+      .set(como(comprador))
+      .send({
+        eventoId: pasado.id,
+        tipoEntradaId: pasado.tiposEntrada[0].id,
+        cantidad: 1,
+      })
+      .expect(409)
   })
 })
 
