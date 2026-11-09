@@ -13,12 +13,19 @@ const { PENDIENTE, CONFIRMADA, UTILIZADA, CANCELADA, REEMBOLSADA } =
 const transiciones = {
   confirmarPago: {
     verbo: "confirmar el pago de",
+    quien: "comprador",
     desde: [PENDIENTE],
     hacia: CONFIRMADA,
   },
-  utilizar: { verbo: "utilizar", desde: [CONFIRMADA], hacia: UTILIZADA },
+  utilizar: {
+    verbo: "utilizar",
+    quien: "organizador",
+    desde: [CONFIRMADA],
+    hacia: UTILIZADA,
+  },
   cancelar: {
     verbo: "cancelar",
+    quien: "comprador",
     desde: [PENDIENTE, CONFIRMADA],
     hacia: CANCELADA,
     motivoDeRechazo: (compra, ahora) => {
@@ -31,6 +38,7 @@ const transiciones = {
   },
   reembolsar: {
     verbo: "reembolsar",
+    quien: "organizador",
     desde: [CANCELADA],
     hacia: REEMBOLSADA,
     motivoDeRechazo: (compra) => {
@@ -42,7 +50,27 @@ const transiciones = {
   },
 }
 
+const acciones = {
+  ...transiciones,
+  resenar: {
+    verbo: "reseñar",
+    quien: "comprador",
+    desde: [UTILIZADA],
+    motivoDeRechazo: (compra) => {
+      if (compra.resena !== null) {
+        return "La compra ya tiene una reseña."
+      }
+      return null
+    },
+  },
+}
+
 export default class Compra {
+  static accion(nombre) {
+    const { quien, verbo } = acciones[nombre]
+    return { quien, verbo }
+  }
+
   constructor(
     { comprador, evento, tipoEntrada, cantidad },
     ahora = new Date(),
@@ -99,20 +127,18 @@ export default class Compra {
     return this.evento.diasHasta(ahora)
   }
 
-  puedeCancelarse(ahora = new Date()) {
-    return !this.#impedimento("cancelar", ahora)
-  }
-
-  puedeResenarse() {
-    return this.estado === UTILIZADA && this.resena === null
+  accionesPara(usuario, ahora = new Date()) {
+    const rol = this.rolDe(usuario)
+    return Object.keys(acciones).filter(
+      (accion) =>
+        acciones[accion].quien === rol && !this.#impedimento(accion, ahora),
+    )
   }
 
   resenar(puntuacion, detalle, ahora = new Date()) {
-    if (this.resena !== null) {
-      throw new DomainRuleError("La compra ya tiene una reseña.")
-    }
-    if (this.estado !== UTILIZADA) {
-      throw new DomainRuleError("Solo se puede reseñar una compra utilizada.")
+    const impedimento = this.#impedimento("resenar", ahora)
+    if (impedimento) {
+      throw new DomainRuleError(impedimento)
     }
     this.resena = new Resena({
       id: this.id,
@@ -124,8 +150,18 @@ export default class Compra {
     return this.resena
   }
 
+  rolDe(usuario) {
+    if (this.esComprador(usuario)) {
+      return "comprador"
+    }
+    if (this.evento.esOrganizador(usuario)) {
+      return "organizador"
+    }
+    return null
+  }
+
   esParte(usuario) {
-    return this.esComprador(usuario) || this.evento.esOrganizador(usuario)
+    return this.rolDe(usuario) !== null
   }
 
   esComprador(usuario) {
@@ -149,11 +185,11 @@ export default class Compra {
   }
 
   #impedimento(accion, ahora) {
-    const transicion = transiciones[accion]
-    if (!transicion.desde.includes(this.estado)) {
-      return `No se puede ${transicion.verbo} una compra ${this.estado}.`
+    const regla = acciones[accion]
+    if (!regla.desde.includes(this.estado)) {
+      return `No se puede ${regla.verbo} una compra ${this.estado}.`
     }
-    return transicion.motivoDeRechazo?.(this, ahora) ?? null
+    return regla.motivoDeRechazo?.(this, ahora) ?? null
   }
 
   #transicionar(accion, quien, ahora) {

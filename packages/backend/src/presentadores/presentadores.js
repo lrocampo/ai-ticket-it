@@ -66,7 +66,7 @@ const presentarMensaje = (mensaje) => ({
   enviado: mensaje.enviado.toISOString(),
 })
 
-export const presentarCompra = (compra) => ({
+export const presentarCompra = (compra, usuario) => ({
   id: compra.id,
   estado: compra.estado,
   cantidad: compra.cantidad,
@@ -84,8 +84,7 @@ export const presentarCompra = (compra) => ({
     precio: compra.tipoEntrada.precio,
   },
   diasParaElEvento: compra.diasParaElEvento(),
-  puedeCancelarse: compra.puedeCancelarse(),
-  puedeResenarse: compra.puedeResenarse(),
+  acciones: compra.accionesPara(usuario),
   historial: compra.historial.map(presentarCambioEstado),
   mensajes: compra.mensajes.map(presentarMensaje),
   resena: compra.resena && presentarResena(compra.resena),

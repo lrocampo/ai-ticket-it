@@ -271,6 +271,14 @@ describe("compras", () => {
     return body
   }
 
+  const accionesDe = async (id, usuario) => {
+    const { body } = await request(app)
+      .get(`/compras/${id}`)
+      .set(como(usuario))
+      .expect(200)
+    return body.acciones
+  }
+
   test("flujo completo: comprar, confirmar, usar y reseñar", async () => {
     const compra = await crearCompra(2)
     expect(compra).toEqual({
@@ -291,8 +299,7 @@ describe("compras", () => {
         precio: general.precio,
       },
       diasParaElEvento: null,
-      puedeCancelarse: true,
-      puedeResenarse: false,
+      acciones: ["confirmarPago", "cancelar"],
       historial: [
         {
           estado: "PENDIENTE",
@@ -311,8 +318,9 @@ describe("compras", () => {
     expect(confirmada.body).toMatchObject({
       estado: "CONFIRMADA",
       diasParaElEvento: expect.any(Number),
-      puedeCancelarse: true,
+      acciones: ["cancelar"],
     })
+    expect(await accionesDe(compra.id, organizador)).toEqual(["utilizar"])
 
     await request(app)
       .post(`/compras/${compra.id}/uso`)
@@ -326,9 +334,9 @@ describe("compras", () => {
     expect(utilizada.body).toMatchObject({
       estado: "UTILIZADA",
       diasParaElEvento: null,
-      puedeCancelarse: false,
-      puedeResenarse: true,
+      acciones: [],
     })
+    expect(await accionesDe(compra.id, comprador)).toEqual(["resenar"])
 
     const resenada = await request(app)
       .post(`/compras/${compra.id}/resena`)
@@ -341,7 +349,7 @@ describe("compras", () => {
       comprador: { id: comprador.id },
       evento: { id: evento.id },
     })
-    expect(resenada.body.puedeResenarse).toBe(false)
+    expect(resenada.body.acciones).toEqual([])
     expect(resenada.body.historial.map((c) => c.estado)).toEqual([
       "PENDIENTE",
       "CONFIRMADA",
@@ -391,8 +399,9 @@ describe("compras", () => {
       .expect(200)
     expect(cancelada.body).toMatchObject({
       estado: "CANCELADA",
-      puedeCancelarse: false,
+      acciones: [],
     })
+    expect(await accionesDe(compra.id, organizador)).toEqual(["reembolsar"])
 
     const despues = await request(app)
       .get(`/eventos/${evento.id}`)
@@ -403,7 +412,10 @@ describe("compras", () => {
       .post(`/compras/${compra.id}/reembolso`)
       .set(como(organizador))
       .expect(200)
-    expect(reembolsada.body.estado).toBe("REEMBOLSADA")
+    expect(reembolsada.body).toMatchObject({
+      estado: "REEMBOLSADA",
+      acciones: [],
+    })
     expect(reembolsada.body.historial.map((c) => c.estado)).toEqual([
       "PENDIENTE",
       "CONFIRMADA",
@@ -478,17 +490,14 @@ describe("compras", () => {
       .expect(400)
   })
 
-  test("GET /compras/:id la ven comprador y organizador, otro recibe 403", async () => {
+  test("GET /compras/:id la ven comprador y organizador con sus acciones, otro recibe 403", async () => {
     const compra = await crearCompra()
 
-    await request(app)
-      .get(`/compras/${compra.id}`)
-      .set(como(comprador))
-      .expect(200)
-    await request(app)
-      .get(`/compras/${compra.id}`)
-      .set(como(organizador))
-      .expect(200)
+    expect(await accionesDe(compra.id, comprador)).toEqual([
+      "confirmarPago",
+      "cancelar",
+    ])
+    expect(await accionesDe(compra.id, organizador)).toEqual([])
     await request(app)
       .get(`/compras/${compra.id}`)
       .set(como(valentina))
@@ -504,7 +513,16 @@ describe("compras", () => {
       .set(como(organizador))
       .expect(200)
     expect(body.evento.id).toBe(evento.id)
-    expect(body.compras.map((c) => c.id)).toContain(compra.id)
+    expect(body.compras.find((c) => c.id === compra.id).acciones).toEqual([])
+
+    const mias = await request(app)
+      .get("/compras")
+      .set(como(comprador))
+      .expect(200)
+    expect(mias.body.find((c) => c.id === compra.id).acciones).toEqual([
+      "confirmarPago",
+      "cancelar",
+    ])
 
     await request(app)
       .get(`/eventos/${evento.id}/compras`)

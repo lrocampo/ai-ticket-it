@@ -7,7 +7,11 @@ export default class CompraController {
 
   mias = (req, res, next) => {
     try {
-      res.json(this.compraService.mias(req.usuario).map(presentarCompra))
+      res.json(
+        this.compraService
+          .mias(req.usuario)
+          .map((compra) => presentarCompra(compra, req.usuario)),
+      )
     } catch (error) {
       next(error)
     }
@@ -15,9 +19,8 @@ export default class CompraController {
 
   porId = (req, res, next) => {
     try {
-      res.json(
-        presentarCompra(this.compraService.porId(req.usuario, req.params.id)),
-      )
+      const compra = this.compraService.porId(req.usuario, req.params.id)
+      res.json(presentarCompra(compra, req.usuario))
     } catch (error) {
       next(error)
     }
@@ -26,7 +29,7 @@ export default class CompraController {
   crear = (req, res, next) => {
     try {
       const compra = this.compraService.crear(req.usuario, req.body)
-      res.status(201).json(presentarCompra(compra))
+      res.status(201).json(presentarCompra(compra, req.usuario))
     } catch (error) {
       next(error)
     }
@@ -44,7 +47,7 @@ export default class CompraController {
         req.params.id,
         req.body.texto,
       )
-      res.status(201).json(presentarCompra(compra))
+      res.status(201).json(presentarCompra(compra, req.usuario))
     } catch (error) {
       next(error)
     }
@@ -57,7 +60,7 @@ export default class CompraController {
         req.params.id,
         req.body,
       )
-      res.status(201).json(presentarCompra(compra))
+      res.status(201).json(presentarCompra(compra, req.usuario))
     } catch (error) {
       next(error)
     }
@@ -67,7 +70,7 @@ export default class CompraController {
     return (req, res, next) => {
       try {
         const compra = this.compraService[nombre](req.usuario, req.params.id)
-        res.json(presentarCompra(compra))
+        res.json(presentarCompra(compra, req.usuario))
       } catch (error) {
         next(error)
       }

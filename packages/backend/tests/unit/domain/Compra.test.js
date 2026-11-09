@@ -15,6 +15,7 @@ const { PENDIENTE, CONFIRMADA, UTILIZADA, CANCELADA, REEMBOLSADA } =
 describe("Compra", () => {
   let comprador
   let organizador
+  let tercero
   let recital
   let tipo
 
@@ -22,6 +23,7 @@ describe("Compra", () => {
     const { usuarios } = crearRepositorios()
     comprador = usuarios.guardar(usuario("Compradora"))
     organizador = usuarios.guardar(usuario("Organizador"))
+    tercero = usuarios.guardar(usuario("Tercero"))
     recital = evento({ organizador })
     tipo = recital.tiposEntrada[0]
   })
@@ -194,31 +196,53 @@ describe("Compra", () => {
         llevarA[CONFIRMADA]().diasParaElEvento(sumarDias(HOY, 13)),
       ).toBeNull()
     })
+  })
 
+  describe("accionesPara", () => {
     test.each([
-      [PENDIENTE, true],
-      [CONFIRMADA, true],
-      [UTILIZADA, false],
-      [CANCELADA, false],
-      [REEMBOLSADA, false],
-    ])("puedeCancelarse en %s es %p", (estado, esperado) => {
-      expect(llevarA[estado]().puedeCancelarse(HOY)).toBe(esperado)
+      [PENDIENTE, ["confirmarPago", "cancelar"], []],
+      [CONFIRMADA, ["cancelar"], ["utilizar"]],
+      [UTILIZADA, ["resenar"], []],
+      [CANCELADA, [], ["reembolsar"]],
+      [REEMBOLSADA, [], []],
+    ])(
+      "en %s el comprador ve %j, el organizador %j y un tercero nada",
+      (estado, delComprador, delOrganizador) => {
+        const compra = llevarA[estado]()
+
+        expect(compra.accionesPara(comprador, HOY)).toEqual(delComprador)
+        expect(compra.accionesPara(organizador, HOY)).toEqual(delOrganizador)
+        expect(compra.accionesPara(tercero, HOY)).toEqual([])
+      },
+    )
+
+    test("cancelar desaparece cuando el evento ya ocurrió", () => {
+      const compra = llevarA[CONFIRMADA]()
+
+      expect(compra.accionesPara(comprador, sumarDias(HOY, 11))).toEqual([])
     })
 
-    test("puedeCancelarse es falso cuando el evento ya ocurrió", () => {
-      expect(llevarA[CONFIRMADA]().puedeCancelarse(sumarDias(HOY, 11))).toBe(
-        false,
-      )
+    test("reembolsar aparece solo si la compra pasó por CONFIRMADA", () => {
+      const compra = comprar()
+      compra.cancelar(comprador, HOY)
+
+      expect(compra.accionesPara(organizador, HOY)).toEqual([])
+    })
+
+    test("resenar desaparece después de reseñar", () => {
+      const compra = llevarA[UTILIZADA]()
+      compra.resenar(4, "Muy bueno", HOY)
+
+      expect(compra.accionesPara(comprador, HOY)).toEqual([])
     })
   })
 
   describe("reseña", () => {
     test("solo una compra utilizada puede reseñarse", () => {
-      expect(comprar().puedeResenarse()).toBe(false)
+      expect(() => comprar().resenar(5, "Genial", HOY)).toThrow(DomainRuleError)
       expect(() => llevarA[CONFIRMADA]().resenar(5, "Genial", HOY)).toThrow(
         DomainRuleError,
       )
-      expect(llevarA[UTILIZADA]().puedeResenarse()).toBe(true)
     })
 
     test("crea la reseña con comprador y evento, y después no admite otra", () => {
@@ -230,7 +254,6 @@ describe("Compra", () => {
       expect(resena.comprador).toBe(comprador)
       expect(resena.evento).toBe(recital)
       expect(resena.puntuacion).toBe(4)
-      expect(compra.puedeResenarse()).toBe(false)
       expect(() => compra.resenar(5, "Otra vez", sumarDias(HOY, 2))).toThrow(
         DomainRuleError,
       )
