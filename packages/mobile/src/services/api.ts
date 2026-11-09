@@ -16,10 +16,11 @@ import type {
 
 // Expo sirve el bundle desde la IP de la Mac; el backend corre en esa misma
 // máquina, así que desde el teléfono se llega por ahí y no por localhost.
+// EXPO_PUBLIC_API_URL la pisa para --tunnel o un backend en otro puerto.
 function urlDelBackend(): string {
   const hostUri = Constants.expoConfig?.hostUri
   const host = hostUri ? hostUri.split(":")[0] : "localhost"
-  return `http://${host}:3000`
+  return process.env.EXPO_PUBLIC_API_URL ?? `http://${host}:3000`
 }
 
 const api = axios.create({ baseURL: urlDelBackend(), timeout: 10000 })
