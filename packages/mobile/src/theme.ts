@@ -4,10 +4,11 @@ const colores = {
   fondo: "#F5F4F8",
   superficie: "#FFFFFF",
   texto: "#1C1B22",
-  textoSecundario: "#6B6878",
+  textoSecundario: "#625F70",
   borde: "#E3E1EA",
+  bordeControl: "#8C8899",
   error: "#C62828",
-  estrella: "#F5A623",
+  estrella: "#C77700",
   sobrePrimario: "#FFFFFF",
 }
 
@@ -63,7 +64,7 @@ export const theme = {
     paddingVertical: espacios.s,
     borderRadius: radios.s,
     borderWidth: 1,
-    borderColor: colores.borde,
+    borderColor: colores.bordeControl,
     backgroundColor: colores.superficie,
   },
 } as const

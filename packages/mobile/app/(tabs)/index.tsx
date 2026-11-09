@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colores.superficie,
     borderRadius: theme.radios.m,
     borderWidth: 1,
-    borderColor: theme.colores.borde,
+    borderColor: theme.colores.bordeControl,
   },
   input: {
     ...theme.texto.cuerpo,

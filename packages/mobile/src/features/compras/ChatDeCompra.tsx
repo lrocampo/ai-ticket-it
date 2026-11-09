@@ -117,8 +117,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   hora: {
-    fontSize: 11,
-    color: theme.colores.textoSecundario,
+    ...theme.texto.secundario,
     alignSelf: "flex-end",
   },
 })
