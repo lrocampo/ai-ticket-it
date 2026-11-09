@@ -55,6 +55,19 @@ function tieneBoton(accion: Accion): accion is AccionConBoton {
   return accion !== "resenar"
 }
 
+function confirmar(titulo: string, mensaje: string, tono: Tono) {
+  return new Promise<boolean>((resolve) => {
+    Alert.alert(titulo, mensaje, [
+      { text: "Volver", style: "cancel", onPress: () => resolve(false) },
+      {
+        text: titulo,
+        style: tono === "peligro" ? "destructive" : "default",
+        onPress: () => resolve(true),
+      },
+    ])
+  })
+}
+
 type Props = {
   compra: Compra
   onCompraActualizada: (compra: Compra) => void
@@ -66,22 +79,12 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
 
   if (acciones.length === 0) return null
 
-  function ejecutar(accion: AccionConBoton) {
+  function hacer(accion: AccionConBoton) {
+    const { etiqueta, tono, confirmacion, ejecutar } = ACCIONES[accion]
     enviar(async () => {
-      onCompraActualizada(await ACCIONES[accion].ejecutar(compra.id))
+      const confirmada = await confirmar(etiqueta, confirmacion(compra), tono)
+      if (confirmada) onCompraActualizada(await ejecutar(compra.id))
     })
-  }
-
-  function pedirConfirmacion(accion: AccionConBoton) {
-    const { etiqueta, tono, confirmacion } = ACCIONES[accion]
-    Alert.alert(etiqueta, confirmacion(compra), [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: etiqueta,
-        style: tono === "peligro" ? "destructive" : "default",
-        onPress: () => ejecutar(accion),
-      },
-    ])
   }
 
   return (
@@ -92,7 +95,7 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
           texto={ACCIONES[accion].etiqueta}
           tono={ACCIONES[accion].tono}
           deshabilitado={enviando}
-          onPress={() => pedirConfirmacion(accion)}
+          onPress={() => hacer(accion)}
         />
       ))}
     </View>
