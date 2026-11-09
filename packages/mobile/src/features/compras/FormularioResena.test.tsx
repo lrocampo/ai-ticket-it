@@ -40,6 +40,12 @@ async function completar({
 const AYUDA_PUNTUACION = "Elegí una puntuación."
 const AYUDA_DETALLE = "Contanos algo del evento."
 
+function ayudasVisibles() {
+  return [AYUDA_PUNTUACION, AYUDA_DETALLE].filter((ayuda) =>
+    screen.queryByText(ayuda),
+  )
+}
+
 test.each([
   {
     caso: "sin estrellas ni texto",
@@ -69,19 +75,12 @@ test.each([
   "$caso: al enviar dice qué falta y no manda nada",
   async ({ estrellas, texto, ayudas }) => {
     const { enviar } = await completar({ estrellas, texto })
-    expect(screen.queryByText(AYUDA_PUNTUACION)).not.toBeOnTheScreen()
-    expect(screen.queryByText(AYUDA_DETALLE)).not.toBeOnTheScreen()
+    expect(ayudasVisibles()).toEqual([])
 
     expect(enviar).toBeEnabled()
     await fireEvent.press(enviar)
 
-    for (const ayuda of [AYUDA_PUNTUACION, AYUDA_DETALLE]) {
-      if (ayudas.includes(ayuda)) {
-        expect(screen.getByText(ayuda)).toBeOnTheScreen()
-      } else {
-        expect(screen.queryByText(ayuda)).not.toBeOnTheScreen()
-      }
-    }
+    expect(ayudasVisibles()).toEqual(ayudas)
     expect(resenarCompra).not.toHaveBeenCalled()
   },
 )
