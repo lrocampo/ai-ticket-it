@@ -4,10 +4,10 @@ import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
 // Quién puede pedir cada acción, según la tabla de docs/dominio.md. La
 // transición en sí la decide la Compra.
 const acciones = {
-  confirmarPago: { quien: "comprador" },
-  utilizar: { quien: "organizador" },
-  cancelar: { quien: "comprador" },
-  reembolsar: { quien: "organizador" },
+  confirmarPago: { quien: "comprador", verbo: "confirmar el pago de" },
+  utilizar: { quien: "organizador", verbo: "utilizar" },
+  cancelar: { quien: "comprador", verbo: "cancelar" },
+  reembolsar: { quien: "organizador", verbo: "reembolsar" },
 }
 
 const esQuien = {
@@ -72,7 +72,8 @@ export default class CompraService {
   }
 
   #accion(nombre, usuario, id, ahora = new Date()) {
-    const compra = this.#deQuien(acciones[nombre].quien, usuario, id, nombre)
+    const { quien, verbo } = acciones[nombre]
+    const compra = this.#deQuien(quien, usuario, id, verbo)
     compra[nombre](usuario, ahora)
     return compra
   }

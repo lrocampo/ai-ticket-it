@@ -57,15 +57,15 @@ Compra = {
 
 ### Catálogo
 
-| Método | Ruta                   | Quién       | Body / query                                           | Respuesta                                        |
-| ------ | ---------------------- | ----------- | ------------------------------------------------------ | ------------------------------------------------ |
-| GET    | `/usuarios`            | nadie       |                                                        | `Usuario[]` (para elegir quién soy)              |
-| GET    | `/categorias`          | nadie       |                                                        | `Categoria[]`                                    |
-| GET    | `/eventos`             | cualquiera  | `?texto=&categoriaId=&orden=precio\|fecha\|puntaje`    | `Evento[]`                                       |
-| GET    | `/eventos/:id`         | cualquiera  |                                                        | `EventoDetalle`                                  |
-| POST   | `/eventos`             | cualquiera  | ver abajo                                              | `201 EventoDetalle`, el organizador es quien pide |
-| GET    | `/eventos/:id/compras` | organizador |                                                        | `{ evento: Evento, compras: Compra[] }`          |
-| GET    | `/mis-eventos`         | cualquiera  |                                                        | `Evento[]` donde soy organizador                 |
+| Método | Ruta                   | Quién       | Body / query                                        | Respuesta                                         |
+| ------ | ---------------------- | ----------- | --------------------------------------------------- | ------------------------------------------------- |
+| GET    | `/usuarios`            | nadie       |                                                     | `Usuario[]` (para elegir quién soy)               |
+| GET    | `/categorias`          | nadie       |                                                     | `Categoria[]`                                     |
+| GET    | `/eventos`             | cualquiera  | `?texto=&categoriaId=&orden=precio\|fecha\|puntaje` | `Evento[]`                                        |
+| GET    | `/eventos/:id`         | cualquiera  |                                                     | `EventoDetalle`                                   |
+| POST   | `/eventos`             | cualquiera  | ver abajo                                           | `201 EventoDetalle`, el organizador es quien pide |
+| GET    | `/eventos/:id/compras` | organizador |                                                     | `{ evento: Evento, compras: Compra[] }`           |
+| GET    | `/mis-eventos`         | cualquiera  |                                                     | `Evento[]` donde soy organizador                  |
 
 Body de `POST /eventos`:
 
@@ -76,7 +76,9 @@ Body de `POST /eventos`:
   "categoriaId": "...",
   "fecha": "2026-12-20T21:00:00.000Z",
   "multimedia": ["https://..."],
-  "tiposEntrada": [{ "nombre": "General", "descripcion": "...", "precio": 15000, "cupo": 200 }]
+  "tiposEntrada": [
+    { "nombre": "General", "descripcion": "...", "precio": 15000, "cupo": 200 }
+  ]
 }
 ```
 
@@ -84,16 +86,16 @@ Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo en
 
 ### Compras
 
-| Método | Ruta                        | Quién        | Body                                      | Respuesta       |
-| ------ | --------------------------- | ------------ | ----------------------------------------- | --------------- |
-| GET    | `/compras`                  | comprador    |                                           | `Compra[]` mías |
-| POST   | `/compras`                  | comprador    | `{ eventoId, tipoEntradaId, cantidad }`   | `201 Compra`    |
-| GET    | `/compras/:id`              | comprador u organizador del evento |                     | `Compra`        |
-| POST   | `/compras/:id/confirmacion` | comprador    |                                           | `Compra`        |
-| POST   | `/compras/:id/uso`          | organizador  |                                           | `Compra`        |
-| POST   | `/compras/:id/cancelacion`  | comprador    |                                           | `Compra`        |
-| POST   | `/compras/:id/reembolso`    | organizador  |                                           | `Compra`        |
-| POST   | `/compras/:id/mensajes`     | comprador u organizador | `{ texto }`                    | `201 Compra`    |
-| POST   | `/compras/:id/resena`       | comprador    | `{ puntuacion, detalle }`                 | `201 Compra`    |
+| Método | Ruta                        | Quién                              | Body                                    | Respuesta       |
+| ------ | --------------------------- | ---------------------------------- | --------------------------------------- | --------------- |
+| GET    | `/compras`                  | comprador                          |                                         | `Compra[]` mías |
+| POST   | `/compras`                  | comprador                          | `{ eventoId, tipoEntradaId, cantidad }` | `201 Compra`    |
+| GET    | `/compras/:id`              | comprador u organizador del evento |                                         | `Compra`        |
+| POST   | `/compras/:id/confirmacion` | comprador                          |                                         | `Compra`        |
+| POST   | `/compras/:id/uso`          | organizador                        |                                         | `Compra`        |
+| POST   | `/compras/:id/cancelacion`  | comprador                          |                                         | `Compra`        |
+| POST   | `/compras/:id/reembolso`    | organizador                        |                                         | `Compra`        |
+| POST   | `/compras/:id/mensajes`     | comprador u organizador            | `{ texto }`                             | `201 Compra`    |
+| POST   | `/compras/:id/resena`       | comprador                          | `{ puntuacion, detalle }`               | `201 Compra`    |
 
 Las acciones sobre una compra devuelven la compra completa actualizada, así la app reemplaza lo que tiene en pantalla sin un segundo request. Las rutas usan sustantivos (`/confirmacion`, no `/confirmar`).
