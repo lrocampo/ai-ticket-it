@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { Alert, StyleSheet, TextInput } from "react-native"
+import { Alert } from "react-native"
 
 import { Boton } from "../../components/Boton"
+import { Campo } from "../../components/Campo"
 import { Estrellas } from "../../components/Estrellas"
 import { Seccion } from "../../components/Seccion"
 import { mensajeDe, resenarCompra } from "../../services/api"
-import { theme } from "../../theme"
 import type { Compra } from "../../types"
 
 type Props = {
@@ -35,12 +35,11 @@ export function FormularioResena({ compra, onCompraActualizada }: Props) {
   return (
     <Seccion titulo="Contanos cómo estuvo">
       <Estrellas puntuacion={puntuacion} tamano={32} onCambio={setPuntuacion} />
-      <TextInput
-        style={styles.detalle}
+      <Campo
+        etiqueta="Tu comentario"
         value={detalle}
         onChangeText={setDetalle}
         placeholder="¿Qué te pareció el evento?"
-        placeholderTextColor={theme.colores.textoSecundario}
         multiline
       />
       <Boton
@@ -51,15 +50,3 @@ export function FormularioResena({ compra, onCompraActualizada }: Props) {
     </Seccion>
   )
 }
-
-const styles = StyleSheet.create({
-  detalle: {
-    ...theme.texto.cuerpo,
-    minHeight: 96,
-    padding: theme.espacios.m,
-    borderRadius: theme.radios.s,
-    borderWidth: 1,
-    borderColor: theme.colores.borde,
-    textAlignVertical: "top",
-  },
-})

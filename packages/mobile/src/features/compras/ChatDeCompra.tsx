@@ -110,15 +110,10 @@ const styles = StyleSheet.create({
     marginTop: theme.espacios.s,
   },
   input: {
-    ...theme.texto.cuerpo,
+    ...theme.input,
     flex: 1,
     maxHeight: 120,
-    paddingHorizontal: theme.espacios.m,
-    paddingTop: theme.espacios.s,
-    paddingBottom: theme.espacios.s,
     borderRadius: theme.radios.m,
-    borderWidth: 1,
-    borderColor: theme.colores.borde,
   },
   enviar: {
     width: 40,

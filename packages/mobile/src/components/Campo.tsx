@@ -29,15 +29,7 @@ const styles = StyleSheet.create({
   campo: {
     gap: theme.espacios.xs,
   },
-  input: {
-    ...theme.texto.cuerpo,
-    paddingHorizontal: theme.espacios.m,
-    paddingVertical: theme.espacios.s,
-    borderRadius: theme.radios.s,
-    borderWidth: 1,
-    borderColor: theme.colores.borde,
-    backgroundColor: theme.colores.superficie,
-  },
+  input: theme.input,
   multilinea: {
     minHeight: 96,
     textAlignVertical: "top",

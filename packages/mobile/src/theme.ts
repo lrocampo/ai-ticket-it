@@ -17,6 +17,23 @@ const radios = {
   pill: 999,
 }
 
+const texto = {
+  titulo: { fontSize: 22, fontWeight: "700", color: colores.texto },
+  subtitulo: { fontSize: 17, fontWeight: "600", color: colores.texto },
+  cuerpo: { fontSize: 15, color: colores.texto },
+  chico: { fontSize: 13, color: colores.texto },
+  secundario: { fontSize: 13, color: colores.textoSecundario },
+  destacado: { fontSize: 13, fontWeight: "600", color: colores.primario },
+} as const
+
+const espacios = {
+  xs: 4,
+  s: 8,
+  m: 12,
+  l: 16,
+  xl: 24,
+}
+
 const sombra = {
   shadowColor: "#000",
   shadowOpacity: 0.06,
@@ -27,25 +44,21 @@ const sombra = {
 
 export const theme = {
   colores,
-  espacios: {
-    xs: 4,
-    s: 8,
-    m: 12,
-    l: 16,
-    xl: 24,
-  },
+  espacios,
   radios,
-  texto: {
-    titulo: { fontSize: 22, fontWeight: "700", color: colores.texto },
-    subtitulo: { fontSize: 17, fontWeight: "600", color: colores.texto },
-    cuerpo: { fontSize: 15, color: colores.texto },
-    chico: { fontSize: 13, color: colores.texto },
-    secundario: { fontSize: 13, color: colores.textoSecundario },
-    destacado: { fontSize: 13, fontWeight: "600", color: colores.primario },
-  },
+  texto,
   tarjeta: {
     backgroundColor: colores.superficie,
     borderRadius: radios.m,
     ...sombra,
+  },
+  input: {
+    ...texto.cuerpo,
+    paddingHorizontal: espacios.m,
+    paddingVertical: espacios.s,
+    borderRadius: radios.s,
+    borderWidth: 1,
+    borderColor: colores.borde,
+    backgroundColor: colores.superficie,
   },
 } as const
