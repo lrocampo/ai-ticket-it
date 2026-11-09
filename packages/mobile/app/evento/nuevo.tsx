@@ -1,7 +1,14 @@
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { router } from "expo-router"
 import { useState } from "react"
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native"
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native"
 
 import { Boton } from "../../src/components/Boton"
 import { Campo } from "../../src/components/Campo"
@@ -20,11 +27,15 @@ import { useCarga } from "../../src/hooks/useCarga"
 import { useEnvio } from "../../src/hooks/useEnvio"
 import { crearEvento, listarCategorias } from "../../src/services/api"
 import { theme } from "../../src/theme"
+import { formatearFecha } from "../../src/utils/fechas"
 
 export default function CrearEvento() {
   const categorias = useCarga(listarCategorias, [])
   const [formulario, setFormulario] = useState(formularioVacio)
   const { enviando: creando, enviar } = useEnvio("No se pudo crear el evento")
+  const [pickerAbierto, setPickerAbierto] = useState<"fecha" | "hora" | null>(
+    null,
+  )
   const { tiposEntrada } = formulario
 
   function actualizar<K extends keyof FormularioEvento>(
@@ -107,14 +118,45 @@ export default function CrearEvento() {
           </Seccion>
 
           <Seccion titulo="Fecha y hora">
-            <DateTimePicker
-              value={formulario.fecha}
-              mode="datetime"
-              display="spinner"
-              locale="es-AR"
-              minimumDate={new Date()}
-              onValueChange={(_, fecha) => actualizar("fecha", fecha)}
-            />
+            <Text style={theme.texto.cuerpo}>
+              {formatearFecha(formulario.fecha.toISOString())}
+            </Text>
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                value={formulario.fecha}
+                mode="datetime"
+                display="spinner"
+                locale="es-AR"
+                minimumDate={new Date()}
+                onValueChange={(_, fecha) => actualizar("fecha", fecha)}
+              />
+            ) : (
+              <>
+                <Boton
+                  texto="Elegir fecha"
+                  tono="secundario"
+                  onPress={() => setPickerAbierto("fecha")}
+                />
+                <Boton
+                  texto="Elegir hora"
+                  tono="secundario"
+                  onPress={() => setPickerAbierto("hora")}
+                />
+                {pickerAbierto && (
+                  <DateTimePicker
+                    value={formulario.fecha}
+                    mode={pickerAbierto === "fecha" ? "date" : "time"}
+                    is24Hour
+                    minimumDate={new Date()}
+                    onValueChange={(_, fecha) => {
+                      setPickerAbierto(null)
+                      actualizar("fecha", fecha)
+                    }}
+                    onDismiss={() => setPickerAbierto(null)}
+                  />
+                )}
+              </>
+            )}
           </Seccion>
 
           <Seccion titulo="Entradas">
