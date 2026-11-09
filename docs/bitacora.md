@@ -14,3 +14,11 @@ Registro del proceso de desarrollo con IA. Es la materia prima de la conclusión
 - Node 24 (`.nvmrc`), porque el Expo SDK actual pide un Node 20 más nuevo que el que tenía instalado.
 
 **Cómo trabaja la IA acá.** Yo converso con una sesión que diseña y revisa. Esa sesión delega la escritura de backend y de app a dos agentes en paralelo, cada uno en su worktree de git, y después mergea y verifica corriendo los tests, el backend y la app en el simulador. El diseño y las decisiones son míos y de la sesión principal; los agentes implementan contra el contrato.
+
+**Primera iteración armada y probada.** Los dos agentes terminaron en unos 15 minutos cada uno, en paralelo. El backend llegó con 100 tests en verde y el flujo comprar→confirmar→usar→reseñar verificado por HTTP; la app con `tsc`, `expo export` y `expo-doctor` limpios. Después del merge, lo que las pruebas automáticas no vieron y el simulador sí:
+
+- El catálogo mostraba primero los eventos que ya habían ocurrido, porque el contrato decía "todos los eventos" y el orden por defecto es fecha ascendente. Arreglo en el backend: el catálogo deja afuera lo que ya pasó. Lección: el contrato lo escribí yo y la IA lo cumplió al pie de la letra; el error era de diseño, no de implementación.
+- Las fechas cortas de las reseñas salían como "6 undefined undefined". El agente había usado `Intl.DateTimeFormat.formatToParts`, probado en Node, pero Hermes (el motor de JavaScript de React Native) devuelve partes vacías para ese formato en español. Arreglo: formatear a mano con arreglos de días y meses. Lección: lo que la IA prueba en Node no es lo que corre en el teléfono; hay que verificar en el dispositivo.
+- Con los dos workspaces instalados, npm dejaba dos copias de React. Un `overrides` en el `package.json` raíz lo resuelve.
+
+Pendiente para la próxima iteración: acciones sobre la compra (confirmar pago, cancelar, usar, reembolsar), chat, reseña y crear evento desde la app. El backend ya expone todo eso; es trabajo solo de la app.
