@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colores.primario,
   },
   deshabilitado: {
-    opacity: 0.4,
+    opacity: theme.opacidad.deshabilitado,
   },
   hora: {
     ...theme.texto.secundario,

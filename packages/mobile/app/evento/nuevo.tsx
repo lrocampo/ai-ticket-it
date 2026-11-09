@@ -113,7 +113,7 @@ export default function CrearEvento() {
           headerLeft: () => (
             <Pressable
               onPress={() => router.back()}
-              hitSlop={12}
+              hitSlop={theme.margenTactil(theme.texto.cuerpo.lineHeight)}
               accessibilityRole="button"
             >
               <Text style={styles.cancelar}>Cancelar</Text>

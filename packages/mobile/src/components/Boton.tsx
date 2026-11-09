@@ -69,10 +69,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   presionado: {
-    opacity: 0.85,
+    opacity: theme.opacidad.presionado,
   },
   deshabilitado: {
-    opacity: 0.5,
+    opacity: theme.opacidad.deshabilitado,
   },
   texto: {
     ...theme.texto.cuerpo,

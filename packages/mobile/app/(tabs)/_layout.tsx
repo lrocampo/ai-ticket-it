@@ -8,7 +8,6 @@ import { theme } from "../../src/theme"
 
 const ICONO_NUEVO = 26
 const ICONO_USUARIO = 20
-const MARGEN_USUARIO = (theme.areaTactil - ICONO_USUARIO) / 2
 
 function BotonCambiarUsuario() {
   const usuario = useUsuarioActual()
@@ -18,7 +17,10 @@ function BotonCambiarUsuario() {
     <Pressable
       style={styles.boton}
       onPress={salir}
-      hitSlop={{ top: MARGEN_USUARIO, bottom: MARGEN_USUARIO }}
+      hitSlop={{
+        top: theme.margenTactil(ICONO_USUARIO),
+        bottom: theme.margenTactil(ICONO_USUARIO),
+      }}
       accessibilityRole="button"
       accessibilityLabel={`${usuario.nombre}, cambiar de usuario`}
     >
@@ -39,7 +41,7 @@ function BotonNuevoEvento() {
     <Pressable
       style={styles.nuevoEvento}
       onPress={() => router.push("/evento/nuevo")}
-      hitSlop={(theme.areaTactil - ICONO_NUEVO) / 2}
+      hitSlop={theme.margenTactil(ICONO_NUEVO)}
       accessibilityRole="button"
       accessibilityLabel="Crear evento"
     >

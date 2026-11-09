@@ -39,6 +39,6 @@ export function Tarjeta({ onPress, style, children }: Props) {
 
 const styles = StyleSheet.create({
   presionada: {
-    opacity: 0.85,
+    opacity: theme.opacidad.presionado,
   },
 })

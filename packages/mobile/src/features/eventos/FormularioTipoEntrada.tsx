@@ -56,7 +56,7 @@ export function FormularioTipoEntrada({
         {onQuitar && (
           <Pressable
             onPress={() => quitarSiConfirma(tipo, onQuitar)}
-            hitSlop={(theme.areaTactil - ICONO_QUITAR) / 2}
+            hitSlop={theme.margenTactil(ICONO_QUITAR)}
             accessibilityRole="button"
             accessibilityLabel="Quitar tipo de entrada"
           >
