@@ -22,7 +22,7 @@ El backend queda en `http://localhost:3000` con datos de ejemplo cargados. En ot
 npm run start:mobile
 ```
 
-Expo muestra un QR para abrir la app con Expo Go en el teléfono, o `i` para abrirla en el simulador de iOS. Desde el teléfono, la app encuentra el backend usando la misma IP que Expo usa para servir el bundle, así que la Mac y el teléfono tienen que estar en la misma red.
+Expo muestra un QR para abrir la app con Expo Go en el teléfono (hay que tener Expo Go instalado), o `i` para abrirla en el simulador de iOS. El backend tiene que estar corriendo antes de abrir la app, porque la primera pantalla lista los usuarios de ejemplo. Desde el teléfono, la app encuentra el backend usando la misma IP que Expo usa para servir el bundle, así que la Mac y el teléfono tienen que estar en la misma red. Si el backend corre en otro lado (otro puerto, o Expo en modo túnel), se le indica con `EXPO_PUBLIC_API_URL=http://host:puerto` al correr `npm run start:mobile`.
 
 ## Tests
 
