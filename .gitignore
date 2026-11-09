@@ -1,0 +1,17 @@
+node_modules/
+.env
+.DS_Store
+coverage/
+
+# Expo
+packages/mobile/.expo/
+packages/mobile/dist/
+packages/mobile/web-build/
+packages/mobile/ios/
+packages/mobile/android/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision

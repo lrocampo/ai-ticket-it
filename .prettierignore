@@ -1,0 +1,5 @@
+node_modules
+packages/mobile/.expo
+packages/mobile/ios
+packages/mobile/android
+package-lock.json
