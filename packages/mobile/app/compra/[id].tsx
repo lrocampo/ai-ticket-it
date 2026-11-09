@@ -88,7 +88,6 @@ export default function DetalleCompra() {
           <Seccion titulo="Historial">
             {compra.historial.map((cambio, indice) => (
               <View key={indice} style={styles.cambio}>
-                <BadgeEstado estado={cambio.estado} />
                 <View style={styles.datosCambio}>
                   <Text style={theme.texto.cuerpo}>
                     {cambio.quien.nombre} {cambio.quien.apellido}
@@ -97,6 +96,7 @@ export default function DetalleCompra() {
                     {formatearFechaHora(cambio.fechaHora)}
                   </Text>
                 </View>
+                <BadgeEstado estado={cambio.estado} />
               </View>
             ))}
           </Seccion>
@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
   },
   cambio: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     gap: theme.espacios.m,
   },
