@@ -27,7 +27,7 @@ export default class EventoService {
     }
   }
 
-  crear = (organizador, datos, ahora = new Date()) => {
+  crear = (organizador, datos, ahora) => {
     const categoria = this.categorias.porId(datos.categoriaId)
     const evento = new Evento(
       {
@@ -44,10 +44,7 @@ export default class EventoService {
   porId = (id) => this.eventos.porId(id)
 
   // El catálogo es para comprar: los eventos que ya ocurrieron no aparecen.
-  buscar = (
-    { texto, categoriaId, orden = "fecha" } = {},
-    ahora = new Date(),
-  ) => {
+  buscar = ({ texto, categoriaId, orden = "fecha" } = {}, ahora) => {
     const buscado = texto ? normalizar(texto) : null
     const eventos = this.eventos.filtrar(
       (evento) =>

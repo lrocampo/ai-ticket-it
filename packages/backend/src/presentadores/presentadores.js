@@ -29,7 +29,7 @@ export const presentarOrganizador = (usuario, reputacion) => ({
   cantidadResenas: reputacion.cantidadResenas,
 })
 
-export const presentarEvento = (evento, reputacion, ahora = new Date()) => ({
+export const presentarEvento = (evento, reputacion) => ({
   id: evento.id,
   nombre: evento.nombre,
   descripcion: evento.descripcion,
@@ -39,15 +39,11 @@ export const presentarEvento = (evento, reputacion, ahora = new Date()) => ({
   organizador: presentarOrganizador(evento.organizador, reputacion),
   tiposEntrada: evento.tiposEntrada.map(presentarTipoEntrada),
   precioDesde: evento.precioDesde(),
-  yaOcurrio: evento.yaOcurrio(ahora),
+  yaOcurrio: evento.yaOcurrio(),
 })
 
-export const presentarEventoDetalle = (
-  evento,
-  reputacion,
-  ahora = new Date(),
-) => ({
-  ...presentarEvento(evento, reputacion, ahora),
+export const presentarEventoDetalle = (evento, reputacion) => ({
+  ...presentarEvento(evento, reputacion),
   resenasDelOrganizador: reputacion.resenas.map(presentarResena),
 })
 
@@ -73,7 +69,7 @@ const presentarMensaje = (mensaje) => ({
   enviado: mensaje.enviado.toISOString(),
 })
 
-export const presentarCompra = (compra, ahora = new Date()) => ({
+export const presentarCompra = (compra) => ({
   id: compra.id,
   estado: compra.estado,
   cantidad: compra.cantidad,
@@ -90,8 +86,8 @@ export const presentarCompra = (compra, ahora = new Date()) => ({
     nombre: compra.tipoEntrada.nombre,
     precio: compra.tipoEntrada.precio,
   },
-  diasParaElEvento: compra.diasParaElEvento(ahora),
-  puedeCancelarse: compra.puedeCancelarse(ahora),
+  diasParaElEvento: compra.diasParaElEvento(),
+  puedeCancelarse: compra.puedeCancelarse(),
   puedeResenarse: compra.puedeResenarse(),
   historial: compra.historial.map(presentarCambioEstado),
   mensajes: compra.mensajes.map(presentarMensaje),
