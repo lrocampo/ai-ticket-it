@@ -16,10 +16,9 @@ const esQuien = {
 }
 
 export default class CompraService {
-  constructor(compraRepository, eventoRepository, resenaRepository) {
+  constructor(compraRepository, eventoRepository) {
     this.compras = compraRepository
     this.eventos = eventoRepository
-    this.resenas = resenaRepository
   }
 
   crear = (comprador, { eventoId, tipoEntradaId, cantidad }, ahora) => {
@@ -66,8 +65,7 @@ export default class CompraService {
 
   resenar = (usuario, id, { puntuacion, detalle }, ahora) => {
     const compra = this.#deQuien("comprador", usuario, id, "reseñar")
-    const resena = compra.resenar(puntuacion, detalle, ahora)
-    this.resenas.guardar(resena)
+    compra.resenar(puntuacion, detalle, ahora)
     return compra
   }
 

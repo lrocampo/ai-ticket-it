@@ -17,13 +17,7 @@ export const enDias = (dias, horas = 21) => {
 
 const imagen = (semilla) => `https://picsum.photos/seed/${semilla}/800/500`
 
-export default function cargarSeed({
-  usuarios,
-  categorias,
-  eventos,
-  compras,
-  resenas,
-}) {
+export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
   const categoria = Object.fromEntries(
     [
       ["Recitales", "Bandas y solistas en vivo"],
@@ -260,12 +254,10 @@ export default function cargarSeed({
     compra.utilizar(evento.organizador, evento.fecha)
     if (resena) {
       const [puntuacion, detalle] = resena
-      resenas.guardar(
-        compra.resenar(
-          puntuacion,
-          detalle,
-          new Date(evento.fecha.getTime() + MILISEGUNDOS_POR_DIA),
-        ),
+      compra.resenar(
+        puntuacion,
+        detalle,
+        new Date(evento.fecha.getTime() + MILISEGUNDOS_POR_DIA),
       )
     }
     return compra

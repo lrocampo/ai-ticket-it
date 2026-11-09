@@ -1,5 +1,6 @@
 import Evento from "../domain/Evento.js"
 import TipoEntrada from "../domain/TipoEntrada.js"
+import reputacion from "../domain/reputacion.js"
 import { NoAutorizado } from "../errors/ApplicationErrors.js"
 
 const normalizar = (texto) =>
@@ -13,16 +14,10 @@ const nulosAlFinal = (comparar) => (a, b) => {
 }
 
 export default class EventoService {
-  constructor(
-    eventoRepository,
-    categoriaRepository,
-    compraRepository,
-    resenaRepository,
-  ) {
+  constructor(eventoRepository, categoriaRepository, compraRepository) {
     this.eventos = eventoRepository
     this.categorias = categoriaRepository
     this.compras = compraRepository
-    this.resenas = resenaRepository
     const puntajeDescendente = nulosAlFinal((a, b) => b - a)
     this.ordenes = {
       fecha: (a, b) => a.fecha - b.fecha,
@@ -82,17 +77,14 @@ export default class EventoService {
     return { evento, compras }
   }
 
-  // Único lugar donde se calcula el puntaje de un organizador: lo usan el
-  // orden por puntaje y la presentación del organizador en cada evento.
-  reputacionDe = (organizador) => {
-    const resenas = this.resenas.filtrar((resena) =>
-      resena.evento.esOrganizador(organizador),
+  // Las reseñas viven en las compras: una compra utilizada tiene a lo sumo una.
+  reputacionDe = (organizador) =>
+    reputacion(
+      this.compras
+        .filtrar(
+          (compra) =>
+            compra.resena !== null && compra.evento.esOrganizador(organizador),
+        )
+        .map((compra) => compra.resena),
     )
-    const puntaje =
-      resenas.length === 0
-        ? null
-        : resenas.reduce((suma, resena) => suma + resena.puntuacion, 0) /
-          resenas.length
-    return { puntaje, cantidadResenas: resenas.length, resenas }
-  }
 }

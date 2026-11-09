@@ -51,13 +51,8 @@ describe("EventoService", () => {
       repositorios.eventos,
       repositorios.categorias,
       repositorios.compras,
-      repositorios.resenas,
     )
-    compras = new CompraService(
-      repositorios.compras,
-      repositorios.eventos,
-      repositorios.resenas,
-    )
+    compras = new CompraService(repositorios.compras, repositorios.eventos)
     ana = usuario("Ana")
     beto = usuario("Beto")
     carla = usuario("Carla")

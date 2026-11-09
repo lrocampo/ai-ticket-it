@@ -20,11 +20,7 @@ describe("CompraService", () => {
 
   beforeEach(() => {
     repositorios = crearRepositorios()
-    service = new CompraService(
-      repositorios.compras,
-      repositorios.eventos,
-      repositorios.resenas,
-    )
+    service = new CompraService(repositorios.compras, repositorios.eventos)
     compradora = usuario("Compradora")
     organizador = usuario("Organizador")
     ajeno = usuario("Ajeno")
@@ -156,7 +152,7 @@ describe("CompraService", () => {
       expect(compra.mensajes).toHaveLength(2)
     })
 
-    test("resenar solo lo puede el comprador y guarda la reseña", () => {
+    test("resenar solo lo puede el comprador y la reseña queda en la compra", () => {
       const compra = utilizada()
       const resena = { puntuacion: 5, detalle: "Excelente" }
 
@@ -169,8 +165,11 @@ describe("CompraService", () => {
 
       service.resenar(compradora, compra.id, resena, HOY)
 
-      expect(repositorios.resenas.todos()).toEqual([compra.resena])
-      expect(compra.resena.id).toEqual(expect.any(String))
+      expect(service.porId(compradora, compra.id).resena).toMatchObject({
+        ...resena,
+        id: compra.id,
+        comprador: compradora,
+      })
     })
   })
 })

@@ -13,12 +13,12 @@ import UsuarioService from "./services/UsuarioService.js"
 // controller). Las rutas solo conocen a los controllers y al middleware.
 
 export const repositorios = crearRepositorios()
-const { usuarios, categorias, eventos, compras, resenas } = repositorios
+const { usuarios, categorias, eventos, compras } = repositorios
 
 const usuarioService = new UsuarioService(usuarios)
 const categoriaService = new CategoriaService(categorias)
-const eventoService = new EventoService(eventos, categorias, compras, resenas)
-const compraService = new CompraService(compras, eventos, resenas)
+const eventoService = new EventoService(eventos, categorias, compras)
+const compraService = new CompraService(compras, eventos)
 
 export const identificar = crearIdentificar(usuarios)
 

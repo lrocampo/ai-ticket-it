@@ -17,9 +17,9 @@ Modelo de AI Ticket It. Parte del diagrama tentativo del enunciado y agrega lo q
 - **Compra**: `id`, `comprador`, `evento`, `tipoEntrada`, `cantidad`, `total`, `estado`, `historial: CambioEstadoCompra[]`, `mensajes: Mensaje[]`, `resena: Resena | null`.
 - **CambioEstadoCompra**: `estado`, `quien: Usuario`, `fechaHora`.
 - **Mensaje**: `id`, `usuario`, `texto`, `enviado`.
-- **Resena**: `id`, `compra`, `comprador`, `evento`, `puntuacion` (entero de 1 a 5), `detalle`, `fecha`.
+- **Resena**: `id` (el de su compra, porque hay a lo sumo una por compra), `compra`, `comprador`, `evento`, `puntuacion` (entero de 1 a 5), `detalle`, `fecha`.
 
-El puntaje de un organizador es el promedio de las puntuaciones de las reseñas de todos sus eventos. Sin reseñas, es `null`.
+La reseña vive solo en `Compra.resena`; no hay un repositorio de reseñas. `reputacion(resenas)` en el dominio calcula el puntaje de un organizador: el promedio de las puntuaciones de las reseñas de todos sus eventos, o `null` sin reseñas. `EventoService.reputacionDe` junta las reseñas recorriendo las compras.
 
 ## Ciclo de vida de la compra
 
@@ -50,5 +50,5 @@ Derivados que expone la compra:
 
 - No hay `rol` en `Usuario`. El enunciado habla de "comprador" y "organizador" como roles de un caso de uso, no como tipos de usuario.
 - `TipoEntrada` lleva `vendidas` para que `disponibles` sea una operación local y la regla de cupo viva en una sola entidad.
-- `Compra` guarda la reseña para garantizar una sola por compra. `Resena` sigue apuntando a comprador y evento como en el diagrama.
+- `Compra` guarda la reseña para garantizar una sola por compra, y es su única fuente de verdad. `Resena` sigue apuntando a comprador y evento como en el diagrama.
 - Reembolso como acción del organizador sobre una compra cancelada, para que `REEMBOLSADA` tenga un camino y el organizador tenga algo que hacer en la demo.

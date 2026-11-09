@@ -103,6 +103,7 @@ export default class Compra {
       throw new DomainRuleError("Solo se puede reseñar una compra utilizada.")
     }
     this.resena = new Resena({
+      id: this.id,
       compra: this,
       puntuacion,
       detalle,
