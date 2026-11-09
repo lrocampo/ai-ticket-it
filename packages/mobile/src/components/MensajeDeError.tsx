@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons"
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 
 import { theme } from "../theme"
+import { Boton } from "./Boton"
 
 type Props = {
   mensaje: string
@@ -17,9 +18,7 @@ export function MensajeDeError({ mensaje, onReintentar }: Props) {
         color={theme.colores.textoSecundario}
       />
       <Text style={styles.mensaje}>{mensaje}</Text>
-      <Pressable style={styles.boton} onPress={onReintentar}>
-        <Text style={styles.textoBoton}>Reintentar</Text>
-      </Pressable>
+      <Boton texto="Reintentar" onPress={onReintentar} />
     </View>
   )
 }
@@ -36,16 +35,5 @@ const styles = StyleSheet.create({
   mensaje: {
     ...theme.texto.cuerpo,
     textAlign: "center",
-  },
-  boton: {
-    backgroundColor: theme.colores.primario,
-    paddingHorizontal: theme.espacios.xl,
-    paddingVertical: theme.espacios.m,
-    borderRadius: theme.radios.pill,
-  },
-  textoBoton: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.sobrePrimario,
-    fontWeight: "600",
   },
 })
