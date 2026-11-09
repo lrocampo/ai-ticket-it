@@ -187,10 +187,13 @@ describe("Compra", () => {
   })
 
   describe("derivados", () => {
-    test("diasParaElEvento solo cuando está CONFIRMADA", () => {
+    test("diasParaElEvento solo cuando está CONFIRMADA y el evento no ocurrió", () => {
       expect(comprar().diasParaElEvento(HOY)).toBeNull()
       expect(llevarA[CONFIRMADA]().diasParaElEvento(HOY)).toBe(10)
       expect(llevarA[UTILIZADA]().diasParaElEvento(HOY)).toBeNull()
+      expect(
+        llevarA[CONFIRMADA]().diasParaElEvento(sumarDias(HOY, 13)),
+      ).toBeNull()
     })
 
     test.each([

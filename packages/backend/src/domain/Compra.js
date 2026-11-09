@@ -95,7 +95,10 @@ export default class Compra {
   }
 
   diasParaElEvento(ahora = new Date()) {
-    return this.estado === CONFIRMADA ? this.evento.diasHasta(ahora) : null
+    if (this.estado !== CONFIRMADA || this.evento.yaOcurrio(ahora)) {
+      return null
+    }
+    return this.evento.diasHasta(ahora)
   }
 
   puedeCancelarse(ahora = new Date()) {

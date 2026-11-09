@@ -37,7 +37,7 @@ Una transición desde un estado no listado lanza `DomainRuleError`. Una acción 
 
 Derivados que expone la compra:
 
-- `diasParaElEvento(ahora)`: solo cuando está `CONFIRMADA`; en otro estado es `null`.
+- `diasParaElEvento(ahora)`: solo cuando está `CONFIRMADA` y el evento todavía no ocurrió; si no, es `null`. Nunca es negativo.
 - `puedeCancelarse(ahora)`: estado `PENDIENTE` o `CONFIRMADA` y el evento no ocurrió.
 - `puedeResenarse()`: estado `UTILIZADA` y todavía no tiene reseña.
 - `resenar(puntuacion, detalle)`: crea la reseña una sola vez.

@@ -42,7 +42,7 @@ Compra = {
   comprador: Usuario,
   evento: { id, nombre, fecha: ISO, organizador: Usuario },
   tipoEntrada: { id, nombre, precio },
-  diasParaElEvento: number | null,   // solo CONFIRMADA
+  diasParaElEvento: number | null,   // solo CONFIRMADA con evento futuro
   puedeCancelarse: boolean,
   puedeResenarse: boolean,
   historial: CambioEstado[],
