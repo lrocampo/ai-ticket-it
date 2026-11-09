@@ -11,9 +11,8 @@ import {
   View,
 } from "react-native"
 
-import { Cargando } from "../../src/components/Cargando"
+import { Cargable } from "../../src/components/Cargable"
 import { Estrellas } from "../../src/components/Estrellas"
-import { MensajeDeError } from "../../src/components/MensajeDeError"
 import { Puntaje } from "../../src/components/Puntaje"
 import { Seccion } from "../../src/components/Seccion"
 import { Stepper } from "../../src/components/Stepper"
@@ -29,57 +28,60 @@ import {
 
 export default function DetalleEvento() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const { datos, error, recargar } = useCarga(() => obtenerEvento(id), [id])
-
-  if (error && !datos) {
-    return <MensajeDeError mensaje={error} onReintentar={recargar} />
-  }
-  if (!datos) return <Cargando />
-
-  const evento = datos
-  const imagen = evento.multimedia[0]
+  const carga = useCarga(() => obtenerEvento(id), [id])
 
   return (
-    <ScrollView contentContainerStyle={styles.pantalla}>
-      <Stack.Screen options={{ title: evento.nombre }} />
-      {imagen && <Image source={{ uri: imagen }} style={styles.imagen} />}
-
-      <View style={styles.contenido}>
-        <View style={styles.encabezado}>
-          <Text style={styles.categoria}>{evento.categoria.nombre}</Text>
-          <Text style={theme.texto.titulo}>{evento.nombre}</Text>
-          <Text style={styles.fecha}>{formatearFecha(evento.fecha)}</Text>
-          <View style={styles.organizador}>
-            <Text style={styles.textoOrganizador}>
-              Organiza {evento.organizador.nombre} {evento.organizador.apellido}
-            </Text>
-            <Puntaje organizador={evento.organizador} />
-          </View>
-          <Text style={styles.descripcion}>{evento.descripcion}</Text>
-        </View>
-
-        <BloqueCompra evento={evento} />
-
-        <Seccion titulo="Reseñas del organizador">
-          {evento.resenasDelOrganizador.length === 0 ? (
-            <Text style={theme.texto.secundario}>
-              Este organizador todavía no tiene reseñas.
-            </Text>
-          ) : (
-            evento.resenasDelOrganizador.map((resena) => (
-              <View key={resena.id} style={styles.resena}>
-                <Estrellas puntuacion={resena.puntuacion} />
-                <Text style={theme.texto.cuerpo}>{resena.detalle}</Text>
-                <Text style={theme.texto.secundario}>
-                  {resena.comprador.nombre} {resena.comprador.apellido} ·{" "}
-                  {resena.evento.nombre} · {formatearFechaCorta(resena.fecha)}
-                </Text>
-              </View>
-            ))
+    <Cargable carga={carga}>
+      {(evento) => (
+        <ScrollView contentContainerStyle={styles.pantalla}>
+          <Stack.Screen options={{ title: evento.nombre }} />
+          {evento.multimedia[0] && (
+            <Image
+              source={{ uri: evento.multimedia[0] }}
+              style={styles.imagen}
+            />
           )}
-        </Seccion>
-      </View>
-    </ScrollView>
+
+          <View style={styles.contenido}>
+            <View style={styles.encabezado}>
+              <Text style={styles.categoria}>{evento.categoria.nombre}</Text>
+              <Text style={theme.texto.titulo}>{evento.nombre}</Text>
+              <Text style={styles.fecha}>{formatearFecha(evento.fecha)}</Text>
+              <View style={styles.organizador}>
+                <Text style={styles.textoOrganizador}>
+                  Organiza {evento.organizador.nombre}{" "}
+                  {evento.organizador.apellido}
+                </Text>
+                <Puntaje organizador={evento.organizador} />
+              </View>
+              <Text style={styles.descripcion}>{evento.descripcion}</Text>
+            </View>
+
+            <BloqueCompra evento={evento} />
+
+            <Seccion titulo="Reseñas del organizador">
+              {evento.resenasDelOrganizador.length === 0 ? (
+                <Text style={theme.texto.secundario}>
+                  Este organizador todavía no tiene reseñas.
+                </Text>
+              ) : (
+                evento.resenasDelOrganizador.map((resena) => (
+                  <View key={resena.id} style={styles.resena}>
+                    <Estrellas puntuacion={resena.puntuacion} />
+                    <Text style={theme.texto.cuerpo}>{resena.detalle}</Text>
+                    <Text style={theme.texto.secundario}>
+                      {resena.comprador.nombre} {resena.comprador.apellido} ·{" "}
+                      {resena.evento.nombre} ·{" "}
+                      {formatearFechaCorta(resena.fecha)}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </Seccion>
+          </View>
+        </ScrollView>
+      )}
+    </Cargable>
   )
 }
 

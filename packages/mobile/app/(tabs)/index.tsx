@@ -10,10 +10,9 @@ import {
   View,
 } from "react-native"
 
-import { Cargando } from "../../src/components/Cargando"
+import { Cargable } from "../../src/components/Cargable"
 import { Chip } from "../../src/components/Chip"
 import { EstadoVacio } from "../../src/components/EstadoVacio"
-import { MensajeDeError } from "../../src/components/MensajeDeError"
 import { TarjetaEvento } from "../../src/components/TarjetaEvento"
 import { useCarga } from "../../src/hooks/useCarga"
 import { useDemorado } from "../../src/hooks/useDemorado"
@@ -96,30 +95,27 @@ export default function Eventos() {
         </View>
       </View>
 
-      {eventos.error && !eventos.datos ? (
-        <MensajeDeError
-          mensaje={eventos.error}
-          onReintentar={eventos.recargar}
-        />
-      ) : !eventos.datos ? (
-        <Cargando />
-      ) : (
-        <FlatList
-          data={eventos.datos}
-          keyExtractor={(evento) => evento.id}
-          contentContainerStyle={styles.lista}
-          keyboardShouldPersistTaps="handled"
-          refreshing={eventos.refrescando}
-          onRefresh={eventos.refrescar}
-          ListEmptyComponent={<EstadoVacio mensaje="No encontramos eventos" />}
-          renderItem={({ item }) => (
-            <TarjetaEvento
-              evento={item}
-              onPress={() => router.push(`/evento/${item.id}`)}
-            />
-          )}
-        />
-      )}
+      <Cargable carga={eventos}>
+        {(datos) => (
+          <FlatList
+            data={datos}
+            keyExtractor={(evento) => evento.id}
+            contentContainerStyle={styles.lista}
+            keyboardShouldPersistTaps="handled"
+            refreshing={eventos.refrescando}
+            onRefresh={eventos.refrescar}
+            ListEmptyComponent={
+              <EstadoVacio mensaje="No encontramos eventos" />
+            }
+            renderItem={({ item }) => (
+              <TarjetaEvento
+                evento={item}
+                onPress={() => router.push(`/evento/${item.id}`)}
+              />
+            )}
+          />
+        )}
+      </Cargable>
     </View>
   )
 }
