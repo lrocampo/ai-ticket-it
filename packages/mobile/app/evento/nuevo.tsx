@@ -113,7 +113,7 @@ export default function CrearEvento() {
               display="spinner"
               locale="es-AR"
               minimumDate={new Date()}
-              onChange={(_, elegida) => elegida && actualizar("fecha", elegida)}
+              onValueChange={(_, fecha) => actualizar("fecha", fecha)}
             />
           </Seccion>
 
