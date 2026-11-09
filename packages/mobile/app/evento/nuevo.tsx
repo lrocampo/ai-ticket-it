@@ -75,6 +75,7 @@ export default function CrearEvento() {
     <Cargable carga={categorias}>
       {(listaDeCategorias) => (
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={styles.pantalla}
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets

@@ -27,6 +27,7 @@ export default function DetalleCompra() {
     <Cargable carga={carga}>
       {(compra) => (
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={styles.pantalla}
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets

@@ -16,6 +16,7 @@ export default function QuienSoy() {
     <Cargable carga={usuarios}>
       {(datos) => (
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           data={datos}
           keyExtractor={(usuario) => usuario.id}
           contentContainerStyle={styles.lista}

@@ -18,7 +18,10 @@ export default function DetalleEvento() {
   return (
     <Cargable carga={carga}>
       {(evento) => (
-        <ScrollView contentContainerStyle={styles.pantalla}>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={styles.pantalla}
+        >
           <Stack.Screen options={{ title: evento.nombre }} />
           {evento.multimedia[0] && (
             <Image
