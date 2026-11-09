@@ -10,8 +10,7 @@ Modelo de AI Ticket It. Parte del diagrama tentativo del enunciado y agrega lo q
   - `yaOcurrio(ahora)`: la fecha del evento es anterior a `ahora`.
   - `diasHasta(ahora)`: días enteros que faltan, redondeando hacia arriba.
   - `precioDesde()`: el menor precio entre sus tipos de entrada.
-  - `tuPrecioEstaEntre(min, max)`: algún tipo de entrada tiene precio en el rango.
-- **TipoEntrada**: `id`, `nombre`, `descripcion`, `precio`, `cupo`, `vendidas`.
+- **TipoEntrada**: `id`, `nombre`, `descripcion`, `precio`, `cupo`, `vendidas`. El `id` es `<idEvento>-<posición>`, lo asigna el repositorio de eventos al guardar.
   - `disponibles()`: `cupo - vendidas`.
   - `hayCupoPara(cantidad)`.
   - `reservar(cantidad)` y `liberar(cantidad)`: mueven `vendidas`. `reservar` falla si no hay cupo.

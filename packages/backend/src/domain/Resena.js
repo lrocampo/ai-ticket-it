@@ -1,0 +1,17 @@
+import { DomainValidationError } from "./errors/DomainErrors.js"
+
+export default class Resena {
+  constructor({ compra, puntuacion, detalle = "", fecha }) {
+    if (!(Number.isInteger(puntuacion) && puntuacion >= 1 && puntuacion <= 5)) {
+      throw new DomainValidationError(
+        "La puntuación debe ser un entero entre 1 y 5.",
+      )
+    }
+    this.compra = compra
+    this.comprador = compra.comprador
+    this.evento = compra.evento
+    this.puntuacion = puntuacion
+    this.detalle = detalle
+    this.fecha = fecha
+  }
+}
