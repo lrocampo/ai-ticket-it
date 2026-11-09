@@ -241,7 +241,16 @@ describe("Compra", () => {
     test.each([0, 6, 3.5])("rechaza la puntuación %p", (puntuacion) => {
       const compra = llevarA[UTILIZADA]()
 
-      expect(() => compra.resenar(puntuacion, "", HOY)).toThrow(
+      expect(() => compra.resenar(puntuacion, "Comentario", HOY)).toThrow(
+        DomainValidationError,
+      )
+      expect(compra.resena).toBeNull()
+    })
+
+    test.each(["", "   ", undefined])("rechaza el detalle %p", (detalle) => {
+      const compra = llevarA[UTILIZADA]()
+
+      expect(() => compra.resenar(4, detalle, HOY)).toThrow(
         DomainValidationError,
       )
       expect(compra.resena).toBeNull()

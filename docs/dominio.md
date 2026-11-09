@@ -17,7 +17,7 @@ Modelo de AI Ticket It. Parte del diagrama tentativo del enunciado y agrega lo q
 - **Compra**: `id`, `comprador`, `evento`, `tipoEntrada`, `cantidad`, `total`, `estado`, `historial: CambioEstadoCompra[]`, `mensajes: Mensaje[]`, `resena: Resena | null`.
 - **CambioEstadoCompra**: `estado`, `quien: Usuario`, `fechaHora`.
 - **Mensaje**: `id`, `usuario`, `texto`, `enviado`.
-- **Resena**: `id` (el de su compra, porque hay a lo sumo una por compra), `compra`, `comprador`, `evento`, `puntuacion` (entero de 1 a 5), `detalle`, `fecha`.
+- **Resena**: `id` (el de su compra, porque hay a lo sumo una por compra), `compra`, `comprador`, `evento`, `puntuacion` (entero de 1 a 5), `detalle` (comentario obligatorio, no vacío), `fecha`.
 
 La reseña vive solo en `Compra.resena`; no hay un repositorio de reseñas. `reputacion(resenas)` en el dominio calcula el puntaje de un organizador: el promedio de las puntuaciones de las reseñas de todos sus eventos, o `null` sin reseñas. `EventoService.reputacionDe` junta las reseñas recorriendo las compras.
 
@@ -40,7 +40,7 @@ Derivados que expone la compra:
 - `diasParaElEvento(ahora)`: solo cuando está `CONFIRMADA` y el evento todavía no ocurrió; si no, es `null`. Nunca es negativo.
 - `puedeCancelarse(ahora)`: estado `PENDIENTE` o `CONFIRMADA` y el evento no ocurrió.
 - `puedeResenarse()`: estado `UTILIZADA` y todavía no tiene reseña.
-- `resenar(puntuacion, detalle)`: crea la reseña una sola vez.
+- `resenar(puntuacion, detalle)`: crea la reseña una sola vez. El enunciado pide puntaje y comentario escrito, así que las dos cosas son obligatorias.
 - `enviarMensaje(usuario, texto)`: solo el comprador o el organizador del evento.
 
 ## Búsqueda
