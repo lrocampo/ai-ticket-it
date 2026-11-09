@@ -5,12 +5,26 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native"
 
 import { Seccion } from "../../components/Seccion"
 import { Stepper } from "../../components/Stepper"
+import { useUsuarioActual } from "../../context/UsuarioContext"
 import { crearCompra, mensajeDe } from "../../services/api"
 import { theme } from "../../theme"
-import type { EventoDetalle, TipoEntrada } from "../../types"
+import type { EventoDetalle, TipoEntrada, Usuario } from "../../types"
 import { formatearPesos } from "../../utils/fechas"
 
+function motivoParaNoComprar(
+  evento: EventoDetalle,
+  usuario: Usuario,
+): string | null {
+  if (evento.yaOcurrio) {
+    return "Este evento ya ocurrió, no se pueden comprar entradas."
+  }
+  if (evento.organizador.id === usuario.id) return "Este evento es tuyo."
+  return null
+}
+
 export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
+  const usuario = useUsuarioActual()
+  const motivo = motivoParaNoComprar(evento, usuario)
   const [tipoElegidoId, setTipoElegidoId] = useState<string | null>(null)
   const [cantidad, setCantidad] = useState(1)
   const [comprando, setComprando] = useState(false)
@@ -51,6 +65,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
     <Seccion titulo="Entradas">
       {evento.tiposEntrada.map((tipo) => {
         const agotado = tipo.disponibles === 0
+        const deshabilitado = agotado || motivo !== null
         const elegido = tipo.id === tipoElegidoId
         return (
           <Pressable
@@ -58,9 +73,9 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
             style={[
               styles.tipo,
               elegido && styles.tipoElegido,
-              (agotado || evento.yaOcurrio) && styles.tipoDeshabilitado,
+              deshabilitado && styles.tipoDeshabilitado,
             ]}
-            disabled={agotado || evento.yaOcurrio}
+            disabled={deshabilitado}
             onPress={() => elegirTipo(tipo)}
             accessibilityRole="radio"
             accessibilityState={{ checked: elegido }}
@@ -84,10 +99,8 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
         )
       })}
 
-      {evento.yaOcurrio ? (
-        <Text style={styles.aviso}>
-          Este evento ya ocurrió, no se pueden comprar entradas.
-        </Text>
+      {motivo ? (
+        <Text style={styles.aviso}>{motivo}</Text>
       ) : (
         <>
           <View style={styles.filaCantidad}>
