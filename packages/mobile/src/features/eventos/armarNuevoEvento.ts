@@ -30,6 +30,21 @@ export function armarNuevoEvento(
     }
   }
 
+  const tipos: NuevoEvento["tiposEntrada"] = []
+  for (const tipo of tiposEntrada) {
+    const nombreTipo = tipo.nombre.trim()
+    const precio = aNumero(tipo.precio)
+    if (precio === null) return { error: noEsNumero("precio", nombreTipo) }
+    const cupo = aNumero(tipo.cupo)
+    if (cupo === null) return { error: noEsNumero("cupo", nombreTipo) }
+    tipos.push({
+      nombre: nombreTipo,
+      descripcion: tipo.descripcion.trim(),
+      precio,
+      cupo,
+    })
+  }
+
   return {
     evento: {
       nombre: nombre.trim(),
@@ -37,12 +52,7 @@ export function armarNuevoEvento(
       categoriaId,
       fecha: fecha.toISOString(),
       multimedia: imagen.trim() === "" ? [] : [imagen.trim()],
-      tiposEntrada: tiposEntrada.map((tipo) => ({
-        nombre: tipo.nombre.trim(),
-        descripcion: tipo.descripcion.trim(),
-        precio: aNumero(tipo.precio),
-        cupo: aNumero(tipo.cupo),
-      })),
+      tiposEntrada: tipos,
     },
   }
 }
@@ -53,7 +63,16 @@ function estaCompleto(tipo: TipoEntradaFormulario) {
   )
 }
 
-// El teclado numérico de iOS en español escribe coma decimal.
-function aNumero(texto: string) {
-  return Number(texto.trim().replace(",", "."))
+// En Argentina el punto separa miles, así que "15.000" es ambiguo: antes que
+// adivinar, solo se acepta un separador decimal con hasta dos decimales.
+function aNumero(texto: string): number | null {
+  const limpio = texto.trim()
+  if (!/^\d+([.,]\d{1,2})?$/.test(limpio)) return null
+  return Number(limpio.replace(",", "."))
+}
+
+const EJEMPLOS = { precio: "15000 o 1500,50", cupo: "200" }
+
+function noEsNumero(campo: keyof typeof EJEMPLOS, tipo: string) {
+  return `El ${campo} de ${tipo} no es un número válido. Escribilo sin puntos de miles, por ejemplo ${EJEMPLOS[campo]}.`
 }
