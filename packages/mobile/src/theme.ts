@@ -22,13 +22,31 @@ const radios = {
   pill: 999,
 }
 
+// Interlineado por rol de better-typography: título 1.2, subtítulo 1.3,
+// cuerpo 1.5 y textos chicos 1.4.
 const texto = {
-  titulo: { fontSize: 22, fontWeight: "700", color: colores.texto },
-  subtitulo: { fontSize: 17, fontWeight: "600", color: colores.texto },
-  cuerpo: { fontSize: 15, color: colores.texto },
-  chico: { fontSize: 13, color: colores.texto },
-  secundario: { fontSize: 13, color: colores.textoSecundario },
-  destacado: { fontSize: 13, fontWeight: "600", color: colores.primario },
+  titulo: {
+    fontSize: 22,
+    lineHeight: 26,
+    letterSpacing: -0.2,
+    fontWeight: "700",
+    color: colores.texto,
+  },
+  subtitulo: {
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: colores.texto,
+  },
+  cuerpo: { fontSize: 15, lineHeight: 23, color: colores.texto },
+  chico: { fontSize: 13, lineHeight: 18, color: colores.texto },
+  secundario: { fontSize: 13, lineHeight: 18, color: colores.textoSecundario },
+  destacado: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: colores.primario,
+  },
 } as const
 
 const espacios = {
@@ -58,8 +76,10 @@ export const theme = {
     borderRadius: radios.m,
     ...sombra,
   },
+  // Sin lineHeight: en iOS corre hacia abajo el texto de un TextInput.
   input: {
-    ...texto.cuerpo,
+    fontSize: texto.cuerpo.fontSize,
+    color: texto.cuerpo.color,
     paddingHorizontal: espacios.m,
     paddingVertical: espacios.s,
     borderRadius: radios.s,

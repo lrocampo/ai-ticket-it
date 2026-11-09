@@ -73,5 +73,6 @@ const styles = StyleSheet.create({
   cupo: {
     ...theme.texto.cuerpo,
     fontWeight: "600",
+    fontVariant: ["tabular-nums"],
   },
 })

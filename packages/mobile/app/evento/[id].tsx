@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
   descripcion: {
     ...theme.texto.cuerpo,
     marginTop: theme.espacios.m,
-    lineHeight: 22,
   },
   resena: {
     gap: theme.espacios.xs,

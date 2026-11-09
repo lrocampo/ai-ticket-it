@@ -36,13 +36,13 @@ export function TarjetaCompra({ compra, vista, onPress }: Props) {
         </Text>
       )}
       <View style={styles.pie}>
-        <Text style={theme.texto.secundario}>
+        <Text style={styles.cantidad}>
           {compra.tipoEntrada.nombre} × {compra.cantidad}
         </Text>
         <Text style={styles.total}>{formatearPesos(compra.total)}</Text>
       </View>
       {vista === "comprador" && compra.diasParaElEvento !== null && (
-        <Text style={theme.texto.destacado}>
+        <Text style={styles.dias}>
           {textoDiasRestantes(compra.diasParaElEvento)}
         </Text>
       )}
@@ -71,8 +71,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: theme.espacios.xs,
   },
+  cantidad: {
+    ...theme.texto.secundario,
+    fontVariant: ["tabular-nums"],
+  },
   total: {
     ...theme.texto.cuerpo,
     fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  dias: {
+    ...theme.texto.destacado,
+    fontVariant: ["tabular-nums"],
   },
 })

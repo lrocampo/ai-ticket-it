@@ -67,5 +67,6 @@ const styles = StyleSheet.create({
     ...theme.texto.subtitulo,
     minWidth: 28,
     textAlign: "center",
+    fontVariant: ["tabular-nums"],
   },
 })

@@ -117,7 +117,7 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
     <View style={styles.dato}>
       <Text style={theme.texto.secundario}>{etiqueta}</Text>
-      <Text style={theme.texto.cuerpo}>{valor}</Text>
+      <Text style={styles.valor}>{valor}</Text>
     </View>
   )
 }
@@ -139,11 +139,16 @@ const styles = StyleSheet.create({
     ...theme.texto.cuerpo,
     color: theme.colores.primario,
     fontWeight: "700",
+    fontVariant: ["tabular-nums"],
   },
   dato: {
     flexDirection: "row",
     justifyContent: "space-between",
     gap: theme.espacios.m,
+  },
+  valor: {
+    ...theme.texto.cuerpo,
+    fontVariant: ["tabular-nums"],
   },
   cambio: {
     flexDirection: "row",

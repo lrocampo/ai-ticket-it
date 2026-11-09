@@ -139,7 +139,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colores.bordeControl,
   },
   input: {
-    ...theme.texto.cuerpo,
+    fontSize: theme.input.fontSize,
+    color: theme.input.color,
     flex: 1,
     paddingVertical: theme.espacios.m,
   },

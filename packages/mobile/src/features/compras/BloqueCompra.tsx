@@ -92,7 +92,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
               {tipo.descripcion ? (
                 <Text style={theme.texto.secundario}>{tipo.descripcion}</Text>
               ) : null}
-              <Text style={theme.texto.secundario}>
+              <Text style={styles.disponibles}>
                 {agotado ? "Agotadas" : `${tipo.disponibles} disponibles`}
               </Text>
             </View>
@@ -116,7 +116,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
           </View>
           <View style={styles.filaTotal}>
             <Text style={theme.texto.cuerpo}>Total</Text>
-            <Text style={theme.texto.subtitulo}>
+            <Text style={styles.total}>
               {formatearPesos(
                 tipoElegido ? tipoElegido.precio * cantidadValida : 0,
               )}
@@ -164,10 +164,19 @@ const styles = StyleSheet.create({
     ...theme.texto.cuerpo,
     fontWeight: "600",
   },
+  disponibles: {
+    ...theme.texto.secundario,
+    fontVariant: ["tabular-nums"],
+  },
   precioTipo: {
     ...theme.texto.cuerpo,
     color: theme.colores.primario,
     fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  total: {
+    ...theme.texto.subtitulo,
+    fontVariant: ["tabular-nums"],
   },
   aviso: {
     ...theme.texto.cuerpo,
