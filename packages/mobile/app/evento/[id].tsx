@@ -17,7 +17,7 @@ import { Puntaje } from "../../src/components/Puntaje"
 import { Seccion } from "../../src/components/Seccion"
 import { Stepper } from "../../src/components/Stepper"
 import { useCarga } from "../../src/hooks/useCarga"
-import { crearCompra, obtenerEvento } from "../../src/services/api"
+import { crearCompra, mensajeDe, obtenerEvento } from "../../src/services/api"
 import { theme } from "../../src/theme"
 import type { EventoDetalle, TipoEntrada } from "../../src/types"
 import {
@@ -116,7 +116,7 @@ function BloqueCompra({ evento }: { evento: EventoDetalle }) {
         "Tu compra quedó pendiente. Confirmá el pago desde Mis compras.",
       )
     } catch (e) {
-      Alert.alert("No pudimos hacer la compra", (e as Error).message)
+      Alert.alert("No pudimos hacer la compra", mensajeDe(e))
     } finally {
       setComprando(false)
     }

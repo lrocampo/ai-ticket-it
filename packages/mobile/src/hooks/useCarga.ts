@@ -1,6 +1,8 @@
 import { useFocusEffect } from "expo-router"
 import { type DependencyList, useCallback, useRef, useState } from "react"
 
+import { mensajeDe } from "../services/api"
+
 export function useCarga<T>(fn: () => Promise<T>, deps: DependencyList) {
   const [datos, setDatos] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +18,7 @@ export function useCarga<T>(fn: () => Promise<T>, deps: DependencyList) {
       const resultado = await fn()
       if (pedido === ultimoPedido.current) setDatos(resultado)
     } catch (e) {
-      if (pedido === ultimoPedido.current) setError((e as Error).message)
+      if (pedido === ultimoPedido.current) setError(mensajeDe(e))
     }
   }, deps)
 

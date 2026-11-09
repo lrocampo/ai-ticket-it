@@ -37,12 +37,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-api.interceptors.response.use(
-  (respuesta) => respuesta,
-  (error: unknown) => Promise.reject(new Error(mensajeDeError(error))),
-)
-
-function mensajeDeError(error: unknown): string {
+export function mensajeDe(error: unknown): string {
   if (isAxiosError<{ message?: string }>(error)) {
     if (error.response?.data?.message) return error.response.data.message
     if (!error.response) return "No pudimos conectarnos con el servidor."
@@ -58,11 +53,15 @@ export async function listarCategorias() {
   return (await api.get<Categoria[]>("/categorias")).data
 }
 
-export async function listarEventos(filtros: FiltrosEventos = {}) {
+export async function listarEventos({
+  texto,
+  categoriaId,
+  orden,
+}: FiltrosEventos) {
   const params = {
-    texto: filtros.texto || undefined,
-    categoriaId: filtros.categoriaId || undefined,
-    orden: filtros.orden,
+    texto: texto || undefined,
+    categoriaId: categoriaId ?? undefined,
+    orden,
   }
   return (await api.get<Evento[]>("/eventos", { params })).data
 }

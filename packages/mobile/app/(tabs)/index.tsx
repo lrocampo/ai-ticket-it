@@ -34,12 +34,7 @@ export default function Eventos() {
 
   const categorias = useCarga(listarCategorias, [])
   const eventos = useCarga(
-    () =>
-      listarEventos({
-        texto: textoBuscado,
-        categoriaId: categoriaId ?? undefined,
-        orden,
-      }),
+    () => listarEventos({ texto: textoBuscado, categoriaId, orden }),
     [textoBuscado, categoriaId, orden],
   )
 

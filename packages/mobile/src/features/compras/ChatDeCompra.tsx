@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native"
 
-import { useUsuario } from "../../context/UsuarioContext"
+import { useUsuarioActual } from "../../context/UsuarioContext"
 import { theme } from "../../theme"
 import type { Compra } from "../../types"
 import { formatearFechaHora } from "../../utils/fechas"
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export function ChatDeCompra({ compra }: Props) {
-  const { usuario } = useUsuario()
+  const usuario = useUsuarioActual()
 
   return (
     <View style={styles.contenedor}>
@@ -19,7 +19,7 @@ export function ChatDeCompra({ compra }: Props) {
         <Text style={theme.texto.secundario}>Todavía no hay mensajes.</Text>
       ) : (
         compra.mensajes.map((mensaje) => {
-          const esMio = mensaje.usuario.id === usuario?.id
+          const esMio = mensaje.usuario.id === usuario.id
           return (
             <View
               key={mensaje.id}

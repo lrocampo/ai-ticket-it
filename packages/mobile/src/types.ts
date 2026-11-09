@@ -95,9 +95,9 @@ export type ComprasDeEvento = {
 export type OrdenEventos = "precio" | "fecha" | "puntaje"
 
 export type FiltrosEventos = {
-  texto?: string
-  categoriaId?: string
-  orden?: OrdenEventos
+  texto: string
+  categoriaId: string | null
+  orden: OrdenEventos
 }
 
 export type NuevaCompra = {

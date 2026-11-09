@@ -74,3 +74,12 @@ export function useUsuario() {
   }
   return contexto
 }
+
+// Para las pantallas detrás de Stack.Protected, donde siempre hay usuario.
+export function useUsuarioActual(): Usuario {
+  const { usuario } = useUsuario()
+  if (!usuario) {
+    throw new Error("useUsuarioActual tiene que usarse con un usuario elegido")
+  }
+  return usuario
+}
