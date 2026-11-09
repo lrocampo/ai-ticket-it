@@ -10,7 +10,7 @@
     "dev:backend": "npm run dev --workspace=backend",
     "start:backend": "npm start --workspace=backend",
     "start:mobile": "npm start --workspace=mobile",
-    "test": "npm test --workspace=backend",
+    "test": "npm test --workspaces",
     "lint": "eslint .",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
