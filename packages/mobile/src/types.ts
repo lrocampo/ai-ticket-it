@@ -79,6 +79,7 @@ export type Compra = {
   comprador: Usuario
   evento: { id: string; nombre: string; fecha: string; organizador: Usuario }
   tipoEntrada: { id: string; nombre: string; precio: number }
+  // null salvo que esté CONFIRMADA y el evento todavía no haya pasado.
   diasParaElEvento: number | null
   puedeCancelarse: boolean
   puedeResenarse: boolean
