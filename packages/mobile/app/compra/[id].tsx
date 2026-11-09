@@ -3,14 +3,17 @@ import { ScrollView, StyleSheet, Text, View } from "react-native"
 
 import { BadgeEstado } from "../../src/components/BadgeEstado"
 import { Cargable } from "../../src/components/Cargable"
+import { Estrellas } from "../../src/components/Estrellas"
 import { Seccion } from "../../src/components/Seccion"
 import { AccionesDeCompra } from "../../src/features/compras/AccionesDeCompra"
 import { ChatDeCompra } from "../../src/features/compras/ChatDeCompra"
+import { FormularioResena } from "../../src/features/compras/FormularioResena"
 import { useCarga } from "../../src/hooks/useCarga"
 import { obtenerCompra } from "../../src/services/api"
 import { theme } from "../../src/theme"
 import {
   formatearFecha,
+  formatearFechaCorta,
   formatearFechaHora,
   formatearPesos,
   textoDiasRestantes,
@@ -37,6 +40,11 @@ export default function DetalleCompra() {
             )}
           </View>
 
+          <AccionesDeCompra
+            compra={compra}
+            onCompraActualizada={carga.setDatos}
+          />
+
           <Seccion titulo="Datos de la compra">
             <Dato etiqueta="Entrada" valor={compra.tipoEntrada.nombre} />
             <Dato
@@ -55,10 +63,22 @@ export default function DetalleCompra() {
             />
           </Seccion>
 
-          <AccionesDeCompra
-            compra={compra}
-            onCompraActualizada={carga.setDatos}
-          />
+          {compra.resena && (
+            <Seccion titulo="Reseña">
+              <Estrellas puntuacion={compra.resena.puntuacion} tamano={20} />
+              <Text style={theme.texto.cuerpo}>{compra.resena.detalle}</Text>
+              <Text style={theme.texto.secundario}>
+                {formatearFechaCorta(compra.resena.fecha)}
+              </Text>
+            </Seccion>
+          )}
+
+          {compra.acciones.includes("resenar") && (
+            <FormularioResena
+              compra={compra}
+              onCompraActualizada={carga.setDatos}
+            />
+          )}
 
           <Seccion titulo="Historial">
             {compra.historial.map((cambio, indice) => (
