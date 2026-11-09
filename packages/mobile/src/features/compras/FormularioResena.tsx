@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { Alert, StyleSheet, TextInput } from "react-native"
 
 import { Boton } from "../../components/Boton"
+import { Campo } from "../../components/Campo"
 import { Estrellas } from "../../components/Estrellas"
 import { Seccion } from "../../components/Seccion"
-import { mensajeDe, resenarCompra } from "../../services/api"
-import { theme } from "../../theme"
+import { useEnvio } from "../../hooks/useEnvio"
+import { resenarCompra } from "../../services/api"
 import type { Compra } from "../../types"
 
 type Props = {
@@ -16,50 +16,31 @@ type Props = {
 export function FormularioResena({ compra, onCompraActualizada }: Props) {
   const [puntuacion, setPuntuacion] = useState(0)
   const [detalle, setDetalle] = useState("")
-  const [enviando, setEnviando] = useState(false)
+  const { enviando, enviar } = useEnvio()
   const completa = puntuacion > 0 && detalle.trim() !== ""
 
-  async function enviar() {
-    setEnviando(true)
-    try {
-      onCompraActualizada(
-        await resenarCompra(compra.id, { puntuacion, detalle: detalle.trim() }),
-      )
-    } catch (e) {
-      Alert.alert("No se pudo", mensajeDe(e))
-    } finally {
-      setEnviando(false)
-    }
+  function enviarResena() {
+    enviar(async () => {
+      const resena = { puntuacion, detalle: detalle.trim() }
+      onCompraActualizada(await resenarCompra(compra.id, resena))
+    })
   }
 
   return (
     <Seccion titulo="Contanos cómo estuvo">
       <Estrellas puntuacion={puntuacion} tamano={32} onCambio={setPuntuacion} />
-      <TextInput
-        style={styles.detalle}
+      <Campo
+        etiqueta="Tu comentario"
         value={detalle}
         onChangeText={setDetalle}
         placeholder="¿Qué te pareció el evento?"
-        placeholderTextColor={theme.colores.textoSecundario}
         multiline
       />
       <Boton
         texto={enviando ? "Enviando…" : "Enviar reseña"}
         deshabilitado={!completa || enviando}
-        onPress={enviar}
+        onPress={enviarResena}
       />
     </Seccion>
   )
 }
-
-const styles = StyleSheet.create({
-  detalle: {
-    ...theme.texto.cuerpo,
-    minHeight: 96,
-    padding: theme.espacios.m,
-    borderRadius: theme.radios.s,
-    borderWidth: 1,
-    borderColor: theme.colores.borde,
-    textAlignVertical: "top",
-  },
-})

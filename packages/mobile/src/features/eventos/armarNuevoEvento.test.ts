@@ -41,31 +41,52 @@ test("sin imagen manda multimedia vacío", () => {
   expect(resultado).toMatchObject({ evento: { multimedia: [] } })
 })
 
-test("acepta coma decimal en el precio", () => {
-  const resultado = armarNuevoEvento(
-    formulario({
-      tiposEntrada: [
-        { nombre: "VIP", descripcion: "", precio: "1500,50", cupo: "10" },
-      ],
-    }),
-  )
+function conTipo(precio: string, cupo = "200") {
+  return formulario({
+    tiposEntrada: [{ nombre: "Platea", descripcion: "", precio, cupo }],
+  })
+}
 
-  expect(resultado).toMatchObject({
-    evento: { tiposEntrada: [{ precio: 1500.5, cupo: 10 }] },
+test.each([
+  ["1500,50", 1500.5],
+  ["1500.50", 1500.5],
+  ["2,5", 2.5],
+  ["0", 0],
+  [" 15000 ", 15000],
+])("el precio %p se manda como %p", (precio, esperado) => {
+  expect(armarNuevoEvento(conTipo(precio))).toMatchObject({
+    evento: { tiposEntrada: [{ precio: esperado }] },
   })
 })
 
-test("un número que no parsea viaja como NaN para que lo rechace el backend", () => {
-  const resultado = armarNuevoEvento(
-    formulario({
-      tiposEntrada: [
-        { nombre: "General", descripcion: "", precio: "mil", cupo: "200" },
-      ],
-    }),
-  )
+const precioInvalido = {
+  error:
+    "El precio de Platea no es un número válido. Escribilo sin puntos de miles, por ejemplo 15000 o 1500,50.",
+}
 
-  expect(resultado).toMatchObject({
-    evento: { tiposEntrada: [{ precio: NaN }] },
+test.each(["15.000", "1,000", "1.000,50", "abc", "-1", "1e3", "1,5,0"])(
+  "el precio %p pide corregirlo",
+  (precio) => {
+    expect(armarNuevoEvento(conTipo(precio))).toEqual(precioInvalido)
+  },
+)
+
+test("un cupo que no es un número pide corregirlo", () => {
+  expect(armarNuevoEvento(conTipo("15000", "doscientos"))).toEqual({
+    error:
+      "El cupo de Platea no es un número válido. Escribilo sin puntos de miles, por ejemplo 200.",
+  })
+})
+
+test("un cupo con decimales viaja tal cual para que lo rechace el dominio", () => {
+  expect(armarNuevoEvento(conTipo("15000", "2,5"))).toMatchObject({
+    evento: { tiposEntrada: [{ cupo: 2.5 }] },
+  })
+})
+
+test("un precio vacío pide completarlo", () => {
+  expect(armarNuevoEvento(conTipo(""))).toEqual({
+    error: "Completá nombre, precio y cupo de cada tipo de entrada.",
   })
 })
 

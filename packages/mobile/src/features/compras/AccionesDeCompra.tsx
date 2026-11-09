@@ -1,11 +1,10 @@
-import { useState } from "react"
 import { Alert, StyleSheet, View } from "react-native"
 
 import { Boton, type Tono } from "../../components/Boton"
+import { useEnvio } from "../../hooks/useEnvio"
 import {
   cancelarCompra,
   confirmarPago,
-  mensajeDe,
   reembolsarCompra,
   utilizarCompra,
 } from "../../services/api"
@@ -56,38 +55,36 @@ function tieneBoton(accion: Accion): accion is AccionConBoton {
   return accion !== "resenar"
 }
 
+function confirmar(titulo: string, mensaje: string, tono: Tono) {
+  return new Promise<boolean>((resolve) => {
+    Alert.alert(titulo, mensaje, [
+      { text: "Volver", style: "cancel", onPress: () => resolve(false) },
+      {
+        text: titulo,
+        style: tono === "peligro" ? "destructive" : "default",
+        onPress: () => resolve(true),
+      },
+    ])
+  })
+}
+
 type Props = {
   compra: Compra
   onCompraActualizada: (compra: Compra) => void
 }
 
 export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
-  const [enCurso, setEnCurso] = useState(false)
+  const { enviando, enviar } = useEnvio()
   const acciones = compra.acciones.filter(tieneBoton)
 
   if (acciones.length === 0) return null
 
-  async function ejecutar(accion: AccionConBoton) {
-    setEnCurso(true)
-    try {
-      onCompraActualizada(await ACCIONES[accion].ejecutar(compra.id))
-    } catch (e) {
-      Alert.alert("No se pudo", mensajeDe(e))
-    } finally {
-      setEnCurso(false)
-    }
-  }
-
-  function pedirConfirmacion(accion: AccionConBoton) {
-    const { etiqueta, tono, confirmacion } = ACCIONES[accion]
-    Alert.alert(etiqueta, confirmacion(compra), [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: etiqueta,
-        style: tono === "peligro" ? "destructive" : "default",
-        onPress: () => ejecutar(accion),
-      },
-    ])
+  function hacer(accion: AccionConBoton) {
+    const { etiqueta, tono, confirmacion, ejecutar } = ACCIONES[accion]
+    enviar(async () => {
+      const confirmada = await confirmar(etiqueta, confirmacion(compra), tono)
+      if (confirmada) onCompraActualizada(await ejecutar(compra.id))
+    })
   }
 
   return (
@@ -97,8 +94,8 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
           key={accion}
           texto={ACCIONES[accion].etiqueta}
           tono={ACCIONES[accion].tono}
-          deshabilitado={enCurso}
-          onPress={() => pedirConfirmacion(accion)}
+          deshabilitado={enviando}
+          onPress={() => hacer(accion)}
         />
       ))}
     </View>

@@ -7,7 +7,8 @@ import { Boton } from "../../components/Boton"
 import { Seccion } from "../../components/Seccion"
 import { Stepper } from "../../components/Stepper"
 import { useUsuarioActual } from "../../context/UsuarioContext"
-import { crearCompra, mensajeDe } from "../../services/api"
+import { useEnvio } from "../../hooks/useEnvio"
+import { crearCompra } from "../../services/api"
 import { theme } from "../../theme"
 import type { EventoDetalle, TipoEntrada, Usuario } from "../../types"
 import { formatearPesos } from "../../utils/fechas"
@@ -36,7 +37,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const motivo = motivoParaNoComprar(evento, usuario)
   const [tipoElegidoId, setTipoElegidoId] = useState<string | null>(null)
   const [cantidad, setCantidad] = useState(1)
-  const [comprando, setComprando] = useState(false)
+  const { enviando: comprando, enviar } = useEnvio("No pudimos hacer la compra")
 
   const tipoElegido = tipoConCupo(evento, tipoElegidoId)
   const cantidadValida = acotarAlCupo(cantidad, tipoElegido)
@@ -46,10 +47,9 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
     setCantidad(1)
   }
 
-  async function comprar() {
+  function comprar() {
     if (!tipoElegido) return
-    setComprando(true)
-    try {
+    enviar(async () => {
       await crearCompra({
         eventoId: evento.id,
         tipoEntradaId: tipoElegido.id,
@@ -60,11 +60,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
         "¡Compra hecha!",
         "Tu compra quedó pendiente. Confirmá el pago desde Mis compras.",
       )
-    } catch (e) {
-      Alert.alert("No pudimos hacer la compra", mensajeDe(e))
-    } finally {
-      setComprando(false)
-    }
+    })
   }
 
   return (

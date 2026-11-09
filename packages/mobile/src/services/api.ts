@@ -38,9 +38,20 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+type CuerpoDeError = {
+  message?: string
+  details?: { path: (string | number)[]; message: string }[]
+}
+
 export function mensajeDe(error: unknown): string {
-  if (isAxiosError<{ message?: string }>(error)) {
-    if (error.response?.data?.message) return error.response.data.message
+  if (isAxiosError<CuerpoDeError>(error)) {
+    const cuerpo = error.response?.data
+    if (cuerpo?.message) {
+      const problemas = (cuerpo.details ?? []).map(
+        (detalle) => `${detalle.path.join(".")}: ${detalle.message}`,
+      )
+      return [cuerpo.message, ...problemas].join("\n")
+    }
     if (!error.response) return "No pudimos conectarnos con el servidor."
   }
   return "Algo salió mal. Probá de nuevo."

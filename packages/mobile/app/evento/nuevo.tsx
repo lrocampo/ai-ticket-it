@@ -1,7 +1,14 @@
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { router } from "expo-router"
 import { useState } from "react"
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native"
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native"
 
 import { Boton } from "../../src/components/Boton"
 import { Campo } from "../../src/components/Campo"
@@ -10,72 +17,58 @@ import { Chip } from "../../src/components/Chip"
 import { Seccion } from "../../src/components/Seccion"
 import {
   armarNuevoEvento,
+  type FormularioEvento,
+  formularioVacio,
+  TIPO_VACIO,
   type TipoEntradaFormulario,
 } from "../../src/features/eventos/armarNuevoEvento"
 import { FormularioTipoEntrada } from "../../src/features/eventos/FormularioTipoEntrada"
 import { useCarga } from "../../src/hooks/useCarga"
-import {
-  crearEvento,
-  listarCategorias,
-  mensajeDe,
-} from "../../src/services/api"
+import { useEnvio } from "../../src/hooks/useEnvio"
+import { crearEvento, listarCategorias } from "../../src/services/api"
 import { theme } from "../../src/theme"
-
-function mananaALas21() {
-  const fecha = new Date()
-  fecha.setDate(fecha.getDate() + 1)
-  fecha.setHours(21, 0, 0, 0)
-  return fecha
-}
-
-const TIPO_VACIO: TipoEntradaFormulario = {
-  nombre: "",
-  descripcion: "",
-  precio: "",
-  cupo: "",
-}
+import { formatearFecha } from "../../src/utils/fechas"
 
 export default function CrearEvento() {
   const categorias = useCarga(listarCategorias, [])
-  const [nombre, setNombre] = useState("")
-  const [descripcion, setDescripcion] = useState("")
-  const [categoriaId, setCategoriaId] = useState<string | null>(null)
-  const [fecha, setFecha] = useState(mananaALas21)
-  const [imagen, setImagen] = useState("")
-  const [tiposEntrada, setTiposEntrada] = useState([
-    { ...TIPO_VACIO, nombre: "General" },
-  ])
-  const [creando, setCreando] = useState(false)
+  const [formulario, setFormulario] = useState(formularioVacio)
+  const { enviando: creando, enviar } = useEnvio("No se pudo crear el evento")
+  const [pickerAbierto, setPickerAbierto] = useState<"fecha" | "hora" | null>(
+    null,
+  )
+  const { tiposEntrada } = formulario
+
+  function actualizar<K extends keyof FormularioEvento>(
+    campo: K,
+    valor: FormularioEvento[K],
+  ) {
+    setFormulario((anterior) => ({ ...anterior, [campo]: valor }))
+  }
 
   function cambiarTipo(indice: number, tipo: TipoEntradaFormulario) {
-    setTiposEntrada(tiposEntrada.map((t, i) => (i === indice ? tipo : t)))
+    actualizar(
+      "tiposEntrada",
+      tiposEntrada.map((t, i) => (i === indice ? tipo : t)),
+    )
   }
 
   function quitarTipo(indice: number) {
-    setTiposEntrada(tiposEntrada.filter((_, i) => i !== indice))
+    actualizar(
+      "tiposEntrada",
+      tiposEntrada.filter((_, i) => i !== indice),
+    )
   }
 
-  async function crear() {
-    const resultado = armarNuevoEvento({
-      nombre,
-      descripcion,
-      categoriaId,
-      fecha,
-      imagen,
-      tiposEntrada,
-    })
+  function crear() {
+    const resultado = armarNuevoEvento(formulario)
     if ("error" in resultado) {
       Alert.alert("Falta completar", resultado.error)
       return
     }
-    setCreando(true)
-    try {
+    enviar(async () => {
       const evento = await crearEvento(resultado.evento)
       router.replace(`/evento/${evento.id}`)
-    } catch (e) {
-      Alert.alert("No se pudo crear el evento", mensajeDe(e))
-      setCreando(false)
-    }
+    })
   }
 
   return (
@@ -89,14 +82,16 @@ export default function CrearEvento() {
           <Seccion titulo="El evento">
             <Campo
               etiqueta="Nombre"
-              value={nombre}
-              onChangeText={setNombre}
+              value={formulario.nombre}
+              onChangeText={(nombre) => actualizar("nombre", nombre)}
               placeholder="Recital en el Luna Park"
             />
             <Campo
               etiqueta="Descripción"
-              value={descripcion}
-              onChangeText={setDescripcion}
+              value={formulario.descripcion}
+              onChangeText={(descripcion) =>
+                actualizar("descripcion", descripcion)
+              }
               placeholder="Contá de qué se trata"
               multiline
             />
@@ -106,15 +101,15 @@ export default function CrearEvento() {
                 <Chip
                   key={categoria.id}
                   texto={categoria.nombre}
-                  activo={categoriaId === categoria.id}
-                  onPress={() => setCategoriaId(categoria.id)}
+                  activo={formulario.categoriaId === categoria.id}
+                  onPress={() => actualizar("categoriaId", categoria.id)}
                 />
               ))}
             </View>
             <Campo
               etiqueta="URL de una imagen (opcional)"
-              value={imagen}
-              onChangeText={setImagen}
+              value={formulario.imagen}
+              onChangeText={(imagen) => actualizar("imagen", imagen)}
               placeholder="https://"
               keyboardType="url"
               autoCapitalize="none"
@@ -123,14 +118,45 @@ export default function CrearEvento() {
           </Seccion>
 
           <Seccion titulo="Fecha y hora">
-            <DateTimePicker
-              value={fecha}
-              mode="datetime"
-              display="spinner"
-              locale="es-AR"
-              minimumDate={new Date()}
-              onChange={(_, elegida) => elegida && setFecha(elegida)}
-            />
+            <Text style={theme.texto.cuerpo}>
+              {formatearFecha(formulario.fecha.toISOString())}
+            </Text>
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                value={formulario.fecha}
+                mode="datetime"
+                display="spinner"
+                locale="es-AR"
+                minimumDate={new Date()}
+                onValueChange={(_, fecha) => actualizar("fecha", fecha)}
+              />
+            ) : (
+              <>
+                <Boton
+                  texto="Elegir fecha"
+                  tono="secundario"
+                  onPress={() => setPickerAbierto("fecha")}
+                />
+                <Boton
+                  texto="Elegir hora"
+                  tono="secundario"
+                  onPress={() => setPickerAbierto("hora")}
+                />
+                {pickerAbierto && (
+                  <DateTimePicker
+                    value={formulario.fecha}
+                    mode={pickerAbierto === "fecha" ? "date" : "time"}
+                    is24Hour
+                    minimumDate={new Date()}
+                    onValueChange={(_, fecha) => {
+                      setPickerAbierto(null)
+                      actualizar("fecha", fecha)
+                    }}
+                    onDismiss={() => setPickerAbierto(null)}
+                  />
+                )}
+              </>
+            )}
           </Seccion>
 
           <Seccion titulo="Entradas">
@@ -147,7 +173,9 @@ export default function CrearEvento() {
             <Boton
               texto="Agregar tipo de entrada"
               tono="secundario"
-              onPress={() => setTiposEntrada([...tiposEntrada, TIPO_VACIO])}
+              onPress={() =>
+                actualizar("tiposEntrada", [...tiposEntrada, TIPO_VACIO])
+              }
             />
           </Seccion>
 

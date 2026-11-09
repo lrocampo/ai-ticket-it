@@ -1,49 +1,68 @@
 import { fireEvent, render, screen } from "@testing-library/react-native"
 
+import { resenarCompra } from "../../services/api"
 import { compraDePrueba } from "../../test/compraDePrueba"
 import { FormularioResena } from "./FormularioResena"
 
-async function renderizarFormulario() {
-  const compra = compraDePrueba({ estado: "UTILIZADA", acciones: ["resenar"] })
+jest.mock("../../services/api")
+
+beforeEach(() => jest.clearAllMocks())
+
+const compra = compraDePrueba({ estado: "UTILIZADA", acciones: ["resenar"] })
+
+async function completar({
+  estrellas,
+  texto,
+}: {
+  estrellas: number | null
+  texto: string
+}) {
+  const onCompraActualizada = jest.fn()
   await render(
-    <FormularioResena compra={compra} onCompraActualizada={jest.fn()} />,
+    <FormularioResena
+      compra={compra}
+      onCompraActualizada={onCompraActualizada}
+    />,
   )
-  return screen.getByRole("button", { name: "Enviar reseña" })
+  if (estrellas) {
+    await fireEvent.press(
+      screen.getByRole("button", { name: `${estrellas} estrellas` }),
+    )
+  }
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("¿Qué te pareció el evento?"),
+    texto,
+  )
+  const enviar = screen.getByRole("button", { name: "Enviar reseña" })
+  return { enviar, onCompraActualizada }
 }
 
-test("sin estrellas ni texto no se puede enviar", async () => {
-  const enviar = await renderizarFormulario()
+test.each([
+  { caso: "sin estrellas ni texto", estrellas: null, texto: "" },
+  { caso: "con estrellas pero sin texto", estrellas: 4, texto: "" },
+  { caso: "con estrellas y solo espacios", estrellas: 4, texto: "   " },
+  { caso: "con texto pero sin estrellas", estrellas: null, texto: "Bueno" },
+])("$caso no se puede enviar", async ({ estrellas, texto }) => {
+  const { enviar } = await completar({ estrellas, texto })
 
   expect(enviar).toBeDisabled()
+  await fireEvent.press(enviar)
+  expect(resenarCompra).not.toHaveBeenCalled()
 })
 
-test("con estrellas pero sin texto no se puede enviar", async () => {
-  const enviar = await renderizarFormulario()
+test("con estrellas y texto manda la reseña y entrega la compra actualizada", async () => {
+  const resenada = compraDePrueba({ estado: "UTILIZADA", acciones: [] })
+  jest.mocked(resenarCompra).mockResolvedValue(resenada)
+  const { enviar, onCompraActualizada } = await completar({
+    estrellas: 4,
+    texto: " Muy bueno ",
+  })
 
-  await fireEvent.press(screen.getByRole("button", { name: "4 estrellas" }))
+  await fireEvent.press(enviar)
 
-  expect(enviar).toBeDisabled()
-})
-
-test("con texto pero sin estrellas no se puede enviar", async () => {
-  const enviar = await renderizarFormulario()
-
-  await fireEvent.changeText(
-    screen.getByPlaceholderText("¿Qué te pareció el evento?"),
-    "Muy bueno",
-  )
-
-  expect(enviar).toBeDisabled()
-})
-
-test("con estrellas y texto se puede enviar", async () => {
-  const enviar = await renderizarFormulario()
-
-  await fireEvent.press(screen.getByRole("button", { name: "4 estrellas" }))
-  await fireEvent.changeText(
-    screen.getByPlaceholderText("¿Qué te pareció el evento?"),
-    "Muy bueno",
-  )
-
-  expect(enviar).toBeEnabled()
+  expect(resenarCompra).toHaveBeenCalledWith("c1", {
+    puntuacion: 4,
+    detalle: "Muy bueno",
+  })
+  expect(onCompraActualizada).toHaveBeenCalledWith(resenada)
 })
