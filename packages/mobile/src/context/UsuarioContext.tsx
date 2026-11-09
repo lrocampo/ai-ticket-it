@@ -24,9 +24,9 @@ const UsuarioContext = createContext<UsuarioContextValue | null>(null)
 // Guardamos solo el id y al arrancar buscamos al usuario en el backend: si el
 // seed cambió y el id ya no existe, la app vuelve a "¿Quién sos?" sola.
 async function recuperarUsuario(): Promise<Usuario | null> {
-  const id = await AsyncStorage.getItem(CLAVE)
-  if (!id) return null
   try {
+    const id = await AsyncStorage.getItem(CLAVE)
+    if (!id) return null
     const usuarios = await listarUsuarios()
     return usuarios.find((u) => u.id === id) ?? null
   } catch {
