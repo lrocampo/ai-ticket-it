@@ -180,6 +180,22 @@ describe("catálogo", () => {
     )
   })
 
+  test("POST /eventos con una URL que no es http(s) responde 400", async () => {
+    const { body } = await request(app)
+      .post("/eventos")
+      .set(como(valentina))
+      .send({
+        nombre: "Con javascript",
+        categoriaId: seed.categorias.Conferencias.id,
+        fecha: "2030-01-01T21:00:00.000Z",
+        multimedia: ["https://ejemplo.com/foto.jpg", "javascript:alert(1)"],
+        tiposEntrada: [{ nombre: "General", precio: 10, cupo: 5 }],
+      })
+      .expect(400)
+
+    expect(body.details.map((issue) => issue.path)).toEqual([["multimedia", 1]])
+  })
+
   test("POST /eventos con fecha pasada responde 422", async () => {
     await request(app)
       .post("/eventos")
