@@ -1,8 +1,6 @@
 import Compra from "../domain/Compra.js"
 import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
 
-// Quién puede pedir cada acción sigue la tabla de docs/dominio.md. La
-// transición en sí la decide la Compra.
 export default class CompraService {
   constructor(compraRepository, eventoRepository) {
     this.compras = compraRepository

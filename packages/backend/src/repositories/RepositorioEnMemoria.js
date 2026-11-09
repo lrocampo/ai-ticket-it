@@ -1,7 +1,5 @@
 import { EntityNotFound } from "../errors/ApplicationErrors.js"
 
-// Guarda los objetos de dominio por referencia: lo que devuelve es el mismo
-// objeto que se guardó, así una compra que reserva cupo se ve en el catálogo.
 export default class RepositorioEnMemoria {
   #entidades = new Map()
   #ultimoId = 0
@@ -29,6 +27,11 @@ export default class RepositorioEnMemoria {
       throw new EntityNotFound(this.#mensajeNoEncontrado)
     }
     return entidad
+  }
+
+  limpiar() {
+    this.#entidades.clear()
+    this.#ultimoId = 0
   }
 
   todos() {

@@ -9,9 +9,6 @@ import CompraService from "./services/CompraService.js"
 import EventoService from "./services/EventoService.js"
 import UsuarioService from "./services/UsuarioService.js"
 
-// Único lugar donde se arman las dependencias (repositorio → servicio →
-// controller). Las rutas solo conocen a los controllers y al middleware.
-
 export const repositorios = crearRepositorios()
 const { usuarios, categorias, eventos, compras } = repositorios
 

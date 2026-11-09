@@ -7,18 +7,16 @@ export function useCarga<T>(fn: () => Promise<T>, deps: DependencyList) {
   const [datos, setDatos] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [refrescando, setRefrescando] = useState(false)
-  const ultimoPedido = useRef(0)
+  const pedidoVigente = useRef(0)
 
   const recargar = useCallback(async () => {
-    // Si cambian los filtros mientras un pedido está en vuelo, la respuesta
-    // vieja no tiene que pisar a la nueva.
-    const pedido = ++ultimoPedido.current
+    const pedido = ++pedidoVigente.current
     setError(null)
     try {
       const resultado = await fn()
-      if (pedido === ultimoPedido.current) setDatos(resultado)
+      if (pedido === pedidoVigente.current) setDatos(resultado)
     } catch (e) {
-      if (pedido === ultimoPedido.current) setError(mensajeDe(e))
+      if (pedido === pedidoVigente.current) setError(mensajeDe(e))
     }
   }, deps)
 

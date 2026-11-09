@@ -1,7 +1,5 @@
 import { BadRequestError } from "../errors/ApplicationErrors.js"
 
-// Valida req.body (o req.query) con un schema de zod y lo reemplaza por el
-// resultado ya parseado, para que el controller reciba datos limpios.
 export default function validar(schema, origen = "body") {
   return (req, _res, next) => {
     const resultado = schema.safeParse(req[origen])

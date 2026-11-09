@@ -29,7 +29,6 @@ describe("Compra", () => {
   const comprar = (cantidad = 2) =>
     new Compra({ comprador, evento: recital, tipoEntrada: tipo, cantidad }, HOY)
 
-  // Lleva una compra nueva hasta el estado pedido por el camino válido.
   const llevarA = {
     [PENDIENTE]: () => comprar(),
     [CONFIRMADA]: () => {

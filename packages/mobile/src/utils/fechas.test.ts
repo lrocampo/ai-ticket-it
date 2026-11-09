@@ -6,7 +6,6 @@ import {
   textoDiasRestantes,
 } from "./fechas"
 
-// Se arma en hora local para que el test no dependa de la zona horaria.
 const miercoles = new Date(2027, 2, 3, 9, 7).toISOString()
 const lunes = new Date(2026, 10, 9, 21, 45).toISOString()
 

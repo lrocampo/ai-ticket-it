@@ -34,7 +34,6 @@ export default class EventoService {
 
   porId = (id) => this.eventos.porId(id)
 
-  // El catálogo es para comprar: los eventos que ya ocurrieron no aparecen.
   buscar = ({ texto, categoriaId, orden = "fecha" } = {}, ahora) => {
     const buscado = texto ? normalizar(texto) : null
     const eventos = this.eventos.filtrar(
@@ -46,13 +45,18 @@ export default class EventoService {
             buscado,
           )),
     )
-    // La puntuación mínima es 1, así que tratar el null (sin reseñas) como 0
-    // deja esos organizadores al final.
-    const puntaje = (evento) =>
-      this.reputacionDe(evento.organizador).puntaje ?? 0
     const comparar =
-      orden === "puntaje" ? (a, b) => puntaje(b) - puntaje(a) : ordenes[orden]
+      orden === "puntaje" ? this.#mejorPuntajePrimero : ordenes[orden]
     return eventos.sort(comparar)
+  }
+
+  #mejorPuntajePrimero = (a, b) => {
+    const puntajeA = this.reputacionDe(a.organizador).puntaje
+    const puntajeB = this.reputacionDe(b.organizador).puntaje
+    if (puntajeA === puntajeB) return 0
+    if (puntajeA === null) return 1
+    if (puntajeB === null) return -1
+    return puntajeB - puntajeA
   }
 
   misEventos = (organizador) =>
@@ -69,7 +73,6 @@ export default class EventoService {
     return { evento, compras }
   }
 
-  // Las reseñas viven en las compras: una compra utilizada tiene a lo sumo una.
   reputacionDe = (organizador) =>
     reputacion(
       this.compras

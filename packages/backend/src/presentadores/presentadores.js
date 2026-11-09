@@ -1,6 +1,3 @@
-// Convierten el dominio (con referencias circulares) a las formas JSON de
-// docs/api.md. `reputacion` viene de EventoService.reputacionDe.
-
 export const presentarUsuario = ({ id, nombre, apellido, email }) => ({
   id,
   nombre,

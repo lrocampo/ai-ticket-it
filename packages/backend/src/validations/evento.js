@@ -1,7 +1,5 @@
 import { z } from "zod"
 
-// La forma la valida zod (400). Los valores (fecha futura, precio, cupo,
-// nombres únicos) los valida el dominio (422).
 const tipoEntradaSchema = z
   .object({
     nombre: z.string().trim().min(1),

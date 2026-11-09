@@ -6,8 +6,6 @@ import { sumarDias } from "../src/utils/fechas.js"
 
 export const HOY = new Date("2026-11-09T12:00:00.000Z")
 
-// Ninguna fixture asigna ids: el test guarda en un repositorio lo que
-// necesite identificar, igual que en producción.
 export const usuario = (nombre) =>
   new Usuario({
     nombre,

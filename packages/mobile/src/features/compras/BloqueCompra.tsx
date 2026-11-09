@@ -22,6 +22,14 @@ function motivoParaNoComprar(
   return null
 }
 
+function tipoConCupo(evento: EventoDetalle, tipoId: string | null) {
+  return evento.tiposEntrada.find((t) => t.id === tipoId && t.disponibles > 0)
+}
+
+function acotarAlCupo(cantidad: number, tipo: TipoEntrada | undefined) {
+  return tipo ? Math.min(cantidad, tipo.disponibles) : cantidad
+}
+
 export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const usuario = useUsuarioActual()
   const motivo = motivoParaNoComprar(evento, usuario)
@@ -29,14 +37,8 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const [cantidad, setCantidad] = useState(1)
   const [comprando, setComprando] = useState(false)
 
-  // Al volver a la pantalla se recargan los disponibles, y pueden haber bajado:
-  // un tipo que se agotó deja de estar elegido y la cantidad no pasa del cupo.
-  const tipoElegido = evento.tiposEntrada.find(
-    (t) => t.id === tipoElegidoId && t.disponibles > 0,
-  )
-  const cantidadValida = tipoElegido
-    ? Math.min(cantidad, tipoElegido.disponibles)
-    : cantidad
+  const tipoElegido = tipoConCupo(evento, tipoElegidoId)
+  const cantidadValida = acotarAlCupo(cantidad, tipoElegido)
 
   function elegirTipo(tipo: TipoEntrada) {
     setTipoElegidoId(tipo.id)

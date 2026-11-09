@@ -21,8 +21,6 @@ type UsuarioContextValue = {
 
 const UsuarioContext = createContext<UsuarioContextValue | null>(null)
 
-// Guardamos solo el id y al arrancar buscamos al usuario en el backend: si el
-// seed cambió y el id ya no existe, la app vuelve a "¿Quién sos?" sola.
 async function recuperarUsuario(): Promise<Usuario | null> {
   try {
     const id = await AsyncStorage.getItem(CLAVE)
@@ -75,7 +73,6 @@ export function useUsuario() {
   return contexto
 }
 
-// Para las pantallas detrás de Stack.Protected, donde siempre hay usuario.
 export function useUsuarioActual(): Usuario {
   const { usuario } = useUsuario()
   if (!usuario) {

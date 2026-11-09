@@ -1,12 +1,16 @@
-import { describe, expect, test } from "@jest/globals"
+import { beforeEach, describe, expect, test } from "@jest/globals"
 import request from "supertest"
 import app from "../../src/app.js"
 import { repositorios } from "../../src/dependencias.js"
 import cargarSeed from "../../src/seeds/cargarSeed.js"
 
-// Los tests comparten el estado del seed y lo van modificando.
 const seed = cargarSeed(repositorios)
 const { lucia, nicolas, valentina, tomas } = seed.usuarios
+
+beforeEach(() => {
+  Object.values(repositorios).forEach((repositorio) => repositorio.limpiar())
+  cargarSeed(repositorios)
+})
 
 const usuarioForma = {
   id: expect.any(String),
@@ -26,18 +30,14 @@ describe("identificación", () => {
       apellido: lucia.apellido,
       email: lucia.email,
     })
-    // La app guarda el id del usuario elegido y cuenta con estos seis.
-    expect(usuarios.body.map((u) => u.id)).toEqual([
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-    ])
 
     const categorias = await request(app).get("/categorias").expect(200)
     expect(categorias.body.map((c) => c.nombre)).toContain("Recitales")
+  })
+
+  test("los usuarios del seed tienen los ids 1 a 6 que la app guarda", async () => {
+    const { body } = await request(app).get("/usuarios").expect(200)
+    expect(body.map((u) => u.id)).toEqual(["1", "2", "3", "4", "5", "6"])
   })
 
   test("sin x-usuario-id responde 401", async () => {
@@ -191,7 +191,6 @@ describe("catálogo", () => {
     expect(body.tiposEntrada[0]).toMatchObject({ cupo: 50, disponibles: 50 })
     expect(body.resenasDelOrganizador).toEqual([])
 
-    // Valentina no organiza nada en el seed.
     const mios = await request(app)
       .get("/mis-eventos")
       .set(como(valentina))

@@ -12,8 +12,6 @@ import { Tarjeta } from "./Tarjeta"
 
 type Props = {
   compra: Compra
-  // El comprador ve el evento que compró; el organizador ya sabe qué evento
-  // es y le interesa quién compró.
   vista: "comprador" | "organizador"
   onPress: () => void
 }

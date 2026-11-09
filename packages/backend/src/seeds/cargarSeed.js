@@ -5,8 +5,6 @@ import TipoEntrada from "../domain/TipoEntrada.js"
 import Usuario from "../domain/Usuario.js"
 import { sumarDias } from "../utils/fechas.js"
 
-// Las fechas son relativas al momento de carga para que la demo nunca quede
-// vieja: los eventos futuros siguen siendo futuros aunque pase el tiempo.
 const enDias = (dias, horas = 21) => {
   const fecha = sumarDias(new Date(), dias)
   fecha.setHours(horas, 0, 0, 0)
@@ -29,7 +27,6 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
     ]),
   )
 
-  // Los ids de usuario (1 a 6, en este orden) los guarda la app.
   const [lucia, martin, sofia, nicolas, valentina, tomas] = [
     ["Lucía", "Fernández", "lucia.fernandez@ejemplo.com"],
     ["Martín", "Pereyra", "martin.pereyra@ejemplo.com"],
@@ -172,8 +169,6 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
         ["Acompañante", 2000, 500, "Acceso a la zona de largada"],
       ]),
     }),
-    // Tomás organiza solo este y nadie lo reseñó: queda al final del orden
-    // por puntaje.
     ajedrez: evento({
       nombre: "Torneo de ajedrez relámpago",
       descripcion:
@@ -189,8 +184,6 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
     }),
   }
 
-  // Eventos pasados: se crean con una fecha anterior a la del evento, y las
-  // compras y reseñas se registran con la hora que les corresponde.
   const pasados = {
     indie: evento(
       {
@@ -272,7 +265,6 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
     return compra
   }
 
-  // Lucía queda con el mejor puntaje, Martín en el medio y Sofía más abajo.
   utilizada(nicolas, pasados.indie, 0, 2, [
     5,
     "Sonido impecable y las bandas salieron puntuales. Volvería sin dudarlo.",

@@ -10,8 +10,6 @@ type Props<T> = {
   children: (datos: T) => ReactNode
 }
 
-// Si falla un refresco cuando ya hay datos, se siguen mostrando los viejos con
-// el error arriba, para que el usuario sepa que pueden estar desactualizados.
 export function Cargable<T>({ carga, children }: Props<T>) {
   const { datos, error, recargar } = carga
   if (datos === null) {
