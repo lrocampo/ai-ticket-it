@@ -56,6 +56,7 @@ export function ChatDeCompra({ compra, onCompraActualizada }: Props) {
           value={texto}
           onChangeText={setTexto}
           placeholder="Escribí un mensaje"
+          accessibilityLabel="Mensaje"
           placeholderTextColor={theme.colores.textoSecundario}
           multiline
         />

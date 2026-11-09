@@ -14,7 +14,8 @@ function BotonCambiarUsuario() {
     <Pressable
       style={styles.boton}
       onPress={salir}
-      accessibilityLabel="Cambiar de usuario"
+      accessibilityRole="button"
+      accessibilityLabel={`${usuario.nombre}, cambiar de usuario`}
     >
       <Text style={styles.nombre} numberOfLines={1}>
         {usuario.nombre}

@@ -18,6 +18,7 @@ export function Tarjeta({ onPress, style, children }: Props) {
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
       style={({ pressed }) => [
         theme.tarjeta,
         style,

@@ -29,7 +29,11 @@ function Navegacion() {
             title: "Nuevo evento",
             presentation: "modal",
             headerLeft: () => (
-              <Pressable onPress={() => router.back()} hitSlop={8}>
+              <Pressable
+                onPress={() => router.back()}
+                hitSlop={8}
+                accessibilityRole="button"
+              >
                 <Text style={styles.cancelar}>Cancelar</Text>
               </Pressable>
             ),

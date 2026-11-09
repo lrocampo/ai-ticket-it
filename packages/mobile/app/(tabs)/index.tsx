@@ -52,6 +52,7 @@ export default function Eventos() {
             value={texto}
             onChangeText={setTexto}
             placeholder="Buscá un evento"
+            accessibilityLabel="Buscar eventos"
             placeholderTextColor={theme.colores.textoSecundario}
             returnKeyType="search"
             autoCorrect={false}

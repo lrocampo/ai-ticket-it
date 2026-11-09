@@ -15,8 +15,15 @@ type Props = TextInputProps & {
 export function Campo({ etiqueta, style, ...props }: Props) {
   return (
     <View style={styles.campo}>
-      <Text style={theme.texto.destacado}>{etiqueta}</Text>
+      <Text
+        style={theme.texto.destacado}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      >
+        {etiqueta}
+      </Text>
       <TextInput
+        accessibilityLabel={etiqueta}
         style={[styles.input, props.multiline && styles.multilinea, style]}
         placeholderTextColor={theme.colores.textoSecundario}
         {...props}

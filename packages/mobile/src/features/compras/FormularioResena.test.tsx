@@ -26,7 +26,7 @@ async function completar({
   )
   if (estrellas) {
     await fireEvent.press(
-      screen.getByRole("button", { name: `${estrellas} estrellas` }),
+      screen.getByRole("radio", { name: `${estrellas} estrellas` }),
     )
   }
   await fireEvent.changeText(

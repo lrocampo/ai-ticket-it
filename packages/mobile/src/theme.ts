@@ -11,6 +11,10 @@ const colores = {
   sobrePrimario: "#FFFFFF",
 }
 
+// 44 pt es el área táctil mínima de Apple HIG (better-accessibility, "Minimum
+// hit area"); los controles más chicos la completan con hitSlop.
+const areaTactil = 44
+
 const radios = {
   s: 8,
   m: 12,
@@ -44,6 +48,7 @@ const sombra = {
 
 export const theme = {
   colores,
+  areaTactil,
   espacios,
   radios,
   texto,
