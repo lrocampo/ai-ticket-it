@@ -4,7 +4,7 @@ import { Animated, Easing } from "react-native"
 import { useMovimientoReducido } from "./useMovimientoReducido"
 
 // 0.96 en 150 ms con ease-out son los valores exactos de better-ui ("Press
-// scales to 0.96"). Con "reducir movimiento" no escala y queda la opacidad.
+// scales to 0.96").
 const ESCALA_PRESIONADO = 0.96
 const DURACION_MS = 150
 

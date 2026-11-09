@@ -38,7 +38,6 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Un issue de zod tal como lo manda el backend en `details`.
 type DetalleDeValidacion = {
   path: (string | number)[]
   message: string

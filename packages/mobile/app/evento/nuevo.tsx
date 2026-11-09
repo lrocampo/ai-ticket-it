@@ -56,7 +56,6 @@ export default function CrearEvento() {
   const posicionesDeTipos = useRef<number[]>([])
   const { tiposEntrada } = formulario
 
-  // Cubre el Cancelar, el gesto de bajar el modal y el botón atrás de Android.
   const permitirSalir = usePreventRemove(
     formularioTieneDatos(formulario) && !creado,
     async ({ repeat }) => {
