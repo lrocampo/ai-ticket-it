@@ -1,38 +1,24 @@
 import Evento from "../domain/Evento.js"
 import TipoEntrada from "../domain/TipoEntrada.js"
+import reputacion from "../domain/reputacion.js"
 import { NoAutorizado } from "../errors/ApplicationErrors.js"
 
 const normalizar = (texto) =>
   texto.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase()
 
-const nulosAlFinal = (comparar) => (a, b) => {
-  if (a === null || b === null) {
-    return (a === null) - (b === null)
-  }
-  return comparar(a, b)
+const ordenes = {
+  fecha: (a, b) => a.fecha - b.fecha,
+  precio: (a, b) => a.precioDesde() - b.precioDesde(),
 }
 
 export default class EventoService {
-  constructor(
-    eventoRepository,
-    categoriaRepository,
-    compraRepository,
-    resenaRepository,
-  ) {
+  constructor(eventoRepository, categoriaRepository, compraRepository) {
     this.eventos = eventoRepository
     this.categorias = categoriaRepository
     this.compras = compraRepository
-    this.resenas = resenaRepository
-    const puntajeDescendente = nulosAlFinal((a, b) => b - a)
-    this.ordenes = {
-      fecha: (a, b) => a.fecha - b.fecha,
-      precio: (a, b) => a.precioDesde() - b.precioDesde(),
-      puntaje: (a, b) =>
-        puntajeDescendente(this.puntajeDe(a), this.puntajeDe(b)),
-    }
   }
 
-  crear = (organizador, datos, ahora = new Date()) => {
+  crear = (organizador, datos, ahora) => {
     const categoria = this.categorias.porId(datos.categoriaId)
     const evento = new Evento(
       {
@@ -49,10 +35,7 @@ export default class EventoService {
   porId = (id) => this.eventos.porId(id)
 
   // El catálogo es para comprar: los eventos que ya ocurrieron no aparecen.
-  buscar = (
-    { texto, categoriaId, orden = "fecha" } = {},
-    ahora = new Date(),
-  ) => {
+  buscar = ({ texto, categoriaId, orden = "fecha" } = {}, ahora) => {
     const buscado = texto ? normalizar(texto) : null
     const eventos = this.eventos.filtrar(
       (evento) =>
@@ -63,10 +46,14 @@ export default class EventoService {
             buscado,
           )),
     )
-    return eventos.sort(this.ordenes[orden])
+    // La puntuación mínima es 1, así que tratar el null (sin reseñas) como 0
+    // deja esos organizadores al final.
+    const puntaje = (evento) =>
+      this.reputacionDe(evento.organizador).puntaje ?? 0
+    const comparar =
+      orden === "puntaje" ? (a, b) => puntaje(b) - puntaje(a) : ordenes[orden]
+    return eventos.sort(comparar)
   }
-
-  puntajeDe = (evento) => this.reputacionDe(evento.organizador).puntaje
 
   misEventos = (organizador) =>
     this.eventos.filtrar((evento) => evento.esOrganizador(organizador))
@@ -82,17 +69,14 @@ export default class EventoService {
     return { evento, compras }
   }
 
-  // Único lugar donde se calcula el puntaje de un organizador: lo usan el
-  // orden por puntaje y la presentación del organizador en cada evento.
-  reputacionDe = (organizador) => {
-    const resenas = this.resenas.filtrar((resena) =>
-      resena.evento.esOrganizador(organizador),
+  // Las reseñas viven en las compras: una compra utilizada tiene a lo sumo una.
+  reputacionDe = (organizador) =>
+    reputacion(
+      this.compras
+        .filtrar(
+          (compra) =>
+            compra.resena !== null && compra.evento.esOrganizador(organizador),
+        )
+        .map((compra) => compra.resena),
     )
-    const puntaje =
-      resenas.length === 0
-        ? null
-        : resenas.reduce((suma, resena) => suma + resena.puntuacion, 0) /
-          resenas.length
-    return { puntaje, cantidadResenas: resenas.length, resenas }
-  }
 }

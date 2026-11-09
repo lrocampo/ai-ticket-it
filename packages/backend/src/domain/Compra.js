@@ -11,7 +11,7 @@ const { PENDIENTE, CONFIRMADA, UTILIZADA, CANCELADA, REEMBOLSADA } =
   EstadoCompra
 
 // Única tabla de transiciones. `falla` devuelve el motivo cuando una condición
-// extra no se cumple y `efecto` corre una vez aplicada la transición.
+// extra no se cumple (o null) y `efecto` corre una vez aplicada la transición.
 const transiciones = {
   confirmarPago: {
     verbo: "confirmar el pago de",
@@ -23,18 +23,24 @@ const transiciones = {
     verbo: "cancelar",
     desde: [PENDIENTE, CONFIRMADA],
     hacia: CANCELADA,
-    falla: (compra, ahora) =>
-      compra.evento.yaOcurrio(ahora) &&
-      "No se puede cancelar una compra de un evento que ya ocurrió.",
+    falla: (compra, ahora) => {
+      if (compra.evento.yaOcurrio(ahora)) {
+        return "No se puede cancelar una compra de un evento que ya ocurrió."
+      }
+      return null
+    },
     efecto: (compra) => compra.tipoEntrada.liberar(compra.cantidad),
   },
   reembolsar: {
     verbo: "reembolsar",
     desde: [CANCELADA],
     hacia: REEMBOLSADA,
-    falla: (compra) =>
-      !compra.pasoPor(CONFIRMADA) &&
-      "Solo se reembolsa una compra que había sido pagada.",
+    falla: (compra) => {
+      if (!compra.pasoPor(CONFIRMADA)) {
+        return "Solo se reembolsa una compra que había sido pagada."
+      }
+      return null
+    },
   },
 }
 
@@ -43,13 +49,18 @@ export default class Compra {
     { comprador, evento, tipoEntrada, cantidad },
     ahora = new Date(),
   ) {
-    if (!(Number.isInteger(cantidad) && cantidad > 0)) {
+    if (!(Number.isSafeInteger(cantidad) && cantidad > 0)) {
       throw new DomainValidationError(
         "La cantidad de entradas debe ser un entero positivo.",
       )
     }
     if (evento.yaOcurrio(ahora)) {
       throw new DomainRuleError("El evento ya ocurrió.")
+    }
+    if (evento.esOrganizador(comprador)) {
+      throw new DomainRuleError(
+        "El organizador no puede comprar entradas de su propio evento.",
+      )
     }
     tipoEntrada.reservar(cantidad)
     this.comprador = comprador
@@ -84,7 +95,10 @@ export default class Compra {
   }
 
   diasParaElEvento(ahora = new Date()) {
-    return this.estado === CONFIRMADA ? this.evento.diasHasta(ahora) : null
+    if (this.estado !== CONFIRMADA || this.evento.yaOcurrio(ahora)) {
+      return null
+    }
+    return this.evento.diasHasta(ahora)
   }
 
   puedeCancelarse(ahora = new Date()) {
@@ -103,6 +117,7 @@ export default class Compra {
       throw new DomainRuleError("Solo se puede reseñar una compra utilizada.")
     }
     this.resena = new Resena({
+      id: this.id,
       compra: this,
       puntuacion,
       detalle,
@@ -140,7 +155,7 @@ export default class Compra {
     if (!transicion.desde.includes(this.estado)) {
       return `No se puede ${transicion.verbo} una compra ${this.estado}.`
     }
-    return transicion.falla?.(this, ahora) || null
+    return transicion.falla?.(this, ahora) ?? null
   }
 
   #transicionar(accion, quien, ahora) {

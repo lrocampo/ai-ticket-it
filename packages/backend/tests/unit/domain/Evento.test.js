@@ -1,13 +1,14 @@
 import { describe, expect, test } from "@jest/globals"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
-import { HOY, dias, evento, tipoEntrada } from "../../fixtures.js"
+import { sumarDias } from "../../../src/utils/fechas.js"
+import { HOY, evento, tipoEntrada } from "../../fixtures.js"
 
 describe("Evento", () => {
   test("yaOcurrio depende de la hora que se le pasa", () => {
-    const recital = evento({ fecha: dias(10) })
+    const recital = evento({ fecha: sumarDias(HOY, 10) })
 
     expect(recital.yaOcurrio(HOY)).toBe(false)
-    expect(recital.yaOcurrio(dias(10, dias(10)))).toBe(true)
+    expect(recital.yaOcurrio(sumarDias(HOY, 20))).toBe(true)
   })
 
   test("diasHasta redondea hacia arriba", () => {
@@ -30,18 +31,26 @@ describe("Evento", () => {
   })
 
   test("no se crea con fecha pasada ni sin tipos de entrada", () => {
-    expect(() => evento({ fecha: dias(-1) }, HOY)).toThrow(
+    expect(() => evento({ fecha: sumarDias(HOY, -1) }, HOY)).toThrow(
       DomainValidationError,
     )
     expect(() => evento({ tiposEntrada: [] })).toThrow(DomainValidationError)
   })
 
-  test("los tipos de entrada no pueden repetir nombre", () => {
+  test("los tipos de entrada no pueden repetir nombre, ni cambiando mayúsculas o espacios", () => {
     expect(() =>
       evento({
         tiposEntrada: [
           tipoEntrada({ nombre: "General" }),
           tipoEntrada({ nombre: "General" }),
+        ],
+      }),
+    ).toThrow(DomainValidationError)
+    expect(() =>
+      evento({
+        tiposEntrada: [
+          tipoEntrada({ nombre: "General" }),
+          tipoEntrada({ nombre: " general " }),
         ],
       }),
     ).toThrow(DomainValidationError)

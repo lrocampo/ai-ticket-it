@@ -1,6 +1,5 @@
 import { DomainValidationError } from "./errors/DomainErrors.js"
-
-const MILISEGUNDOS_POR_DIA = 24 * 60 * 60 * 1000
+import { MILISEGUNDOS_POR_DIA } from "../utils/fechas.js"
 
 export default class Evento {
   constructor(
@@ -35,7 +34,9 @@ export default class Evento {
         "El evento necesita al menos un tipo de entrada.",
       )
     }
-    const nombres = new Set(tiposEntrada.map((tipo) => tipo.nombre))
+    const nombres = new Set(
+      tiposEntrada.map((tipo) => tipo.nombre.trim().toLowerCase()),
+    )
     if (nombres.size !== tiposEntrada.length) {
       throw new DomainValidationError(
         "Los tipos de entrada deben tener nombres distintos.",

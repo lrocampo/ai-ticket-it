@@ -12,14 +12,14 @@ No hay login. El cliente manda el header `x-usuario-id` con el id del usuario qu
 { "message": "texto para mostrar", "details": [] }
 ```
 
-| Código | Cuándo                                                             |
-| ------ | ------------------------------------------------------------------ |
-| 400    | body o query inválidos (zod); `details` lista los campos           |
-| 401    | falta `x-usuario-id` o no corresponde a un usuario                 |
-| 403    | el usuario no es quien puede hacer la acción                       |
-| 404    | entidad inexistente                                                |
-| 409    | regla de negocio (sin cupo, transición inválida, reseña duplicada) |
-| 422    | validación de dominio (valores fuera de rango)                     |
+| Código | Cuándo                                                                                                     |
+| ------ | ---------------------------------------------------------------------------------------------------------- |
+| 400    | body o query inválidos (zod); `details` lista los campos                                                   |
+| 401    | falta `x-usuario-id` o no corresponde a un usuario                                                         |
+| 403    | el usuario no es quien puede hacer la acción                                                               |
+| 404    | entidad inexistente                                                                                        |
+| 409    | regla de negocio (sin cupo, transición inválida, reseña duplicada, el organizador compra su propio evento) |
+| 422    | validación de dominio (valores fuera de rango)                                                             |
 
 ## Formas
 
@@ -42,7 +42,7 @@ Compra = {
   comprador: Usuario,
   evento: { id, nombre, fecha: ISO, organizador: Usuario },
   tipoEntrada: { id, nombre, precio },
-  diasParaElEvento: number | null,   // solo CONFIRMADA
+  diasParaElEvento: number | null,   // solo CONFIRMADA con evento futuro
   puedeCancelarse: boolean,
   puedeResenarse: boolean,
   historial: CambioEstado[],
@@ -82,20 +82,22 @@ Body de `POST /eventos`:
 }
 ```
 
-Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento.
+Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento (sin distinguir mayúsculas ni espacios alrededor). `multimedia` solo admite URLs `http` o `https`.
 
 ### Compras
 
-| Método | Ruta                        | Quién                              | Body                                    | Respuesta       |
-| ------ | --------------------------- | ---------------------------------- | --------------------------------------- | --------------- |
-| GET    | `/compras`                  | comprador                          |                                         | `Compra[]` mías |
-| POST   | `/compras`                  | comprador                          | `{ eventoId, tipoEntradaId, cantidad }` | `201 Compra`    |
-| GET    | `/compras/:id`              | comprador u organizador del evento |                                         | `Compra`        |
-| POST   | `/compras/:id/confirmacion` | comprador                          |                                         | `Compra`        |
-| POST   | `/compras/:id/uso`          | organizador                        |                                         | `Compra`        |
-| POST   | `/compras/:id/cancelacion`  | comprador                          |                                         | `Compra`        |
-| POST   | `/compras/:id/reembolso`    | organizador                        |                                         | `Compra`        |
-| POST   | `/compras/:id/mensajes`     | comprador u organizador            | `{ texto }`                             | `201 Compra`    |
-| POST   | `/compras/:id/resena`       | comprador                          | `{ puntuacion, detalle }`               | `201 Compra`    |
+| Método | Ruta                        | Quién                              | Body                                            | Respuesta       |
+| ------ | --------------------------- | ---------------------------------- | ----------------------------------------------- | --------------- |
+| GET    | `/compras`                  | comprador                          |                                                 | `Compra[]` mías |
+| POST   | `/compras`                  | comprador                          | `{ eventoId, tipoEntradaId, cantidad }`         | `201 Compra`    |
+| GET    | `/compras/:id`              | comprador u organizador del evento |                                                 | `Compra`        |
+| POST   | `/compras/:id/confirmacion` | comprador                          |                                                 | `Compra`        |
+| POST   | `/compras/:id/uso`          | organizador                        |                                                 | `Compra`        |
+| POST   | `/compras/:id/cancelacion`  | comprador                          |                                                 | `Compra`        |
+| POST   | `/compras/:id/reembolso`    | organizador                        |                                                 | `Compra`        |
+| POST   | `/compras/:id/mensajes`     | comprador u organizador            | `{ texto }`                                     | `201 Compra`    |
+| POST   | `/compras/:id/resena`       | comprador                          | `{ puntuacion, detalle }`, los dos obligatorios | `201 Compra`    |
+
+En la reseña, `puntuacion` es un entero de 1 a 5 y `detalle` un texto no vacío; si falta alguno o `detalle` viene vacío, responde `400`.
 
 Las acciones sobre una compra devuelven la compra completa actualizada, así la app reemplaza lo que tiene en pantalla sin un segundo request. Las rutas usan sustantivos (`/confirmacion`, no `/confirmar`).

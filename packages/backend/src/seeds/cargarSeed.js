@@ -3,27 +3,19 @@ import Compra from "../domain/Compra.js"
 import Evento from "../domain/Evento.js"
 import TipoEntrada from "../domain/TipoEntrada.js"
 import Usuario from "../domain/Usuario.js"
-
-const MILISEGUNDOS_POR_DIA = 24 * 60 * 60 * 1000
+import { sumarDias } from "../utils/fechas.js"
 
 // Las fechas son relativas al momento de carga para que la demo nunca quede
 // vieja: los eventos futuros siguen siendo futuros aunque pase el tiempo.
-export const enDias = (dias, horas = 21) => {
-  const fecha = new Date(Date.now() + dias * MILISEGUNDOS_POR_DIA)
-  fecha.setMinutes(0, 0, 0)
-  fecha.setHours(horas)
+const enDias = (dias, horas = 21) => {
+  const fecha = sumarDias(new Date(), dias)
+  fecha.setHours(horas, 0, 0, 0)
   return fecha
 }
 
 const imagen = (semilla) => `https://picsum.photos/seed/${semilla}/800/500`
 
-export default function cargarSeed({
-  usuarios,
-  categorias,
-  eventos,
-  compras,
-  resenas,
-}) {
+export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
   const categoria = Object.fromEntries(
     [
       ["Recitales", "Bandas y solistas en vivo"],
@@ -180,6 +172,21 @@ export default function cargarSeed({
         ["Acompañante", 2000, 500, "Acceso a la zona de largada"],
       ]),
     }),
+    // Tomás organiza solo este y nadie lo reseñó: queda al final del orden
+    // por puntaje.
+    ajedrez: evento({
+      nombre: "Torneo de ajedrez relámpago",
+      descripcion:
+        "Partidas de tres minutos a sistema suizo en el club de Villa del Parque. Abierto a todos los niveles.",
+      categoria: categoria.Deportes,
+      fecha: enDias(20, 10),
+      organizador: tomas,
+      semilla: "ajedrez-relampago",
+      tiposEntrada: tipos([
+        ["Jugador", 3000, 64, "Inscripción al torneo"],
+        ["Espectador", 0, 100, "Acceso a la sala"],
+      ]),
+    }),
   }
 
   // Eventos pasados: se crean con una fecha anterior a la del evento, y las
@@ -254,19 +261,13 @@ export default function cargarSeed({
       evento,
       indiceTipo,
       cantidad,
-      enDias(evento.diasHasta(enDias(0)) - 15),
+      sumarDias(evento.fecha, -15),
     )
-    compra.confirmarPago(comprador, enDias(evento.diasHasta(enDias(0)) - 14))
+    compra.confirmarPago(comprador, sumarDias(evento.fecha, -14))
     compra.utilizar(evento.organizador, evento.fecha)
     if (resena) {
       const [puntuacion, detalle] = resena
-      resenas.guardar(
-        compra.resenar(
-          puntuacion,
-          detalle,
-          new Date(evento.fecha.getTime() + MILISEGUNDOS_POR_DIA),
-        ),
-      )
+      compra.resenar(puntuacion, detalle, sumarDias(evento.fecha, 1))
     }
     return compra
   }
@@ -361,4 +362,10 @@ export default function cargarSeed({
   const canceladaConPago = comprar(valentina, futuros.maraton, 0, 1, enDias(-8))
   canceladaConPago.confirmarPago(valentina, enDias(-8, 22))
   canceladaConPago.cancelar(valentina, enDias(-1))
+
+  return {
+    usuarios: { lucia, martin, sofia, nicolas, valentina, tomas },
+    categorias: categoria,
+    eventos: { ...futuros, ...pasados },
+  }
 }

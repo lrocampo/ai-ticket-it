@@ -17,7 +17,7 @@ export const eventoSchema = z
     descripcion: z.string().trim().default(""),
     categoriaId: z.string().min(1),
     fecha: z.iso.datetime({ offset: true }).pipe(z.coerce.date()),
-    multimedia: z.array(z.url()).default([]),
+    multimedia: z.array(z.url({ protocol: /^https?$/ })).default([]),
     tiposEntrada: z.array(tipoEntradaSchema).min(1),
   })
   .strict()

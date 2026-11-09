@@ -14,6 +14,6 @@ export default class Usuario {
   }
 
   esElMismo(otro) {
-    return otro?.id === this.id
+    return this.id !== undefined && otro?.id === this.id
   }
 }

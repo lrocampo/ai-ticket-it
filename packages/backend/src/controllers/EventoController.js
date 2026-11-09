@@ -42,7 +42,7 @@ export default class EventoController {
       )
       res.json({
         evento: this.presentar(evento),
-        compras: compras.map((compra) => presentarCompra(compra)),
+        compras: compras.map(presentarCompra),
       })
     } catch (error) {
       next(error)

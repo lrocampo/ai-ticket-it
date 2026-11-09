@@ -7,9 +7,8 @@ import {
   NoAutorizado,
 } from "../../../src/errors/ApplicationErrors.js"
 import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
-import { HOY, dias } from "../../fixtures.js"
-import Usuario from "../../../src/domain/Usuario.js"
-import Categoria from "../../../src/domain/Categoria.js"
+import { sumarDias } from "../../../src/utils/fechas.js"
+import { HOY, categoria, usuario } from "../../fixtures.js"
 
 describe("EventoService", () => {
   let repositorios
@@ -21,22 +20,13 @@ describe("EventoService", () => {
   let recitales
   let teatro
 
-  const usuario = (nombre) =>
-    repositorios.usuarios.guardar(
-      new Usuario({
-        nombre,
-        apellido: "Prueba",
-        email: `${nombre}@ejemplo.com`,
-      }),
-    )
-
   const crear = (organizador, datos) =>
     service.crear(
       organizador,
       {
         descripcion: "",
         categoriaId: recitales.id,
-        fecha: dias(10),
+        fecha: sumarDias(HOY, 10),
         tiposEntrada: [{ nombre: "General", precio: 1000, cupo: 100 }],
         ...datos,
       },
@@ -51,22 +41,13 @@ describe("EventoService", () => {
       repositorios.eventos,
       repositorios.categorias,
       repositorios.compras,
-      repositorios.resenas,
     )
-    compras = new CompraService(
-      repositorios.compras,
-      repositorios.eventos,
-      repositorios.resenas,
-    )
-    ana = usuario("Ana")
-    beto = usuario("Beto")
-    carla = usuario("Carla")
-    recitales = repositorios.categorias.guardar(
-      new Categoria({ nombre: "Recitales" }),
-    )
-    teatro = repositorios.categorias.guardar(
-      new Categoria({ nombre: "Teatro" }),
-    )
+    compras = new CompraService(repositorios.compras, repositorios.eventos)
+    ana = repositorios.usuarios.guardar(usuario("Ana"))
+    beto = repositorios.usuarios.guardar(usuario("Beto"))
+    carla = repositorios.usuarios.guardar(usuario("Carla"))
+    recitales = repositorios.categorias.guardar(categoria("Recitales"))
+    teatro = repositorios.categorias.guardar(categoria("Teatro"))
   })
 
   describe("crear", () => {
@@ -95,9 +76,9 @@ describe("EventoService", () => {
     })
 
     test("falla con fecha pasada sin guardar nada", () => {
-      expect(() => crear(ana, { nombre: "Recital", fecha: dias(-1) })).toThrow(
-        DomainValidationError,
-      )
+      expect(() =>
+        crear(ana, { nombre: "Recital", fecha: sumarDias(HOY, -1) }),
+      ).toThrow(DomainValidationError)
       expect(service.buscar()).toEqual([])
     })
   })
@@ -107,14 +88,14 @@ describe("EventoService", () => {
       crear(ana, {
         nombre: "Recital de Fito Páez",
         descripcion: "Piano y canciones",
-        fecha: dias(30),
+        fecha: sumarDias(HOY, 30),
         tiposEntrada: [{ nombre: "Campo", precio: 8000, cupo: 10 }],
       })
       crear(beto, {
         nombre: "Obra: La Nona",
         descripcion: "Comedia clásica",
         categoriaId: teatro.id,
-        fecha: dias(5),
+        fecha: sumarDias(HOY, 5),
         tiposEntrada: [
           { nombre: "Platea", precio: 5000, cupo: 10 },
           { nombre: "Pullman", precio: 2000, cupo: 10 },
@@ -123,7 +104,7 @@ describe("EventoService", () => {
       crear(carla, {
         nombre: "Jam de jazz",
         descripcion: "Músicos invitados tocan el piano",
-        fecha: dias(15),
+        fecha: sumarDias(HOY, 15),
         tiposEntrada: [{ nombre: "General", precio: 3000, cupo: 10 }],
       })
     })
@@ -146,7 +127,7 @@ describe("EventoService", () => {
     })
 
     test("deja afuera los eventos que ya ocurrieron", () => {
-      expect(nombres(service.buscar({}, dias(10)))).toEqual([
+      expect(nombres(service.buscar({}, sumarDias(HOY, 10)))).toEqual([
         "Jam de jazz",
         "Recital de Fito Páez",
       ])

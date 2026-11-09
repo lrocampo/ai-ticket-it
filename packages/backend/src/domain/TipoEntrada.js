@@ -13,7 +13,7 @@ export default class TipoEntrada {
         `El precio de "${nombre}" no puede ser negativo.`,
       )
     }
-    if (!(Number.isInteger(cupo) && cupo > 0)) {
+    if (!(Number.isSafeInteger(cupo) && cupo > 0)) {
       throw new DomainValidationError(
         `El cupo de "${nombre}" debe ser un entero positivo.`,
       )

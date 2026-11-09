@@ -7,11 +7,7 @@ export default class CompraController {
 
   mias = (req, res, next) => {
     try {
-      res.json(
-        this.compraService
-          .mias(req.usuario)
-          .map((compra) => presentarCompra(compra)),
-      )
+      res.json(this.compraService.mias(req.usuario).map(presentarCompra))
     } catch (error) {
       next(error)
     }
