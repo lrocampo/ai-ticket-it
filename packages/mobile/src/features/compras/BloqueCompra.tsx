@@ -29,8 +29,11 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const [cantidad, setCantidad] = useState(1)
   const [comprando, setComprando] = useState(false)
 
-  const tipoElegido = evento.tiposEntrada.find((t) => t.id === tipoElegidoId)
-  // Al volver a la pantalla se recargan los disponibles, y pueden haber bajado.
+  // Al volver a la pantalla se recargan los disponibles, y pueden haber bajado:
+  // un tipo que se agotó deja de estar elegido y la cantidad no pasa del cupo.
+  const tipoElegido = evento.tiposEntrada.find(
+    (t) => t.id === tipoElegidoId && t.disponibles > 0,
+  )
   const cantidadValida = tipoElegido
     ? Math.min(cantidad, tipoElegido.disponibles)
     : cantidad
@@ -66,7 +69,7 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
       {evento.tiposEntrada.map((tipo) => {
         const agotado = tipo.disponibles === 0
         const deshabilitado = agotado || motivo !== null
-        const elegido = tipo.id === tipoElegidoId
+        const elegido = tipo.id === tipoElegido?.id
         return (
           <Pressable
             key={tipo.id}
