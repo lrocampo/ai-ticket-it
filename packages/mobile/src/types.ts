@@ -58,6 +58,13 @@ export type EstadoCompra =
   | "CANCELADA"
   | "REEMBOLSADA"
 
+export type Accion =
+  | "confirmarPago"
+  | "utilizar"
+  | "cancelar"
+  | "reembolsar"
+  | "resenar"
+
 export type CambioEstado = {
   estado: EstadoCompra
   quien: Usuario
@@ -80,8 +87,7 @@ export type Compra = {
   evento: { id: string; nombre: string; fecha: string; organizador: Usuario }
   tipoEntrada: { id: string; nombre: string; precio: number }
   diasParaElEvento: number | null
-  puedeCancelarse: boolean
-  puedeResenarse: boolean
+  acciones: Accion[]
   historial: CambioEstado[]
   mensajes: Mensaje[]
   resena: Resena | null

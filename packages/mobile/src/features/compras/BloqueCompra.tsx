@@ -3,6 +3,7 @@ import { router } from "expo-router"
 import { useState } from "react"
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native"
 
+import { Boton } from "../../components/Boton"
 import { Seccion } from "../../components/Seccion"
 import { Stepper } from "../../components/Stepper"
 import { useUsuarioActual } from "../../context/UsuarioContext"
@@ -125,22 +126,17 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
               )}
             </Text>
           </View>
-          <Pressable
-            style={[
-              styles.botonComprar,
-              (!tipoElegido || comprando) && styles.botonDeshabilitado,
-            ]}
-            disabled={!tipoElegido || comprando}
-            onPress={comprar}
-          >
-            <Text style={styles.textoBoton}>
-              {comprando
+          <Boton
+            texto={
+              comprando
                 ? "Comprando…"
                 : tipoElegido
                   ? "Comprá tus entradas"
-                  : "Elegí un tipo de entrada"}
-            </Text>
-          </Pressable>
+                  : "Elegí un tipo de entrada"
+            }
+            deshabilitado={!tipoElegido || comprando}
+            onPress={comprar}
+          />
         </>
       )}
     </Seccion>
@@ -191,19 +187,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  botonComprar: {
-    backgroundColor: theme.colores.primario,
-    borderRadius: theme.radios.m,
-    paddingVertical: theme.espacios.l,
-    alignItems: "center",
-  },
-  botonDeshabilitado: {
-    opacity: 0.5,
-  },
-  textoBoton: {
-    ...theme.texto.cuerpo,
-    color: theme.colores.sobrePrimario,
-    fontWeight: "700",
   },
 })
