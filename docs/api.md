@@ -82,7 +82,7 @@ Body de `POST /eventos`:
 }
 ```
 
-Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento.
+Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento (sin distinguir mayúsculas ni espacios alrededor).
 
 ### Compras
 

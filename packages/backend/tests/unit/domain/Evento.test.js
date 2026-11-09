@@ -37,12 +37,20 @@ describe("Evento", () => {
     expect(() => evento({ tiposEntrada: [] })).toThrow(DomainValidationError)
   })
 
-  test("los tipos de entrada no pueden repetir nombre", () => {
+  test("los tipos de entrada no pueden repetir nombre, ni cambiando mayúsculas o espacios", () => {
     expect(() =>
       evento({
         tiposEntrada: [
           tipoEntrada({ nombre: "General" }),
           tipoEntrada({ nombre: "General" }),
+        ],
+      }),
+    ).toThrow(DomainValidationError)
+    expect(() =>
+      evento({
+        tiposEntrada: [
+          tipoEntrada({ nombre: "General" }),
+          tipoEntrada({ nombre: " general " }),
         ],
       }),
     ).toThrow(DomainValidationError)

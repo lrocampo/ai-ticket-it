@@ -6,7 +6,7 @@ Modelo de AI Ticket It. Parte del diagrama tentativo del enunciado y agrega lo q
 
 - **Usuario**: `id`, `nombre`, `apellido`, `email`, `favoritos: Evento[]`. No tiene rol. Cualquier usuario compra entradas, y es organizador de los eventos que creó.
 - **Categoria**: `id`, `nombre`, `descripcion`.
-- **Evento**: `id`, `nombre`, `descripcion`, `categoria`, `fecha`, `tiposEntrada: TipoEntrada[]`, `multimedia: string[]` (URLs), `organizador: Usuario`.
+- **Evento**: `id`, `nombre`, `descripcion`, `categoria`, `fecha`, `tiposEntrada: TipoEntrada[]` (con nombres distintos, sin distinguir mayúsculas ni espacios alrededor), `multimedia: string[]` (URLs), `organizador: Usuario`.
   - `yaOcurrio(ahora)`: la fecha del evento es anterior a `ahora`.
   - `diasHasta(ahora)`: días enteros que faltan, redondeando hacia arriba.
   - `precioDesde()`: el menor precio entre sus tipos de entrada.
