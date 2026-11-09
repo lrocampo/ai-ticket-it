@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text } from "react-native"
+import { Animated, Pressable, StyleSheet, Text } from "react-native"
 
+import { useEscalaAlPresionar } from "../hooks/useEscalaAlPresionar"
 import { theme } from "../theme"
 
 export type Tono = "primario" | "secundario" | "peligro"
@@ -36,21 +37,26 @@ export function Boton({
   deshabilitado = false,
 }: Props) {
   const colores = COLORES[tono]
+  const { estilo, alPresionar, alSoltar } = useEscalaAlPresionar()
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={deshabilitado}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: deshabilitado }}
-      style={({ pressed }) => [
-        styles.boton,
-        { backgroundColor: colores.fondo, borderColor: colores.borde },
-        pressed && styles.presionado,
-        deshabilitado && styles.deshabilitado,
-      ]}
-    >
-      <Text style={[styles.texto, { color: colores.texto }]}>{texto}</Text>
-    </Pressable>
+    <Animated.View style={estilo}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={alPresionar}
+        onPressOut={alSoltar}
+        disabled={deshabilitado}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: deshabilitado }}
+        style={({ pressed }) => [
+          styles.boton,
+          { backgroundColor: colores.fondo, borderColor: colores.borde },
+          pressed && styles.presionado,
+          deshabilitado && styles.deshabilitado,
+        ]}
+      >
+        <Text style={[styles.texto, { color: colores.texto }]}>{texto}</Text>
+      </Pressable>
+    </Animated.View>
   )
 }
 

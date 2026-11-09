@@ -1,11 +1,13 @@
 import type { ReactNode } from "react"
 import {
+  Animated,
   Pressable,
   type StyleProp,
   StyleSheet,
   type ViewStyle,
 } from "react-native"
 
+import { useEscalaAlPresionar } from "../hooks/useEscalaAlPresionar"
 import { theme } from "../theme"
 
 type Props = {
@@ -15,18 +17,23 @@ type Props = {
 }
 
 export function Tarjeta({ onPress, style, children }: Props) {
+  const { estilo, alPresionar, alSoltar } = useEscalaAlPresionar()
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={({ pressed }) => [
-        theme.tarjeta,
-        style,
-        pressed && styles.presionada,
-      ]}
-    >
-      {children}
-    </Pressable>
+    <Animated.View style={estilo}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={alPresionar}
+        onPressOut={alSoltar}
+        accessibilityRole="button"
+        style={({ pressed }) => [
+          theme.tarjeta,
+          style,
+          pressed && styles.presionada,
+        ]}
+      >
+        {children}
+      </Pressable>
+    </Animated.View>
   )
 }
 
