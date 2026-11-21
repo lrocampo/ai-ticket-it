@@ -213,6 +213,28 @@ describe("EventoService", () => {
     })
   })
 
+  describe("entradasDe", () => {
+    test("cuenta las entradas que el usuario retiene en el evento", () => {
+      const evento = crear(ana, { nombre: "Recital" })
+      const comprar = (cantidad) =>
+        compras.crear(
+          beto,
+          {
+            eventoId: evento.id,
+            tipoEntradaId: evento.tiposEntrada[0].id,
+            cantidad,
+          },
+          HOY,
+        )
+      comprar(2)
+      const cancelada = comprar(1)
+      compras.cancelar(beto, cancelada.id, HOY)
+
+      expect(service.entradasDe(beto, evento)).toBe(2)
+      expect(service.entradasDe(carla, evento)).toBe(0)
+    })
+  })
+
   test("misEventos devuelve solo los que organizo", () => {
     crear(ana, { nombre: "Mío" })
     crear(beto, { nombre: "De otro" })

@@ -1,5 +1,6 @@
 import Evento from "../domain/Evento.js"
 import TipoEntrada from "../domain/TipoEntrada.js"
+import entradasRetenidas from "../domain/entradasRetenidas.js"
 import reputacion from "../domain/reputacion.js"
 import { NoAutorizado } from "../errors/ApplicationErrors.js"
 
@@ -72,6 +73,9 @@ export default class EventoService {
     const compras = this.compras.filtrar((compra) => compra.evento === evento)
     return { evento, compras }
   }
+
+  entradasDe = (usuario, evento) =>
+    entradasRetenidas(usuario, evento, this.compras.todos())
 
   reputacionDe = (organizador) =>
     reputacion(
