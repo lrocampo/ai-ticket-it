@@ -57,7 +57,7 @@ async function elegirGeneral(evento: EventoDetalle) {
 
 async function sumarHastaElTope() {
   for (let i = 0; i < 10; i++) {
-    const sumar = screen.getByRole("button", { name: "Sumar uno" })
+    const sumar = screen.getByRole("button", { name: "Agregar una entrada" })
     if (sumar.props.accessibilityState?.disabled) break
     await fireEvent.press(sumar)
   }
