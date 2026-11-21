@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons"
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { router, Stack, usePreventRemove } from "expo-router"
 import { useState } from "react"
@@ -13,6 +12,7 @@ import {
 } from "react-native"
 
 import { Boton } from "../../src/components/Boton"
+import { BotonQuitar } from "../../src/components/BotonQuitar"
 import { Campo } from "../../src/components/Campo"
 import { Cargable } from "../../src/components/Cargable"
 import { Chip } from "../../src/components/Chip"
@@ -20,10 +20,12 @@ import { Seccion } from "../../src/components/Seccion"
 import {
   armarNuevoEvento,
   type CampoDelEvento,
+  type ErrorDeImagen,
   type ErrorDelFormulario,
   type FormularioEvento,
   formularioTieneDatos,
   formularioVacio,
+  imagenVacia,
   TIPO_VACIO,
   type TipoEntradaFormulario,
 } from "../../src/features/eventos/armarNuevoEvento"
@@ -34,8 +36,6 @@ import { crearEvento, listarCategorias } from "../../src/services/api"
 import { theme } from "../../src/theme"
 import { confirmar } from "../../src/utils/confirmar"
 import { formatearFecha } from "../../src/utils/fechas"
-
-const ICONO_QUITAR = 20
 
 export default function CrearEvento() {
   const categorias = useCarga(listarCategorias, [])
@@ -84,7 +84,9 @@ export default function CrearEvento() {
 
   function mostrarError(nuevo: ErrorDelFormulario) {
     setError(nuevo)
-    AccessibilityInfo.announceForAccessibility(nuevo.mensaje)
+    AccessibilityInfo.announceForAccessibility(
+      nuevo.campo === "imagen" ? textoDeImagen(nuevo) : nuevo.mensaje,
+    )
   }
 
   function cambiarTipo(indice: number, tipo: TipoEntradaFormulario) {
@@ -104,7 +106,7 @@ export default function CrearEvento() {
   function cambiarImagen(indice: number, url: string) {
     actualizar(
       "imagenes",
-      imagenes.map((actual, i) => (i === indice ? url : actual)),
+      imagenes.map((actual, i) => (i === indice ? { ...actual, url } : actual)),
     )
   }
 
@@ -113,6 +115,7 @@ export default function CrearEvento() {
       "imagenes",
       imagenes.filter((_, i) => i !== indice),
     )
+    AccessibilityInfo.announceForAccessibility(`Imagen ${indice + 1} quitada`)
   }
 
   function crear() {
@@ -184,44 +187,37 @@ export default function CrearEvento() {
               {errorDe("categoriaId") && (
                 <Text style={theme.texto.error}>{errorDe("categoriaId")}</Text>
               )}
+              <Text style={theme.texto.destacado}>Imágenes</Text>
               <Text style={theme.texto.secundario}>
                 Opcional. La primera es la portada.
               </Text>
-              {imagenes.map((url, indice) => (
-                <View key={indice} style={styles.filaDeImagen}>
-                  <View style={styles.columnaDeImagen}>
-                    <Campo
-                      etiqueta={`Imagen ${indice + 1}`}
-                      value={url}
-                      onChangeText={(nueva) => cambiarImagen(indice, nueva)}
-                      placeholder="https://"
-                      keyboardType="url"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      error={errorDeImagen(indice)}
-                    />
-                  </View>
-                  {imagenes.length > 1 && (
-                    <Pressable
-                      onPress={() => quitarImagen(indice)}
-                      hitSlop={theme.margenTactil(ICONO_QUITAR)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Quitar imagen ${indice + 1}`}
-                      style={styles.quitarImagen}
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={ICONO_QUITAR}
-                        color={theme.colores.error}
+              {imagenes.map(({ id, url }, indice) => (
+                <Campo
+                  key={id}
+                  etiqueta={`Imagen ${indice + 1}`}
+                  value={url}
+                  onChangeText={(nueva) => cambiarImagen(indice, nueva)}
+                  placeholder="https://"
+                  keyboardType="url"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  error={errorDeImagen(indice)}
+                  accesorio={
+                    imagenes.length > 1 && (
+                      <BotonQuitar
+                        etiqueta={`Quitar imagen ${indice + 1}`}
+                        onPress={() => quitarImagen(indice)}
                       />
-                    </Pressable>
-                  )}
-                </View>
+                    )
+                  }
+                />
               ))}
               <Boton
                 texto="Agregar otra imagen"
                 tono="secundario"
-                onPress={() => actualizar("imagenes", [...imagenes, ""])}
+                onPress={() =>
+                  actualizar("imagenes", [...imagenes, imagenVacia()])
+                }
               />
               <Campo
                 etiqueta="Máximo de entradas por persona"
@@ -317,10 +313,15 @@ export default function CrearEvento() {
   )
 }
 
+function textoDeImagen(error: ErrorDeImagen) {
+  return `Imagen ${error.indice + 1}: ${error.mensaje}`
+}
+
 function resumenDelError(
   error: ErrorDelFormulario,
   tipos: TipoEntradaFormulario[],
 ) {
+  if (error.campo === "imagen") return textoDeImagen(error)
   if (error.campo !== "tipo") return error.mensaje
   const nombre = tipos[error.indice]?.nombre.trim()
   return nombre ? `«${nombre}»: ${error.mensaje}` : error.mensaje
@@ -335,19 +336,6 @@ const styles = StyleSheet.create({
     padding: theme.espacios.l,
     paddingBottom: theme.espacios.xl * 2,
     gap: theme.espacios.l,
-  },
-  filaDeImagen: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: theme.espacios.m,
-  },
-  columnaDeImagen: {
-    flex: 1,
-  },
-  // Baja el ícono hasta el centro del input, debajo de la etiqueta del Campo.
-  quitarImagen: {
-    marginTop:
-      theme.texto.destacado.lineHeight + theme.espacios.xs + theme.espacios.s,
   },
   chips: {
     flexDirection: "row",

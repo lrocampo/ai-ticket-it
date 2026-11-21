@@ -5,6 +5,8 @@ import {
   within,
 } from "@testing-library/react-native"
 
+import { AccessibilityInfo } from "react-native"
+
 import CrearEvento from "../../../app/evento/nuevo"
 import { crearEvento, listarCategorias } from "../../services/api"
 
@@ -22,6 +24,7 @@ jest.mock("expo-router", () => {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  jest.spyOn(AccessibilityInfo, "announceForAccessibility").mockImplementation()
   jest
     .mocked(listarCategorias)
     .mockResolvedValue([{ id: "1", nombre: "Música", descripcion: "" }])
@@ -35,12 +38,17 @@ async function completarElEvento() {
   await fireEvent.press(screen.getByRole("button", { name: "Música" }))
 }
 
+async function completarLaEntrada() {
+  await fireEvent.changeText(screen.getByLabelText("Precio"), "1000")
+  await fireEvent.changeText(screen.getByLabelText("Cupo"), "10")
+}
+
 function crear() {
   return fireEvent.press(screen.getByRole("button", { name: "Crear evento" }))
 }
 
 function campo(etiqueta: string, indice = 0) {
-  return within(screen.getAllByLabelText(etiqueta)[indice].parent!)
+  return within(screen.getAllByLabelText(etiqueta)[indice].parent!.parent!)
 }
 
 function textoAntesDelBoton() {
@@ -92,11 +100,6 @@ test("el máximo de entradas por persona arranca en 6 y su error aparece debajo 
   expect(crearEvento).not.toHaveBeenCalled()
 })
 
-async function completarLaEntrada() {
-  await fireEvent.changeText(screen.getByLabelText("Precio"), "1000")
-  await fireEvent.changeText(screen.getByLabelText("Cupo"), "10")
-}
-
 test("se pueden cargar varias imágenes y viajan todas, en orden, al crear", async () => {
   jest.mocked(crearEvento).mockResolvedValue({ id: "9" } as never)
   await completarElEvento()
@@ -125,10 +128,8 @@ test("se pueden cargar varias imágenes y viajan todas, en orden, al crear", asy
   )
 })
 
-test("una fila de imagen se puede quitar y con una sola no hay cómo quitarla", async () => {
-  jest.mocked(crearEvento).mockResolvedValue({ id: "9" } as never)
+test("una fila de imagen se puede quitar, se anuncia, y con una sola no hay cómo quitarla", async () => {
   await completarElEvento()
-  await completarLaEntrada()
   expect(screen.queryByRole("button", { name: /Quitar imagen/ })).toBeNull()
 
   await fireEvent.press(
@@ -149,9 +150,8 @@ test("una fila de imagen se puede quitar y con una sola no hay cómo quitarla", 
     "value",
     "https://ejemplo.com/b.jpg",
   )
-  await crear()
-  expect(crearEvento).toHaveBeenCalledWith(
-    expect.objectContaining({ multimedia: ["https://ejemplo.com/b.jpg"] }),
+  expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
+    "Imagen 1 quitada",
   )
 })
 
@@ -173,5 +173,11 @@ test("el error de una URL inválida aparece debajo de la fila de esa imagen", as
     ),
   ).toBeVisible()
   expect(campo("Imagen 1").queryByText(/La URL/)).toBeNull()
+  expect(textoAntesDelBoton()).toBe(
+    "Imagen 2: La URL de la imagen tiene que empezar con http:// o https://.",
+  )
+  expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
+    "Imagen 2: La URL de la imagen tiene que empezar con http:// o https://.",
+  )
   expect(crearEvento).not.toHaveBeenCalled()
 })

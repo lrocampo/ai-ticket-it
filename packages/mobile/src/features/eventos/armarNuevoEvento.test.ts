@@ -6,6 +6,10 @@ import {
   TIPO_VACIO,
 } from "./armarNuevoEvento"
 
+function imagenes(...urls: string[]) {
+  return urls.map((url, id) => ({ id, url }))
+}
+
 const fecha = new Date("2026-12-20T21:00:00.000Z")
 
 function formulario(cambios: Partial<FormularioEvento> = {}): FormularioEvento {
@@ -14,7 +18,7 @@ function formulario(cambios: Partial<FormularioEvento> = {}): FormularioEvento {
     descripcion: "Banda en vivo",
     categoriaId: "musica",
     fecha,
-    imagenes: [""],
+    imagenes: imagenes(""),
     limitePorUsuario: "6",
     tiposEntrada: [
       { nombre: "General", descripcion: "", precio: "15000", cupo: "200" },
@@ -25,7 +29,7 @@ function formulario(cambios: Partial<FormularioEvento> = {}): FormularioEvento {
 
 test("convierte los textos del formulario en el body de POST /eventos", () => {
   const resultado = armar(
-    formulario({ imagenes: [" https://ejemplo.com/a.jpg "] }),
+    formulario({ imagenes: imagenes(" https://ejemplo.com/a.jpg ") }),
   )
 
   expect(resultado).toEqual({
@@ -44,7 +48,7 @@ test("convierte los textos del formulario en el body de POST /eventos", () => {
 })
 
 test("sin imagen manda multimedia vacío", () => {
-  const resultado = armar(formulario({ imagenes: ["  "] }))
+  const resultado = armar(formulario({ imagenes: imagenes("  ") }))
 
   expect(resultado).toMatchObject({ evento: { multimedia: [] } })
 })
@@ -52,12 +56,12 @@ test("sin imagen manda multimedia vacío", () => {
 test("manda las imágenes en el orden del formulario y ignora las filas vacías", () => {
   const resultado = armar(
     formulario({
-      imagenes: [
+      imagenes: imagenes(
         "https://ejemplo.com/portada.jpg",
         " ",
         " http://ejemplo.com/b.jpg ",
         "",
-      ],
+      ),
     }),
   )
 
@@ -74,7 +78,10 @@ test("manda las imágenes en el orden del formulario y ignora las filas vacías"
 test("una URL inválida señala la fila de esa imagen", () => {
   const resultado = armar(
     formulario({
-      imagenes: ["https://ejemplo.com/a.jpg", "ftp://ejemplo.com/b.jpg"],
+      imagenes: imagenes(
+        "https://ejemplo.com/a.jpg",
+        "ftp://ejemplo.com/b.jpg",
+      ),
     }),
   )
 
@@ -219,8 +226,8 @@ test("el formulario recién abierto no tiene nada que descartar", () => {
 test.each<[string, Partial<FormularioEvento>]>([
   ["un nombre", { nombre: "Recital" }],
   ["una categoría", { categoriaId: "musica" }],
-  ["una URL", { imagenes: ["https://"] }],
-  ["una URL en la segunda fila", { imagenes: ["", "https://"] }],
+  ["una URL", { imagenes: imagenes("https://") }],
+  ["una URL en la segunda fila", { imagenes: imagenes("", "https://") }],
   ["otro máximo por persona", { limitePorUsuario: "2" }],
   [
     "un precio en un tipo",

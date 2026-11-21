@@ -7,12 +7,17 @@ export type TipoEntradaFormulario = {
   cupo: string
 }
 
+export type ImagenFormulario = {
+  id: number
+  url: string
+}
+
 export type FormularioEvento = {
   nombre: string
   descripcion: string
   categoriaId: string | null
   fecha: Date
-  imagenes: string[]
+  imagenes: ImagenFormulario[]
   limitePorUsuario: string
   tiposEntrada: TipoEntradaFormulario[]
 }
@@ -47,6 +52,13 @@ export const TIPO_VACIO: TipoEntradaFormulario = {
   cupo: "",
 }
 
+let ultimoIdDeImagen = 0
+
+export function imagenVacia(): ImagenFormulario {
+  ultimoIdDeImagen += 1
+  return { id: ultimoIdDeImagen, url: "" }
+}
+
 const NOMBRE_SUGERIDO = "General"
 const LIMITE_POR_USUARIO_POR_DEFECTO = 6
 
@@ -59,7 +71,7 @@ export function formularioVacio(): FormularioEvento {
     descripcion: "",
     categoriaId: null,
     fecha,
-    imagenes: [""],
+    imagenes: [imagenVacia()],
     limitePorUsuario: String(LIMITE_POR_USUARIO_POR_DEFECTO),
     tiposEntrada: [{ ...TIPO_VACIO, nombre: NOMBRE_SUGERIDO }],
   }
@@ -79,7 +91,9 @@ export function formularioTieneDatos(formulario: FormularioEvento) {
   const { nombre, descripcion, categoriaId, imagenes, tiposEntrada } =
     formulario
   return (
-    [nombre, descripcion, ...imagenes].some((campo) => campo.trim() !== "") ||
+    [nombre, descripcion, ...imagenes.map((imagen) => imagen.url)].some(
+      (campo) => campo.trim() !== "",
+    ) ||
     categoriaId !== null ||
     formulario.limitePorUsuario.trim() !==
       String(LIMITE_POR_USUARIO_POR_DEFECTO) ||
@@ -116,8 +130,8 @@ export function armarNuevoEvento(
   }
 
   const multimedia: string[] = []
-  for (const [indice, texto] of formulario.imagenes.entries()) {
-    const url = texto.trim()
+  for (const [indice, imagen] of formulario.imagenes.entries()) {
+    const url = imagen.url.trim()
     if (url === "") continue
     if (!/^https?:\/\/\S+$/i.test(url)) {
       return {
