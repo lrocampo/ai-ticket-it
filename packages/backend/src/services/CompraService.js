@@ -1,5 +1,4 @@
 import Compra from "../domain/Compra.js"
-import entradasRetenidas from "../domain/entradasRetenidas.js"
 import { EntityNotFound, NoAutorizado } from "../errors/ApplicationErrors.js"
 
 export default class CompraService {
@@ -14,13 +13,8 @@ export default class CompraService {
     if (!tipoEntrada) {
       throw new EntityNotFound("El tipo de entrada no existe en este evento.")
     }
-    const entradasPrevias = entradasRetenidas(
-      comprador,
-      evento,
-      this.compras.todos(),
-    )
     const compra = new Compra(
-      { comprador, evento, tipoEntrada, cantidad, entradasPrevias },
+      { comprador, evento, tipoEntrada, cantidad },
       ahora,
     )
     return this.compras.guardar(compra)

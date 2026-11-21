@@ -40,13 +40,9 @@ export const presentarEvento = (evento, reputacion) => ({
   limitePorUsuario: evento.limitePorUsuario,
 })
 
-export const presentarEventoDetalle = (
-  evento,
-  reputacion,
-  entradasDelUsuario,
-) => ({
+export const presentarEventoDetalle = (evento, reputacion, usuario) => ({
   ...presentarEvento(evento, reputacion),
-  entradasDelUsuario,
+  entradasDelUsuario: evento.entradasDe(usuario),
   resenasDelOrganizador: reputacion.resenas.map(presentarResena),
 })
 

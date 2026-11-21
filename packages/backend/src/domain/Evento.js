@@ -4,9 +4,11 @@ import {
 } from "./errors/DomainErrors.js"
 import { MILISEGUNDOS_POR_DIA } from "../utils/fechas.js"
 
-export const LIMITE_POR_USUARIO_POR_DEFECTO = 6
+const LIMITE_POR_USUARIO_POR_DEFECTO = 6
 
 export default class Evento {
+  #retenidas = new Map()
+
   constructor(
     {
       nombre,
@@ -80,18 +82,25 @@ export default class Evento {
     return this.tiposEntrada.find((tipo) => tipo.id === id)
   }
 
-  entradasRestantesPara(entradasQueYaTiene) {
-    return Math.max(0, this.limitePorUsuario - entradasQueYaTiene)
+  entradasDe(usuario) {
+    return this.#retenidas.get(usuario.id) ?? 0
   }
 
-  verificarLimite(cantidad, entradasQueYaTiene) {
-    if (cantidad > this.entradasRestantesPara(entradasQueYaTiene)) {
-      const yaTiene =
-        entradasQueYaTiene > 0 ? `: ya tenés ${entradasQueYaTiene}` : ""
+  reservar(comprador, tipoEntrada, cantidad) {
+    const yaTiene = this.entradasDe(comprador)
+    if (yaTiene + cantidad > this.limitePorUsuario) {
+      const detalle = yaTiene > 0 ? `: ya tenés ${yaTiene}` : ""
       throw new DomainRuleError(
-        `Hasta ${this.limitePorUsuario} entradas por persona para este evento${yaTiene}.`,
+        `Hasta ${this.limitePorUsuario} entradas por persona para este evento${detalle}.`,
       )
     }
+    tipoEntrada.reservar(cantidad)
+    this.#retenidas.set(comprador.id, yaTiene + cantidad)
+  }
+
+  liberar(comprador, tipoEntrada, cantidad) {
+    tipoEntrada.liberar(cantidad)
+    this.#retenidas.set(comprador.id, this.entradasDe(comprador) - cantidad)
   }
 
   esOrganizador(usuario) {

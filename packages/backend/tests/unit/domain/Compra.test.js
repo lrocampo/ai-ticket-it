@@ -85,22 +85,34 @@ describe("Compra", () => {
       expect(tipo.disponibles()).toBe(10)
     })
 
-    test("cuenta las entradas que el comprador ya tenía", () => {
-      const compraConPrevias = (cantidad, entradasPrevias) =>
-        new Compra(
-          {
-            comprador,
-            evento: recital,
-            tipoEntrada: tipo,
-            cantidad,
-            entradasPrevias,
-          },
-          HOY,
-        )
+    test("cuenta las entradas de las compras anteriores del comprador", () => {
+      comprar(4)
 
-      expect(() => compraConPrevias(3, 4)).toThrow("ya tenés 4")
-      expect(tipo.disponibles()).toBe(10)
-      expect(compraConPrevias(2, 4).cantidad).toBe(2)
+      expect(() => comprar(3)).toThrow(
+        "Hasta 6 entradas por persona para este evento: ya tenés 4.",
+      )
+      expect(tipo.disponibles()).toBe(6)
+      expect(comprar(2).cantidad).toBe(2)
+    })
+
+    test("es por comprador", () => {
+      comprar(6)
+
+      const deTercero = new Compra(
+        { comprador: tercero, evento: recital, tipoEntrada: tipo, cantidad: 4 },
+        HOY,
+      )
+      expect(deTercero.cantidad).toBe(4)
+    })
+
+    test.each([
+      ["cancelada", CANCELADA],
+      ["reembolsada", REEMBOLSADA],
+    ])("una compra %s ya no cuenta para el límite", (_, estado) => {
+      llevarA[estado]()
+      comprar(2)
+
+      expect(comprar(4).cantidad).toBe(4)
     })
 
     test("el límite lo decide cada evento", () => {
@@ -135,18 +147,6 @@ describe("Compra", () => {
             sumarDias(HOY, 11),
           ),
       ).toThrow(DomainRuleError)
-    })
-  })
-
-  describe("retieneEntradas", () => {
-    test.each([
-      [PENDIENTE, true],
-      [CONFIRMADA, true],
-      [UTILIZADA, true],
-      [CANCELADA, false],
-      [REEMBOLSADA, false],
-    ])("en %s es %s", (estado, retiene) => {
-      expect(llevarA[estado]().retieneEntradas()).toBe(retiene)
     })
   })
 
@@ -245,6 +245,8 @@ describe("Compra", () => {
 
   describe("derivados", () => {
     test("diasParaElEvento solo cuando está CONFIRMADA y el evento no ocurrió", () => {
+      recital = evento({ organizador, limitePorUsuario: 20 })
+      tipo = recital.tiposEntrada[0]
       expect(comprar().diasParaElEvento(HOY)).toBeNull()
       expect(llevarA[CONFIRMADA]().diasParaElEvento(HOY)).toBe(10)
       expect(llevarA[UTILIZADA]().diasParaElEvento(HOY)).toBeNull()

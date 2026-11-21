@@ -74,70 +74,35 @@ describe("CompraService", () => {
     })
   })
 
-  describe("límite por usuario", () => {
-    let concurrido
-    const comprarEntradas = (cantidad, quien = compradora) =>
+  test("el límite por usuario suma todos los tipos del evento y se libera al cancelar", () => {
+    const concurrido = repositorios.eventos.guardar(
+      evento({
+        organizador,
+        limitePorUsuario: 4,
+        tiposEntrada: [
+          tipoEntrada({ cupo: 50 }),
+          tipoEntrada({ nombre: "VIP", cupo: 50 }),
+        ],
+      }),
+    )
+    const comprarDelTipo = (posicion, cantidad) =>
       service.crear(
-        quien,
+        compradora,
         {
           eventoId: concurrido.id,
-          tipoEntradaId: concurrido.tiposEntrada[0].id,
+          tipoEntradaId: concurrido.tiposEntrada[posicion].id,
           cantidad,
         },
         HOY,
       )
+    const primera = comprarDelTipo(0, 3)
 
-    beforeEach(() => {
-      concurrido = repositorios.eventos.guardar(
-        evento({
-          organizador,
-          limitePorUsuario: 4,
-          tiposEntrada: [
-            tipoEntrada({ cupo: 50 }),
-            tipoEntrada({ nombre: "VIP", cupo: 50 }),
-          ],
-        }),
-      )
-    })
+    expect(() => comprarDelTipo(1, 2)).toThrow(DomainRuleError)
+    expect(concurrido.tiposEntrada[1].disponibles()).toBe(50)
 
-    test("dos compras que juntas lo superan: falla la segunda y no reserva", () => {
-      comprarEntradas(3)
+    service.cancelar(compradora, primera.id, HOY)
 
-      expect(() => comprarEntradas(2)).toThrow(DomainRuleError)
-      expect(concurrido.tiposEntrada[0].disponibles()).toBe(47)
-      expect(service.mias(compradora)).toHaveLength(1)
-    })
-
-    test("cuenta todos los tipos de entrada del evento", () => {
-      comprarEntradas(3)
-
-      expect(() =>
-        service.crear(
-          compradora,
-          {
-            eventoId: concurrido.id,
-            tipoEntradaId: concurrido.tiposEntrada[1].id,
-            cantidad: 2,
-          },
-          HOY,
-        ),
-      ).toThrow(DomainRuleError)
-    })
-
-    test("es por usuario", () => {
-      comprarEntradas(4)
-
-      expect(comprarEntradas(4, ajeno).cantidad).toBe(4)
-    })
-
-    test("después de cancelar, el usuario puede volver a comprar", () => {
-      const compra = comprarEntradas(4)
-      expect(() => comprarEntradas(1)).toThrow(DomainRuleError)
-
-      service.cancelar(compradora, compra.id, HOY)
-
-      expect(comprarEntradas(4).cantidad).toBe(4)
-    })
+    expect(comprarDelTipo(1, 4).cantidad).toBe(4)
   })
 
   test("cancelar libera el cupo en el catálogo", () => {

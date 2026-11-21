@@ -69,6 +69,6 @@ export default class EventoController {
     presentarEventoDetalle(
       evento,
       this.eventoService.reputacionDe(evento.organizador),
-      this.eventoService.entradasDe(usuario, evento),
+      usuario,
     )
 }
