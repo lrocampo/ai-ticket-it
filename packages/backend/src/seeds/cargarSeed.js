@@ -49,7 +49,11 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
       new Evento(
         {
           ...datos,
-          multimedia: [1, 2, 3].map((n) => imagen(`${datos.semilla}-${n}`)),
+          multimedia: [
+            imagen(datos.semilla),
+            imagen(`${datos.semilla}-2`),
+            imagen(`${datos.semilla}-3`),
+          ],
         },
         creado,
       ),

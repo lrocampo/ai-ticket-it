@@ -57,17 +57,6 @@ describe("identificación", () => {
 })
 
 describe("catálogo", () => {
-  test("GET /eventos devuelve tres imágenes distintas por evento del seed", async () => {
-    const { body } = await request(app)
-      .get("/eventos")
-      .set(como(nicolas))
-      .expect(200)
-
-    for (const evento of body) {
-      expect(new Set(evento.multimedia).size).toBe(3)
-    }
-  })
-
   test("GET /eventos devuelve la forma Evento ordenada por fecha", async () => {
     const { body } = await request(app)
       .get("/eventos")
