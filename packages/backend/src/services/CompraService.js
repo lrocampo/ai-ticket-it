@@ -17,6 +17,7 @@ export default class CompraService {
       { comprador, evento, tipoEntrada, cantidad },
       ahora,
     )
+    this.eventos.guardar(evento)
     return this.compras.guardar(compra)
   }
 
@@ -34,37 +35,38 @@ export default class CompraService {
   confirmarPago = (usuario, id, ahora) => {
     const compra = this.#autorizada(usuario, id, "confirmarPago")
     compra.confirmarPago(usuario, ahora)
-    return compra
+    return this.compras.guardar(compra)
   }
 
   utilizar = (usuario, id, ahora) => {
     const compra = this.#autorizada(usuario, id, "utilizar")
     compra.utilizar(usuario, ahora)
-    return compra
+    return this.compras.guardar(compra)
   }
 
   cancelar = (usuario, id, ahora) => {
     const compra = this.#autorizada(usuario, id, "cancelar")
     compra.cancelar(usuario, ahora)
-    return compra
+    this.eventos.guardar(compra.evento)
+    return this.compras.guardar(compra)
   }
 
   reembolsar = (usuario, id, ahora) => {
     const compra = this.#autorizada(usuario, id, "reembolsar")
     compra.reembolsar(usuario, ahora)
-    return compra
+    return this.compras.guardar(compra)
   }
 
   enviarMensaje = (usuario, id, texto, ahora) => {
     const compra = this.porId(usuario, id)
     compra.enviarMensaje(usuario, texto, ahora)
-    return compra
+    return this.compras.guardar(compra)
   }
 
   resenar = (usuario, id, { puntuacion, detalle }, ahora) => {
     const compra = this.#autorizada(usuario, id, "resenar")
     compra.resenar(puntuacion, detalle, ahora)
-    return compra
+    return this.compras.guardar(compra)
   }
 
   #autorizada(usuario, id, accion) {
