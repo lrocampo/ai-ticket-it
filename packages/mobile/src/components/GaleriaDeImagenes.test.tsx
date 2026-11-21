@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from "@testing-library/react-native"
-import { Dimensions } from "react-native"
 
 import { GaleriaDeImagenes } from "./GaleriaDeImagenes"
 
@@ -22,26 +21,46 @@ test("muestra una imagen por URL, cada una con su lugar en la galería", async (
   }
 })
 
-test("con varias imágenes indica cuál se está viendo", async () => {
-  await galeria(urls)
+function verPagina(indice: number) {
+  return fireEvent(screen.getByTestId("galeria"), "viewableItemsChanged", {
+    viewableItems: [{ index: indice, item: urls[indice], isViewable: true }],
+  })
+}
 
-  expect(screen.getByText("1 / 3")).toBeVisible()
+test("indica cuál imagen se ve y sigue a la que queda visible", async () => {
+  await galeria(urls)
+  expect(
+    screen.getByText("1 / 3", { includeHiddenElements: true }),
+  ).toBeOnTheScreen()
+
+  await verPagina(1)
+
+  expect(
+    screen.getByText("2 / 3", { includeHiddenElements: true }),
+  ).toBeOnTheScreen()
+  expect(
+    screen.queryByText("1 / 3", { includeHiddenElements: true }),
+  ).toBeNull()
 })
 
-test("al deslizar a la segunda página indica 2 / 3", async () => {
+test("el indicador no se expone a lectores de pantalla", async () => {
   await galeria(urls)
-  const { width } = Dimensions.get("window")
 
-  await fireEvent(screen.getByTestId("galeria"), "momentumScrollEnd", {
-    nativeEvent: {
-      contentOffset: { x: width },
-      layoutMeasurement: { width },
-      contentSize: { width: width * 3 },
-    },
-  })
-
-  expect(screen.getByText("2 / 3")).toBeVisible()
   expect(screen.queryByText("1 / 3")).toBeNull()
+})
+
+test("si una imagen no carga, su página muestra el ícono de sin imagen", async () => {
+  await galeria(urls)
+  expect(screen.queryByTestId("sin-imagen")).toBeNull()
+
+  await fireEvent(screen.getByLabelText("Imagen 1 de 3 de Recital"), "error")
+
+  expect(screen.getByTestId("sin-imagen")).toBeOnTheScreen()
+  expect(screen.getByLabelText("Imagen 1 de 3 de Recital")).toBeOnTheScreen()
+  expect(screen.getByLabelText("Imagen 2 de 3 de Recital")).toHaveProp(
+    "source",
+    { uri: urls[1] },
+  )
 })
 
 test("con una sola imagen no muestra indicador", async () => {

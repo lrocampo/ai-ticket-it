@@ -1,9 +1,7 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import {
   FlatList,
   Image,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -11,23 +9,26 @@ import {
 } from "react-native"
 
 import { theme } from "../theme"
+import { SinImagen } from "./SinImagen"
 
 type Props = {
   urls: string[]
   nombreDelEvento: string
 }
 
+const CONFIGURACION_DE_VISTA = { itemVisiblePercentThreshold: 50 }
+
 export function GaleriaDeImagenes({ urls, nombreDelEvento }: Props) {
   const { width } = useWindowDimensions()
   const [pagina, setPagina] = useState(0)
+  const alCambiarLasVisibles = useRef(
+    ({ viewableItems }: { viewableItems: { index?: number | null }[] }) => {
+      const visible = viewableItems[0]?.index
+      if (visible != null) setPagina(visible)
+    },
+  )
 
   if (urls.length === 0) return null
-
-  function alTerminarDeDeslizar(
-    evento: NativeSyntheticEvent<NativeScrollEvent>,
-  ) {
-    setPagina(Math.round(evento.nativeEvent.contentOffset.x / width))
-  }
 
   return (
     <View>
@@ -38,25 +39,53 @@ export function GaleriaDeImagenes({ urls, nombreDelEvento }: Props) {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={alTerminarDeDeslizar}
+        viewabilityConfig={CONFIGURACION_DE_VISTA}
+        onViewableItemsChanged={alCambiarLasVisibles.current}
         renderItem={({ item, index }) => (
-          <Image
-            source={{ uri: item }}
-            accessible
-            accessibilityLabel={`Imagen ${index + 1} de ${urls.length} de ${nombreDelEvento}`}
-            style={[styles.imagen, { width }]}
+          <PaginaDeGaleria
+            url={item}
+            width={width}
+            etiqueta={`Imagen ${index + 1} de ${urls.length} de ${nombreDelEvento}`}
           />
         )}
       />
       {urls.length > 1 && (
         <Text
           style={styles.indicador}
-          accessibilityLabel={`Imagen ${pagina + 1} de ${urls.length}`}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
         >
           {pagina + 1} / {urls.length}
         </Text>
       )}
     </View>
+  )
+}
+
+type PaginaProps = {
+  url: string
+  width: number
+  etiqueta: string
+}
+
+function PaginaDeGaleria({ url, width, etiqueta }: PaginaProps) {
+  const [fallo, setFallo] = useState(false)
+  const propiedades = {
+    accessible: true,
+    accessibilityRole: "image",
+    accessibilityLabel: etiqueta,
+    style: [styles.imagen, { width }],
+  } as const
+
+  return fallo ? (
+    <SinImagen {...propiedades} />
+  ) : (
+    <Image
+      source={{ uri: url }}
+      onError={() => setFallo(true)}
+      {...propiedades}
+    />
   )
 }
 
