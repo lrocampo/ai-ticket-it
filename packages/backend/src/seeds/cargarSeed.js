@@ -132,7 +132,7 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
       descripcion:
         "Dos jornadas con peñas, feria de artesanos y cierre con una chacarera multitudinaria.",
       categoria: categoria.Festivales,
-      fecha: enDias(55, 18),
+      fecha: enDias(35, 18),
       organizador: martin,
       semilla: "folklore-cosquin",
       tiposEntrada: tipos([
