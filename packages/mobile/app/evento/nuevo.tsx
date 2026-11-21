@@ -177,7 +177,6 @@ export default function CrearEvento() {
                 onChangeText={(limite) =>
                   actualizar("limitePorUsuario", limite)
                 }
-                placeholder="6"
                 keyboardType="number-pad"
                 error={errorDe("limitePorUsuario")}
               />

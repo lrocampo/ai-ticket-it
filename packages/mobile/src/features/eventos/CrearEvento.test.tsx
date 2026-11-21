@@ -86,7 +86,7 @@ test("el máximo de entradas por persona arranca en 6 y su error aparece debajo 
 
   expect(
     campo("Máximo de entradas por persona").getByText(
-      "Escribí un número entero de 1 en adelante, por ejemplo 6.",
+      "No es un número válido. Escribilo sin puntos de miles, por ejemplo 6.",
     ),
   ).toBeVisible()
   expect(crearEvento).not.toHaveBeenCalled()

@@ -181,6 +181,7 @@ test.each<[string, Partial<FormularioEvento>]>([
   ["un nombre", { nombre: "Recital" }],
   ["una categoría", { categoriaId: "musica" }],
   ["una URL", { imagen: "https://" }],
+  ["otro máximo por persona", { limitePorUsuario: "2" }],
   [
     "un precio en un tipo",
     { tiposEntrada: [{ ...TIPO_VACIO, nombre: "General", precio: "100" }] },
@@ -197,12 +198,15 @@ test("el máximo de entradas por persona arranca en 6 y viaja como número", () 
   })
 })
 
+const SIN_NUMERO =
+  "No es un número válido. Escribilo sin puntos de miles, por ejemplo 6."
+
 test.each([
   ["", "Completá el máximo de entradas por persona."],
-  ["0", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
-  ["2,5", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
-  ["-3", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
-  ["seis", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
+  ["0", SIN_NUMERO],
+  ["2,5", SIN_NUMERO],
+  ["-3", SIN_NUMERO],
+  ["seis", SIN_NUMERO],
 ])("el máximo por persona %p se corrige en su campo", (valor, mensaje) => {
   expect(armar(formulario({ limitePorUsuario: valor }))).toEqual({
     error: { campo: "limitePorUsuario", mensaje },

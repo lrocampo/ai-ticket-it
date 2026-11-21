@@ -70,6 +70,8 @@ export function formularioTieneDatos(formulario: FormularioEvento) {
   return (
     [nombre, descripcion, imagen].some((campo) => campo.trim() !== "") ||
     categoriaId !== null ||
+    formulario.limitePorUsuario.trim() !==
+      String(LIMITE_POR_USUARIO_POR_DEFECTO) ||
     tiposEntrada.some(tipoTieneDatos)
   )
 }
@@ -109,17 +111,11 @@ export function armarNuevoEvento(
     )
   }
 
-  const limitePorUsuario = formulario.limitePorUsuario.trim()
-  if (limitePorUsuario === "") {
+  const limitePorUsuario = aEntero(formulario.limitePorUsuario)
+  if (limitePorUsuario === null) {
     return falta(
       "limitePorUsuario",
-      "Completá el máximo de entradas por persona.",
-    )
-  }
-  if (!/^\d+$/.test(limitePorUsuario) || Number(limitePorUsuario) < 1) {
-    return falta(
-      "limitePorUsuario",
-      "Escribí un número entero de 1 en adelante, por ejemplo 6.",
+      errorDeNumero("limitePorUsuario", formulario.limitePorUsuario),
     )
   }
 
@@ -156,7 +152,7 @@ export function armarNuevoEvento(
       categoriaId,
       fecha: fecha.toISOString(),
       multimedia: imagen === "" ? [] : [imagen],
-      limitePorUsuario: Number(limitePorUsuario),
+      limitePorUsuario,
       tiposEntrada: tipos,
     },
   }
@@ -170,9 +166,22 @@ function aNumero(texto: string): number | null {
   return Number(limpio.replace(",", "."))
 }
 
-const EJEMPLOS = { precio: "15000 o 1500,50", cupo: "200" }
+function aEntero(texto: string): number | null {
+  const limpio = texto.trim()
+  return /^[1-9]\d*$/.test(limpio) ? Number(limpio) : null
+}
 
-function errorDeNumero(campo: keyof typeof EJEMPLOS, texto: string) {
-  if (texto.trim() === "") return `Completá el ${campo}.`
-  return `No es un número válido. Escribilo sin puntos de miles, por ejemplo ${EJEMPLOS[campo]}.`
+const CAMPOS_NUMERICOS = {
+  precio: { nombre: "precio", ejemplo: "15000 o 1500,50" },
+  cupo: { nombre: "cupo", ejemplo: "200" },
+  limitePorUsuario: {
+    nombre: "máximo de entradas por persona",
+    ejemplo: String(LIMITE_POR_USUARIO_POR_DEFECTO),
+  },
+}
+
+function errorDeNumero(campo: keyof typeof CAMPOS_NUMERICOS, texto: string) {
+  const { nombre, ejemplo } = CAMPOS_NUMERICOS[campo]
+  if (texto.trim() === "") return `Completá el ${nombre}.`
+  return `No es un número válido. Escribilo sin puntos de miles, por ejemplo ${ejemplo}.`
 }

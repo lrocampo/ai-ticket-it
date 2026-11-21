@@ -14,7 +14,7 @@ import type { EventoDetalle, TipoEntrada, Usuario } from "../../types"
 import { formatearPesos } from "../../utils/fechas"
 
 function entradasRestantes(evento: EventoDetalle) {
-  return Math.max(0, evento.limitePorUsuario - evento.entradasDelUsuario)
+  return evento.limitePorUsuario - evento.entradasDelUsuario
 }
 
 function motivoParaNoComprar(
@@ -25,7 +25,7 @@ function motivoParaNoComprar(
     return "Este evento ya ocurrió, no se pueden comprar entradas."
   }
   if (evento.organizador.id === usuario.id) return "Este evento es tuyo."
-  if (entradasRestantes(evento) === 0) {
+  if (entradasRestantes(evento) <= 0) {
     return `Ya tenés el máximo de ${evento.limitePorUsuario} entradas para este evento.`
   }
   return null
@@ -33,10 +33,6 @@ function motivoParaNoComprar(
 
 function tipoConCupo(evento: EventoDetalle, tipoId: string | null) {
   return evento.tiposEntrada.find((t) => t.id === tipoId && t.disponibles > 0)
-}
-
-function maximoPara(tipo: TipoEntrada | undefined, restantes: number) {
-  return tipo ? Math.min(tipo.disponibles, restantes) : 1
 }
 
 function ayudaDeLimite(evento: EventoDetalle) {
@@ -54,8 +50,10 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const { enviando: comprando, enviar } = useEnvio()
 
   const tipoElegido = tipoConCupo(evento, tipoElegidoId)
-  const maximo = maximoPara(tipoElegido, entradasRestantes(evento))
-  const cantidadValida = tipoElegido ? Math.min(cantidad, maximo) : cantidad
+  const maximo = tipoElegido
+    ? Math.min(tipoElegido.disponibles, entradasRestantes(evento))
+    : 1
+  const cantidadValida = Math.min(cantidad, maximo)
 
   function elegirTipo(tipo: TipoEntrada) {
     setTipoElegidoId(tipo.id)
