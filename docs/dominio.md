@@ -10,17 +10,16 @@ Modelo de AI Ticket It. Parte del diagrama tentativo del enunciado y agrega lo q
   - `yaOcurrio(ahora)`: la fecha del evento es anterior a `ahora`.
   - `diasHasta(ahora)`: días enteros que faltan, redondeando hacia arriba.
   - `precioDesde()`: el menor precio entre sus tipos de entrada.
-  - `entradasRestantesPara(entradasQueYaTiene)`: cuántas entradas más puede comprar alguien que ya tiene esas, sin bajar de cero. `verificarLimite(cantidad, entradasQueYaTiene)` lanza `DomainRuleError` si `cantidad` lo supera.
+  - `entradasDe(usuario)`: cuántas entradas retiene ese usuario en el evento, sumando todos sus tipos de entrada. Lo lleva el evento en un contador privado por usuario.
+  - `reservar(comprador, tipoEntrada, cantidad)`: lanza `DomainRuleError` si el comprador pasaría `limitePorUsuario`. Si no, reserva el cupo en el tipo de entrada (que puede fallar antes de que cambie nada) y suma al contador. `liberar(comprador, tipoEntrada, cantidad)` hace lo inverso.
 - **TipoEntrada**: `id`, `nombre`, `descripcion`, `precio`, `cupo`, `vendidas`. El `id` es `<idEvento>-<posición>`, lo asigna el repositorio de eventos al guardar.
   - `disponibles()`: `cupo - vendidas`.
   - `hayCupoPara(cantidad)`.
   - `reservar(cantidad)` y `liberar(cantidad)`: mueven `vendidas`. `reservar` falla si no hay cupo.
-- **Compra**: `id`, `comprador`, `evento`, `tipoEntrada`, `cantidad`, `total`, `estado`, `historial: CambioEstadoCompra[]`, `mensajes: Mensaje[]`, `resena: Resena | null`. `creada` es la fecha del primer cambio de estado. `retieneEntradas()` es verdadero salvo en `CANCELADA` y `REEMBOLSADA`, los estados que ya liberaron el cupo.
+- **Compra**: `id`, `comprador`, `evento`, `tipoEntrada`, `cantidad`, `total`, `estado`, `historial: CambioEstadoCompra[]`, `mensajes: Mensaje[]`, `resena: Resena | null`. `creada` es la fecha del primer cambio de estado.
 - **CambioEstadoCompra**: `estado`, `quien: Usuario`, `fechaHora`.
 - **Mensaje**: `id`, `usuario`, `texto`, `enviado`.
 - **Resena**: `id` (el de su compra, porque hay a lo sumo una por compra), `compra`, `comprador`, `evento`, `puntuacion` (entero de 1 a 5), `detalle` (comentario obligatorio, no vacío), `fecha`.
-
-El límite por usuario cuenta las entradas de todos los tipos del evento en compras que `retieneEntradas()`. `entradasRetenidas(comprador, evento, compras)` hace esa suma, y `CompraService.crear` se la pasa a `Compra` como `entradasPrevias`.
 
 La reseña vive solo en `Compra.resena`; no hay un repositorio de reseñas. `reputacion(resenas)` en el dominio calcula el puntaje de un organizador: el promedio de las puntuaciones de las reseñas de todos sus eventos, o `null` sin reseñas. `EventoService.reputacionDe` junta las reseñas recorriendo las compras.
 
@@ -53,6 +52,7 @@ Derivados que expone la compra:
 
 - No hay `rol` en `Usuario`. El enunciado habla de "comprador" y "organizador" como roles de un caso de uso, no como tipos de usuario.
 - `TipoEntrada` lleva `vendidas` para que `disponibles` sea una operación local y la regla de cupo viva en una sola entidad.
+- `Evento` lleva las entradas que retiene cada usuario para que el límite por persona tenga el mismo ciclo de vida que el cupo: `Compra` lo reserva al crearse y lo libera al cancelarse, y la regla vive en una sola entidad sin recorrer las compras.
 - `Compra` guarda la reseña para garantizar una sola por compra, y es su única fuente de verdad. `Resena` sigue apuntando a comprador y evento como en el diagrama.
 - Reembolso como acción del organizador sobre una compra cancelada, para que `REEMBOLSADA` tenga un camino y el organizador tenga algo que hacer en la demo.
 - El máximo de entradas por persona es configurable por evento (`limitePorUsuario`, 6 por defecto) en lugar de una constante global, porque lo decide el organizador según el tipo de evento. Cancelar o reembolsar libera ese máximo igual que libera el cupo.
