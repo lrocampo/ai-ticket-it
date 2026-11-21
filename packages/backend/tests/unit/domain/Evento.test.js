@@ -1,5 +1,9 @@
 import { describe, expect, test } from "@jest/globals"
-import { DomainValidationError } from "../../../src/domain/errors/DomainErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "../../../src/domain/errors/DomainErrors.js"
+import { LIMITE_POR_USUARIO_POR_DEFECTO } from "../../../src/domain/Evento.js"
 import { sumarDias } from "../../../src/utils/fechas.js"
 import { HOY, evento, tipoEntrada } from "../../fixtures.js"
 
@@ -54,5 +58,47 @@ describe("Evento", () => {
         ],
       }),
     ).toThrow(DomainValidationError)
+  })
+
+  describe("límite de entradas por usuario", () => {
+    test("por defecto es 6", () => {
+      expect(LIMITE_POR_USUARIO_POR_DEFECTO).toBe(6)
+      expect(evento().limitePorUsuario).toBe(6)
+    })
+
+    test("el organizador puede fijar otro", () => {
+      expect(evento({ limitePorUsuario: 2 }).limitePorUsuario).toBe(2)
+    })
+
+    test.each([0, -1, 1.5, "4", null, Number.NaN, 1e300])(
+      "rechaza el límite %p",
+      (limitePorUsuario) => {
+        expect(() => evento({ limitePorUsuario })).toThrow(
+          DomainValidationError,
+        )
+      },
+    )
+
+    test("entradasRestantesPara descuenta lo que ya tiene y no baja de cero", () => {
+      const recital = evento({ limitePorUsuario: 4 })
+
+      expect(recital.entradasRestantesPara(0)).toBe(4)
+      expect(recital.entradasRestantesPara(3)).toBe(1)
+      expect(recital.entradasRestantesPara(9)).toBe(0)
+    })
+
+    test("verificarLimite deja pasar hasta el límite y rechaza el exceso con un mensaje claro", () => {
+      const recital = evento({ limitePorUsuario: 4 })
+
+      expect(() => recital.verificarLimite(4, 0)).not.toThrow()
+      expect(() => recital.verificarLimite(1, 3)).not.toThrow()
+      expect(() => recital.verificarLimite(5, 0)).toThrow(
+        "Hasta 4 entradas por persona para este evento.",
+      )
+      expect(() => recital.verificarLimite(2, 3)).toThrow(DomainRuleError)
+      expect(() => recital.verificarLimite(2, 3)).toThrow(
+        "Hasta 4 entradas por persona para este evento: ya tenés 3.",
+      )
+    })
   })
 })

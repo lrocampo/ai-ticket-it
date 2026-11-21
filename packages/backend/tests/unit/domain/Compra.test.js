@@ -72,8 +72,43 @@ describe("Compra", () => {
     })
 
     test("falla sin cupo y no reserva nada", () => {
-      expect(() => comprar(11)).toThrow(DomainRuleError)
+      recital = evento({ organizador, limitePorUsuario: 20 })
+      tipo = recital.tiposEntrada[0]
+
+      expect(() => comprar(11)).toThrow("No hay cupo")
       expect(tipo.disponibles()).toBe(10)
+    })
+
+    test("falla si supera el límite por usuario y no reserva cupo", () => {
+      expect(() => comprar(7)).toThrow(DomainRuleError)
+      expect(() => comprar(7)).toThrow("Hasta 6 entradas por persona")
+      expect(tipo.disponibles()).toBe(10)
+    })
+
+    test("cuenta las entradas que el comprador ya tenía", () => {
+      const compraConPrevias = (cantidad, entradasPrevias) =>
+        new Compra(
+          {
+            comprador,
+            evento: recital,
+            tipoEntrada: tipo,
+            cantidad,
+            entradasPrevias,
+          },
+          HOY,
+        )
+
+      expect(() => compraConPrevias(3, 4)).toThrow("ya tenés 4")
+      expect(tipo.disponibles()).toBe(10)
+      expect(compraConPrevias(2, 4).cantidad).toBe(2)
+    })
+
+    test("el límite lo decide cada evento", () => {
+      recital = evento({ organizador, limitePorUsuario: 1 })
+      tipo = recital.tiposEntrada[0]
+
+      expect(() => comprar(2)).toThrow(DomainRuleError)
+      expect(comprar(1).cantidad).toBe(1)
     })
 
     test("el organizador no puede comprar su propio evento", () => {
@@ -100,6 +135,27 @@ describe("Compra", () => {
             sumarDias(HOY, 11),
           ),
       ).toThrow(DomainRuleError)
+    })
+  })
+
+  describe("retieneEntradas", () => {
+    test.each([
+      [PENDIENTE, true],
+      [CONFIRMADA, true],
+      [UTILIZADA, true],
+      [CANCELADA, false],
+      [REEMBOLSADA, false],
+    ])("en %s es %s", (estado, retiene) => {
+      expect(llevarA[estado]().retieneEntradas()).toBe(retiene)
+    })
+  })
+
+  describe("creada", () => {
+    test("es la fecha del primer cambio de estado", () => {
+      const compra = comprar()
+      compra.confirmarPago(comprador, sumarDias(HOY, 1))
+
+      expect(compra.creada).toEqual(HOY)
     })
   })
 

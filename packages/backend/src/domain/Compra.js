@@ -67,7 +67,7 @@ const acciones = {
 
 export default class Compra {
   constructor(
-    { comprador, evento, tipoEntrada, cantidad },
+    { comprador, evento, tipoEntrada, cantidad, entradasPrevias = 0 },
     ahora = new Date(),
   ) {
     if (!(Number.isSafeInteger(cantidad) && cantidad > 0)) {
@@ -83,6 +83,7 @@ export default class Compra {
         "El organizador no puede comprar entradas de su propio evento.",
       )
     }
+    evento.verificarLimite(cantidad, entradasPrevias)
     tipoEntrada.reservar(cantidad)
     this.comprador = comprador
     this.evento = evento
@@ -109,6 +110,14 @@ export default class Compra {
 
   reembolsar(quien, ahora = new Date()) {
     this.#transicionar("reembolsar", quien, ahora)
+  }
+
+  get creada() {
+    return this.historial[0].fechaHora
+  }
+
+  retieneEntradas() {
+    return this.estado !== CANCELADA && this.estado !== REEMBOLSADA
   }
 
   pasoPor(estado) {

@@ -1,5 +1,10 @@
-import { DomainValidationError } from "./errors/DomainErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "./errors/DomainErrors.js"
 import { MILISEGUNDOS_POR_DIA } from "../utils/fechas.js"
+
+export const LIMITE_POR_USUARIO_POR_DEFECTO = 6
 
 export default class Evento {
   constructor(
@@ -11,6 +16,7 @@ export default class Evento {
       tiposEntrada,
       multimedia = [],
       organizador,
+      limitePorUsuario = LIMITE_POR_USUARIO_POR_DEFECTO,
     },
     ahora = new Date(),
   ) {
@@ -42,6 +48,11 @@ export default class Evento {
         "Los tipos de entrada deben tener nombres distintos.",
       )
     }
+    if (!(Number.isSafeInteger(limitePorUsuario) && limitePorUsuario > 0)) {
+      throw new DomainValidationError(
+        "El máximo de entradas por persona debe ser un entero positivo.",
+      )
+    }
     this.nombre = nombre
     this.descripcion = descripcion
     this.categoria = categoria
@@ -49,6 +60,7 @@ export default class Evento {
     this.tiposEntrada = tiposEntrada
     this.multimedia = multimedia
     this.organizador = organizador
+    this.limitePorUsuario = limitePorUsuario
   }
 
   yaOcurrio(ahora = new Date()) {
@@ -66,6 +78,20 @@ export default class Evento {
 
   tipoEntrada(id) {
     return this.tiposEntrada.find((tipo) => tipo.id === id)
+  }
+
+  entradasRestantesPara(entradasQueYaTiene) {
+    return Math.max(0, this.limitePorUsuario - entradasQueYaTiene)
+  }
+
+  verificarLimite(cantidad, entradasQueYaTiene) {
+    if (cantidad > this.entradasRestantesPara(entradasQueYaTiene)) {
+      const yaTiene =
+        entradasQueYaTiene > 0 ? `: ya tenés ${entradasQueYaTiene}` : ""
+      throw new DomainRuleError(
+        `Hasta ${this.limitePorUsuario} entradas por persona para este evento${yaTiene}.`,
+      )
+    }
   }
 
   esOrganizador(usuario) {
