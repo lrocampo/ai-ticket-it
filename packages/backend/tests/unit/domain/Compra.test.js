@@ -192,6 +192,28 @@ describe("Compra", () => {
     })
   })
 
+  describe("estado", () => {
+    test("no se puede cambiar desde afuera sin pasar por una transición", () => {
+      const compra = comprar()
+      expect(() => {
+        compra.estado = UTILIZADA
+      }).toThrow(TypeError)
+      expect(compra.estado).toBe(PENDIENTE)
+      expect(compra.historial.map((cambio) => cambio.estado)).toEqual([
+        PENDIENTE,
+      ])
+    })
+
+    test("la reseña tampoco se puede pisar desde afuera", () => {
+      const compra = llevarA[UTILIZADA]()
+      const resena = compra.resenar(5, "Muy bueno", HOY)
+      expect(() => {
+        compra.resena = null
+      }).toThrow(TypeError)
+      expect(compra.resena).toBe(resena)
+    })
+  })
+
   describe("transiciones inválidas", () => {
     test.each([
       ["confirmarPago", CONFIRMADA],
