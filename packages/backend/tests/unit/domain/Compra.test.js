@@ -72,8 +72,55 @@ describe("Compra", () => {
     })
 
     test("falla sin cupo y no reserva nada", () => {
-      expect(() => comprar(11)).toThrow(DomainRuleError)
+      recital = evento({ organizador, limitePorUsuario: 20 })
+      tipo = recital.tiposEntrada[0]
+
+      expect(() => comprar(11)).toThrow("No hay cupo")
       expect(tipo.disponibles()).toBe(10)
+    })
+
+    test("falla si supera el límite por usuario y no reserva cupo", () => {
+      expect(() => comprar(7)).toThrow(DomainRuleError)
+      expect(() => comprar(7)).toThrow("Hasta 6 entradas por persona")
+      expect(tipo.disponibles()).toBe(10)
+    })
+
+    test("cuenta las entradas de las compras anteriores del comprador", () => {
+      comprar(4)
+
+      expect(() => comprar(3)).toThrow(
+        "Hasta 6 entradas por persona para este evento: ya tenés 4.",
+      )
+      expect(tipo.disponibles()).toBe(6)
+      expect(comprar(2).cantidad).toBe(2)
+    })
+
+    test("es por comprador", () => {
+      comprar(6)
+
+      const deTercero = new Compra(
+        { comprador: tercero, evento: recital, tipoEntrada: tipo, cantidad: 4 },
+        HOY,
+      )
+      expect(deTercero.cantidad).toBe(4)
+    })
+
+    test.each([
+      ["cancelada", CANCELADA],
+      ["reembolsada", REEMBOLSADA],
+    ])("una compra %s ya no cuenta para el límite", (_, estado) => {
+      llevarA[estado]()
+      comprar(2)
+
+      expect(comprar(4).cantidad).toBe(4)
+    })
+
+    test("el límite lo decide cada evento", () => {
+      recital = evento({ organizador, limitePorUsuario: 1 })
+      tipo = recital.tiposEntrada[0]
+
+      expect(() => comprar(2)).toThrow(DomainRuleError)
+      expect(comprar(1).cantidad).toBe(1)
     })
 
     test("el organizador no puede comprar su propio evento", () => {
@@ -100,6 +147,15 @@ describe("Compra", () => {
             sumarDias(HOY, 11),
           ),
       ).toThrow(DomainRuleError)
+    })
+  })
+
+  describe("creada", () => {
+    test("es la fecha del primer cambio de estado", () => {
+      const compra = comprar()
+      compra.confirmarPago(comprador, sumarDias(HOY, 1))
+
+      expect(compra.creada).toEqual(HOY)
     })
   })
 
@@ -189,6 +245,8 @@ describe("Compra", () => {
 
   describe("derivados", () => {
     test("diasParaElEvento solo cuando está CONFIRMADA y el evento no ocurrió", () => {
+      recital = evento({ organizador, limitePorUsuario: 20 })
+      tipo = recital.tiposEntrada[0]
       expect(comprar().diasParaElEvento(HOY)).toBeNull()
       expect(llevarA[CONFIRMADA]().diasParaElEvento(HOY)).toBe(10)
       expect(llevarA[UTILIZADA]().diasParaElEvento(HOY)).toBeNull()

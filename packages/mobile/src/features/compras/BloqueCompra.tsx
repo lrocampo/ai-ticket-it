@@ -13,6 +13,10 @@ import { theme } from "../../theme"
 import type { EventoDetalle, TipoEntrada, Usuario } from "../../types"
 import { formatearPesos } from "../../utils/fechas"
 
+function entradasRestantes(evento: EventoDetalle) {
+  return evento.limitePorUsuario - evento.entradasDelUsuario
+}
+
 function motivoParaNoComprar(
   evento: EventoDetalle,
   usuario: Usuario,
@@ -21,6 +25,9 @@ function motivoParaNoComprar(
     return "Este evento ya ocurrió, no se pueden comprar entradas."
   }
   if (evento.organizador.id === usuario.id) return "Este evento es tuyo."
+  if (entradasRestantes(evento) <= 0) {
+    return `Ya tenés el máximo de ${evento.limitePorUsuario} entradas para este evento.`
+  }
   return null
 }
 
@@ -28,8 +35,11 @@ function tipoConCupo(evento: EventoDetalle, tipoId: string | null) {
   return evento.tiposEntrada.find((t) => t.id === tipoId && t.disponibles > 0)
 }
 
-function acotarAlCupo(cantidad: number, tipo: TipoEntrada | undefined) {
-  return tipo ? Math.min(cantidad, tipo.disponibles) : cantidad
+function ayudaDeLimite(evento: EventoDetalle) {
+  const hasta = `Hasta ${evento.limitePorUsuario} por persona`
+  return evento.entradasDelUsuario > 0
+    ? `${hasta} · ya tenés ${evento.entradasDelUsuario}`
+    : hasta
 }
 
 export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
@@ -40,7 +50,10 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
   const { enviando: comprando, enviar } = useEnvio()
 
   const tipoElegido = tipoConCupo(evento, tipoElegidoId)
-  const cantidadValida = acotarAlCupo(cantidad, tipoElegido)
+  const maximo = tipoElegido
+    ? Math.min(tipoElegido.disponibles, entradasRestantes(evento))
+    : 1
+  const cantidadValida = Math.min(cantidad, maximo)
 
   function elegirTipo(tipo: TipoEntrada) {
     setTipoElegidoId(tipo.id)
@@ -106,11 +119,16 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
       ) : (
         <>
           <View style={styles.filaCantidad}>
-            <Text style={theme.texto.cuerpo}>Cantidad</Text>
+            <View>
+              <Text style={theme.texto.cuerpo}>Cantidad</Text>
+              <Text style={theme.texto.secundario}>
+                {ayudaDeLimite(evento)}
+              </Text>
+            </View>
             <Stepper
               valor={cantidadValida}
               minimo={1}
-              maximo={tipoElegido?.disponibles ?? 1}
+              maximo={maximo}
               onCambio={setCantidad}
             />
           </View>

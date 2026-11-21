@@ -12,14 +12,14 @@ No hay login. El cliente manda el header `x-usuario-id` con el id del usuario qu
 { "message": "texto para mostrar", "details": [] }
 ```
 
-| Código | Cuándo                                                                                                     |
-| ------ | ---------------------------------------------------------------------------------------------------------- |
-| 400    | body o query inválidos (zod); `details` lista los campos                                                   |
-| 401    | falta `x-usuario-id` o no corresponde a un usuario                                                         |
-| 403    | el usuario no es quien puede hacer la acción                                                               |
-| 404    | entidad inexistente                                                                                        |
-| 409    | regla de negocio (sin cupo, transición inválida, reseña duplicada, el organizador compra su propio evento) |
-| 422    | validación de dominio (valores fuera de rango)                                                             |
+| Código | Cuándo                                                                                                                                     |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 400    | body o query inválidos (zod); `details` lista los campos                                                                                   |
+| 401    | falta `x-usuario-id` o no corresponde a un usuario                                                                                         |
+| 403    | el usuario no es quien puede hacer la acción                                                                                               |
+| 404    | entidad inexistente                                                                                                                        |
+| 409    | regla de negocio (sin cupo, pasarse del máximo por persona, transición inválida, reseña duplicada, el organizador compra su propio evento) |
+| 422    | validación de dominio (valores fuera de rango)                                                                                             |
 
 ## Formas
 
@@ -31,14 +31,19 @@ Organizador = Usuario & { puntaje: number | null, cantidadResenas: number }
 Evento = {
   id, nombre, descripcion, categoria: Categoria, fecha: ISO,
   multimedia: string[], organizador: Organizador,
-  tiposEntrada: TipoEntrada[], precioDesde: number, yaOcurrio: boolean
+  tiposEntrada: TipoEntrada[], precioDesde: number, yaOcurrio: boolean,
+  limitePorUsuario: number           // máximo de entradas por persona
 }
-EventoDetalle = Evento & { resenasDelOrganizador: Resena[] }
+EventoDetalle = Evento & {
+  resenasDelOrganizador: Resena[],
+  entradasDelUsuario: number         // las que quien pide ya tiene en este evento
+}
 Resena = { id, puntuacion, detalle, fecha: ISO, comprador: Usuario, evento: { id, nombre } }
 CambioEstado = { estado, quien: Usuario, fechaHora: ISO }
 Mensaje = { id, usuario: Usuario, texto, enviado: ISO }
 Compra = {
   id, estado, cantidad, total,
+  creada: ISO,                       // cuándo se hizo la compra
   comprador: Usuario,
   evento: { id, nombre, fecha: ISO, organizador: Usuario },
   tipoEntrada: { id, nombre, precio },
@@ -77,13 +82,14 @@ Body de `POST /eventos`:
   "categoriaId": "...",
   "fecha": "2026-12-20T21:00:00.000Z",
   "multimedia": ["https://..."],
+  "limitePorUsuario": 6,
   "tiposEntrada": [
     { "nombre": "General", "descripcion": "...", "precio": 15000, "cupo": 200 }
   ]
 }
 ```
 
-Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento (sin distinguir mayúsculas ni espacios alrededor). `multimedia` solo admite URLs `http` o `https`.
+Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento (sin distinguir mayúsculas ni espacios alrededor). `multimedia` solo admite URLs `http` o `https`. `limitePorUsuario` es opcional (6 por defecto) y tiene que ser un entero positivo.
 
 ### Compras
 

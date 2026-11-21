@@ -70,3 +70,24 @@ test("el error de un campo del evento aparece debajo de ese campo y arriba del b
   expect(textoAntesDelBoton()).toBe("Ponele un nombre al evento.")
   expect(crearEvento).not.toHaveBeenCalled()
 })
+
+test("el máximo de entradas por persona arranca en 6 y su error aparece debajo de su campo", async () => {
+  await completarElEvento()
+  expect(screen.getByLabelText("Máximo de entradas por persona")).toHaveProp(
+    "value",
+    "6",
+  )
+
+  await fireEvent.changeText(
+    screen.getByLabelText("Máximo de entradas por persona"),
+    "0",
+  )
+  await crear()
+
+  expect(
+    campo("Máximo de entradas por persona").getByText(
+      "Tiene que ser un número entero de 1 en adelante, por ejemplo 6.",
+    ),
+  ).toBeVisible()
+  expect(crearEvento).not.toHaveBeenCalled()
+})

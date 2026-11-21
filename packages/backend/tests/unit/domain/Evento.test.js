@@ -55,4 +55,23 @@ describe("Evento", () => {
       }),
     ).toThrow(DomainValidationError)
   })
+
+  describe("límite de entradas por usuario", () => {
+    test("sin indicarlo, son 6", () => {
+      expect(evento().limitePorUsuario).toBe(6)
+    })
+
+    test("el organizador puede fijar otro", () => {
+      expect(evento({ limitePorUsuario: 2 }).limitePorUsuario).toBe(2)
+    })
+
+    test.each([0, -1, 1.5, "4", null, Number.NaN, 1e300])(
+      "rechaza el límite %p",
+      (limitePorUsuario) => {
+        expect(() => evento({ limitePorUsuario })).toThrow(
+          DomainValidationError,
+        )
+      },
+    )
+  })
 })

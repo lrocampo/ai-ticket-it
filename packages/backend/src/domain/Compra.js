@@ -34,7 +34,12 @@ const transiciones = {
       }
       return null
     },
-    alAplicar: (compra) => compra.tipoEntrada.liberar(compra.cantidad),
+    alAplicar: (compra) =>
+      compra.evento.liberar(
+        compra.comprador,
+        compra.tipoEntrada,
+        compra.cantidad,
+      ),
   },
   reembolsar: {
     verbo: "reembolsar",
@@ -83,7 +88,7 @@ export default class Compra {
         "El organizador no puede comprar entradas de su propio evento.",
       )
     }
-    tipoEntrada.reservar(cantidad)
+    evento.reservar(comprador, tipoEntrada, cantidad)
     this.comprador = comprador
     this.evento = evento
     this.tipoEntrada = tipoEntrada
@@ -109,6 +114,10 @@ export default class Compra {
 
   reembolsar(quien, ahora = new Date()) {
     this.#transicionar("reembolsar", quien, ahora)
+  }
+
+  get creada() {
+    return this.historial[0].fechaHora
   }
 
   pasoPor(estado) {

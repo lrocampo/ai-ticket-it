@@ -1,24 +1,32 @@
 import { router, Stack, useLocalSearchParams } from "expo-router"
+import { useState } from "react"
 import { FlatList, StyleSheet, Text, View } from "react-native"
 
 import { Cargable } from "../../../src/components/Cargable"
 import { EstadoVacio } from "../../../src/components/EstadoVacio"
 import { Seccion } from "../../../src/components/Seccion"
+import { SelectorOrden } from "../../../src/components/SelectorOrden"
 import { TarjetaCompra } from "../../../src/components/TarjetaCompra"
 import { useCarga } from "../../../src/hooks/useCarga"
 import { listarComprasDeEvento } from "../../../src/services/api"
 import { theme } from "../../../src/theme"
+import type { OrdenCompras } from "../../../src/types"
+import {
+  ORDENES_COMPRAS,
+  ordenarCompras,
+} from "../../../src/utils/ordenarCompras"
 
 export default function ComprasDelEvento() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const carga = useCarga(() => listarComprasDeEvento(id), [id])
+  const [orden, setOrden] = useState<OrdenCompras>("recientes")
 
   return (
     <Cargable carga={carga}>
       {({ evento, compras }) => (
         <FlatList
           contentInsetAdjustmentBehavior="automatic"
-          data={compras}
+          data={ordenarCompras(compras, orden)}
           keyExtractor={(compra) => compra.id}
           contentContainerStyle={styles.lista}
           refreshing={carga.refrescando}
@@ -36,7 +44,16 @@ export default function ComprasDelEvento() {
                   </View>
                 ))}
               </Seccion>
-              <Text style={theme.texto.subtitulo}>Compras</Text>
+              <View style={styles.compras}>
+                <Text style={theme.texto.subtitulo}>Compras</Text>
+                {compras.length > 0 && (
+                  <SelectorOrden
+                    opciones={ORDENES_COMPRAS}
+                    orden={orden}
+                    onCambio={setOrden}
+                  />
+                )}
+              </View>
             </View>
           }
           ListEmptyComponent={
@@ -65,6 +82,9 @@ const styles = StyleSheet.create({
   },
   encabezado: {
     gap: theme.espacios.l,
+  },
+  compras: {
+    gap: theme.espacios.s,
   },
   tipo: {
     flexDirection: "row",

@@ -74,6 +74,37 @@ describe("CompraService", () => {
     })
   })
 
+  test("el límite por usuario suma todos los tipos del evento y se libera al cancelar", () => {
+    const concurrido = repositorios.eventos.guardar(
+      evento({
+        organizador,
+        limitePorUsuario: 4,
+        tiposEntrada: [
+          tipoEntrada({ cupo: 50 }),
+          tipoEntrada({ nombre: "VIP", cupo: 50 }),
+        ],
+      }),
+    )
+    const comprarDelTipo = (posicion, cantidad) =>
+      service.crear(
+        compradora,
+        {
+          eventoId: concurrido.id,
+          tipoEntradaId: concurrido.tiposEntrada[posicion].id,
+          cantidad,
+        },
+        HOY,
+      )
+    const primera = comprarDelTipo(0, 3)
+
+    expect(() => comprarDelTipo(1, 2)).toThrow(DomainRuleError)
+    expect(concurrido.tiposEntrada[1].disponibles()).toBe(50)
+
+    service.cancelar(compradora, primera.id, HOY)
+
+    expect(comprarDelTipo(1, 4).cantidad).toBe(4)
+  })
+
   test("cancelar libera el cupo en el catálogo", () => {
     const compra = comprar(2)
 

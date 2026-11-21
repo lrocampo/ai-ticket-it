@@ -13,6 +13,7 @@ import {
 import { Cargable } from "../../src/components/Cargable"
 import { Chip } from "../../src/components/Chip"
 import { EstadoVacio } from "../../src/components/EstadoVacio"
+import { SelectorOrden } from "../../src/components/SelectorOrden"
 import { TarjetaEvento } from "../../src/components/TarjetaEvento"
 import { useCarga } from "../../src/hooks/useCarga"
 import { useDemorado } from "../../src/hooks/useDemorado"
@@ -95,17 +96,12 @@ export default function Eventos() {
             />
           ))}
         </ScrollView>
-        <View style={styles.orden}>
-          <Text style={theme.texto.secundario}>Ordenar por</Text>
-          {ORDENES.map((opcion) => (
-            <Chip
-              key={opcion.valor}
-              texto={opcion.etiqueta}
-              activo={orden === opcion.valor}
-              onPress={() => setOrden(opcion.valor)}
-            />
-          ))}
-        </View>
+        <SelectorOrden
+          opciones={ORDENES}
+          orden={orden}
+          onCambio={setOrden}
+          style={styles.orden}
+        />
       </View>
 
       <Cargable carga={eventos}>
@@ -173,9 +169,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.espacios.l,
   },
   orden: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.espacios.s,
     paddingHorizontal: theme.espacios.l,
   },
   lista: {

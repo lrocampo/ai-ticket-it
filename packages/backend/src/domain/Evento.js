@@ -1,7 +1,14 @@
-import { DomainValidationError } from "./errors/DomainErrors.js"
+import {
+  DomainRuleError,
+  DomainValidationError,
+} from "./errors/DomainErrors.js"
 import { MILISEGUNDOS_POR_DIA } from "../utils/fechas.js"
 
+const LIMITE_POR_USUARIO_POR_DEFECTO = 6
+
 export default class Evento {
+  #retenidas = new Map()
+
   constructor(
     {
       nombre,
@@ -11,6 +18,7 @@ export default class Evento {
       tiposEntrada,
       multimedia = [],
       organizador,
+      limitePorUsuario = LIMITE_POR_USUARIO_POR_DEFECTO,
     },
     ahora = new Date(),
   ) {
@@ -42,6 +50,11 @@ export default class Evento {
         "Los tipos de entrada deben tener nombres distintos.",
       )
     }
+    if (!(Number.isSafeInteger(limitePorUsuario) && limitePorUsuario > 0)) {
+      throw new DomainValidationError(
+        "El máximo de entradas por persona debe ser un entero positivo.",
+      )
+    }
     this.nombre = nombre
     this.descripcion = descripcion
     this.categoria = categoria
@@ -49,6 +62,7 @@ export default class Evento {
     this.tiposEntrada = tiposEntrada
     this.multimedia = multimedia
     this.organizador = organizador
+    this.limitePorUsuario = limitePorUsuario
   }
 
   yaOcurrio(ahora = new Date()) {
@@ -66,6 +80,27 @@ export default class Evento {
 
   tipoEntrada(id) {
     return this.tiposEntrada.find((tipo) => tipo.id === id)
+  }
+
+  entradasDe(usuario) {
+    return this.#retenidas.get(usuario.id) ?? 0
+  }
+
+  reservar(comprador, tipoEntrada, cantidad) {
+    const yaTiene = this.entradasDe(comprador)
+    if (yaTiene + cantidad > this.limitePorUsuario) {
+      const detalle = yaTiene > 0 ? `: ya tenés ${yaTiene}` : ""
+      throw new DomainRuleError(
+        `Hasta ${this.limitePorUsuario} entradas por persona para este evento${detalle}.`,
+      )
+    }
+    tipoEntrada.reservar(cantidad)
+    this.#retenidas.set(comprador.id, yaTiene + cantidad)
+  }
+
+  liberar(comprador, tipoEntrada, cantidad) {
+    tipoEntrada.liberar(cantidad)
+    this.#retenidas.set(comprador.id, this.entradasDe(comprador) - cantidad)
   }
 
   esOrganizador(usuario) {

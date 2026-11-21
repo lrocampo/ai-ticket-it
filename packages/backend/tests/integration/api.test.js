@@ -92,6 +92,7 @@ describe("catálogo", () => {
       ]),
       precioDesde: expect.any(Number),
       yaOcurrio: expect.any(Boolean),
+      limitePorUsuario: expect.any(Number),
     })
     const fechas = body.map((evento) => evento.fecha)
     expect(fechas).toEqual([...fechas].sort())
@@ -172,6 +173,25 @@ describe("catálogo", () => {
     })
   })
 
+  test("GET /eventos/:id trae el límite y cuántas entradas tiene quien pide", async () => {
+    const pedir = async (usuario) => {
+      const { body } = await request(app)
+        .get(`/eventos/${seed.eventos.rock.id}`)
+        .set(como(usuario))
+        .expect(200)
+      return body
+    }
+
+    expect(await pedir(nicolas)).toMatchObject({
+      limitePorUsuario: 4,
+      entradasDelUsuario: 2,
+    })
+    expect(await pedir(tomas)).toMatchObject({
+      limitePorUsuario: 4,
+      entradasDelUsuario: 0,
+    })
+  })
+
   test("GET /eventos/:id inexistente responde 404", async () => {
     await request(app).get("/eventos/999").set(como(nicolas)).expect(404)
   })
@@ -201,6 +221,32 @@ describe("catálogo", () => {
       .set(como(valentina))
       .expect(200)
     expect(mios.body.map((evento) => evento.id)).toEqual([body.id])
+  })
+
+  test("POST /eventos guarda el máximo por persona, y sin él usa 6", async () => {
+    const crear = (extra) =>
+      request(app)
+        .post("/eventos")
+        .set(como(valentina))
+        .send({
+          nombre: "Con límite",
+          categoriaId: seed.categorias.Conferencias.id,
+          fecha: "2030-01-01T21:00:00.000Z",
+          tiposEntrada: [{ nombre: "General", precio: 10, cupo: 50 }],
+          ...extra,
+        })
+
+    const propio = await crear({ limitePorUsuario: 2 }).expect(201)
+    expect(propio.body).toMatchObject({
+      limitePorUsuario: 2,
+      entradasDelUsuario: 0,
+    })
+    const porDefecto = await crear({}).expect(201)
+    expect(porDefecto.body.limitePorUsuario).toBe(6)
+
+    await crear({ limitePorUsuario: 0 }).expect(422)
+    await crear({ limitePorUsuario: 1.5 }).expect(422)
+    await crear({ limitePorUsuario: "dos" }).expect(400)
   })
 
   test("POST /eventos con body inválido responde 400 con details", async () => {
@@ -292,6 +338,7 @@ describe("compras", () => {
     const compra = await crearCompra(2)
     expect(compra).toEqual({
       id: expect.any(String),
+      creada: expect.any(String),
       estado: "PENDIENTE",
       cantidad: 2,
       total: 2 * general.precio,
@@ -442,20 +489,70 @@ describe("compras", () => {
   })
 
   test("sin cupo responde 409 y no crea la compra", async () => {
-    const mias = await request(app).get("/compras").set(como(comprador))
+    const chico = await request(app)
+      .post("/eventos")
+      .set(como(organizador))
+      .send({
+        nombre: "Cupo chico",
+        categoriaId: seed.categorias.Conferencias.id,
+        fecha: "2030-01-01T21:00:00.000Z",
+        tiposEntrada: [{ nombre: "General", precio: 10, cupo: 3 }],
+      })
+      .expect(201)
 
-    await request(app)
+    const { body } = await request(app)
       .post("/compras")
       .set(como(comprador))
       .send({
-        eventoId: evento.id,
-        tipoEntradaId: evento.tiposEntrada[1].id,
-        cantidad: 999,
+        eventoId: chico.body.id,
+        tipoEntradaId: chico.body.tiposEntrada[0].id,
+        cantidad: 4,
       })
       .expect(409)
 
+    expect(body.message).toContain("No hay cupo")
+    const mias = await request(app).get("/compras").set(como(comprador))
+    expect(mias.body.map((c) => c.evento.id)).not.toContain(chico.body.id)
+  })
+
+  test("superar el límite por persona responde 409 y no crea la compra", async () => {
+    const mias = await request(app).get("/compras").set(como(comprador))
+
+    const { body } = await request(app)
+      .post("/compras")
+      .set(como(comprador))
+      .send({ eventoId: evento.id, tipoEntradaId: general.id, cantidad: 7 })
+      .expect(409)
+
+    expect(body.message).toContain("Hasta 6 entradas por persona")
     const despues = await request(app).get("/compras").set(como(comprador))
     expect(despues.body).toHaveLength(mias.body.length)
+  })
+
+  test("el límite cuenta lo ya comprado y se libera al cancelar", async () => {
+    const entradasDelUsuario = async () => {
+      const { body } = await request(app)
+        .get(`/eventos/${evento.id}`)
+        .set(como(comprador))
+        .expect(200)
+      return body.entradasDelUsuario
+    }
+    const compra = await crearCompra(4)
+    expect(await entradasDelUsuario()).toBe(4)
+
+    const { body } = await request(app)
+      .post("/compras")
+      .set(como(comprador))
+      .send({ eventoId: evento.id, tipoEntradaId: general.id, cantidad: 3 })
+      .expect(409)
+    expect(body.message).toContain("ya tenés 4")
+
+    await request(app)
+      .post(`/compras/${compra.id}/cancelacion`)
+      .set(como(comprador))
+      .expect(200)
+    expect(await entradasDelUsuario()).toBe(0)
+    await crearCompra(6)
   })
 
   test("mensajes ida y vuelta entre comprador y organizador", async () => {

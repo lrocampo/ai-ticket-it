@@ -19,7 +19,12 @@ export default class EventoController {
 
   porId = (req, res, next) => {
     try {
-      res.json(this.presentarDetalle(this.eventoService.porId(req.params.id)))
+      res.json(
+        this.presentarDetalle(
+          this.eventoService.porId(req.params.id),
+          req.usuario,
+        ),
+      )
     } catch (error) {
       next(error)
     }
@@ -28,7 +33,7 @@ export default class EventoController {
   crear = (req, res, next) => {
     try {
       const evento = this.eventoService.crear(req.usuario, req.body)
-      res.status(201).json(this.presentarDetalle(evento))
+      res.status(201).json(this.presentarDetalle(evento, req.usuario))
     } catch (error) {
       next(error)
     }
@@ -60,9 +65,10 @@ export default class EventoController {
   presentar = (evento) =>
     presentarEvento(evento, this.eventoService.reputacionDe(evento.organizador))
 
-  presentarDetalle = (evento) =>
+  presentarDetalle = (evento, usuario) =>
     presentarEventoDetalle(
       evento,
       this.eventoService.reputacionDe(evento.organizador),
+      usuario,
     )
 }

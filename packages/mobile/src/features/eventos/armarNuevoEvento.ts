@@ -13,6 +13,7 @@ export type FormularioEvento = {
   categoriaId: string | null
   fecha: Date
   imagen: string
+  limitePorUsuario: string
   tiposEntrada: TipoEntradaFormulario[]
 }
 
@@ -37,6 +38,7 @@ export const TIPO_VACIO: TipoEntradaFormulario = {
 }
 
 const NOMBRE_SUGERIDO = "General"
+const LIMITE_POR_USUARIO_POR_DEFECTO = 6
 
 export function formularioVacio(): FormularioEvento {
   const fecha = new Date()
@@ -48,6 +50,7 @@ export function formularioVacio(): FormularioEvento {
     categoriaId: null,
     fecha,
     imagen: "",
+    limitePorUsuario: String(LIMITE_POR_USUARIO_POR_DEFECTO),
     tiposEntrada: [{ ...TIPO_VACIO, nombre: NOMBRE_SUGERIDO }],
   }
 }
@@ -67,6 +70,8 @@ export function formularioTieneDatos(formulario: FormularioEvento) {
   return (
     [nombre, descripcion, imagen].some((campo) => campo.trim() !== "") ||
     categoriaId !== null ||
+    formulario.limitePorUsuario.trim() !==
+      String(LIMITE_POR_USUARIO_POR_DEFECTO) ||
     tiposEntrada.some(tipoTieneDatos)
   )
 }
@@ -106,6 +111,14 @@ export function armarNuevoEvento(
     )
   }
 
+  const limitePorUsuario = aEntero(formulario.limitePorUsuario)
+  if (limitePorUsuario === null) {
+    return falta(
+      "limitePorUsuario",
+      errorDeNumero("limitePorUsuario", formulario.limitePorUsuario),
+    )
+  }
+
   const tipos: NuevoEvento["tiposEntrada"] = []
   for (const [indice, tipo] of tiposEntrada.entries()) {
     const nombreTipo = tipo.nombre.trim()
@@ -139,6 +152,7 @@ export function armarNuevoEvento(
       categoriaId,
       fecha: fecha.toISOString(),
       multimedia: imagen === "" ? [] : [imagen],
+      limitePorUsuario,
       tiposEntrada: tipos,
     },
   }
@@ -152,9 +166,30 @@ function aNumero(texto: string): number | null {
   return Number(limpio.replace(",", "."))
 }
 
-const EJEMPLOS = { precio: "15000 o 1500,50", cupo: "200" }
+function aEntero(texto: string): number | null {
+  const limpio = texto.trim()
+  return /^[1-9]\d*$/.test(limpio) ? Number(limpio) : null
+}
 
-function errorDeNumero(campo: keyof typeof EJEMPLOS, texto: string) {
-  if (texto.trim() === "") return `Completá el ${campo}.`
-  return `No es un número válido. Escribilo sin puntos de miles, por ejemplo ${EJEMPLOS[campo]}.`
+const SIN_PUNTOS_DE_MILES =
+  "No es un número válido. Escribilo sin puntos de miles"
+
+const CAMPOS_NUMERICOS = {
+  precio: {
+    nombre: "precio",
+    invalido: `${SIN_PUNTOS_DE_MILES}, por ejemplo 15000 o 1500,50.`,
+  },
+  cupo: {
+    nombre: "cupo",
+    invalido: `${SIN_PUNTOS_DE_MILES}, por ejemplo 200.`,
+  },
+  limitePorUsuario: {
+    nombre: "máximo de entradas por persona",
+    invalido: `Tiene que ser un número entero de 1 en adelante, por ejemplo ${LIMITE_POR_USUARIO_POR_DEFECTO}.`,
+  },
+}
+
+function errorDeNumero(campo: keyof typeof CAMPOS_NUMERICOS, texto: string) {
+  const { nombre, invalido } = CAMPOS_NUMERICOS[campo]
+  return texto.trim() === "" ? `Completá el ${nombre}.` : invalido
 }

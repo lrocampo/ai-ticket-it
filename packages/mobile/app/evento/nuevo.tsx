@@ -171,6 +171,15 @@ export default function CrearEvento() {
                 autoCorrect={false}
                 error={errorDe("imagen")}
               />
+              <Campo
+                etiqueta="Máximo de entradas por persona"
+                value={formulario.limitePorUsuario}
+                onChangeText={(limite) =>
+                  actualizar("limitePorUsuario", limite)
+                }
+                keyboardType="number-pad"
+                error={errorDe("limitePorUsuario")}
+              />
             </Seccion>
 
             <Seccion titulo="Fecha y hora">
