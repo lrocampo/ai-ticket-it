@@ -171,17 +171,25 @@ function aEntero(texto: string): number | null {
   return /^[1-9]\d*$/.test(limpio) ? Number(limpio) : null
 }
 
+const SIN_PUNTOS_DE_MILES =
+  "No es un número válido. Escribilo sin puntos de miles"
+
 const CAMPOS_NUMERICOS = {
-  precio: { nombre: "precio", ejemplo: "15000 o 1500,50" },
-  cupo: { nombre: "cupo", ejemplo: "200" },
+  precio: {
+    nombre: "precio",
+    invalido: `${SIN_PUNTOS_DE_MILES}, por ejemplo 15000 o 1500,50.`,
+  },
+  cupo: {
+    nombre: "cupo",
+    invalido: `${SIN_PUNTOS_DE_MILES}, por ejemplo 200.`,
+  },
   limitePorUsuario: {
     nombre: "máximo de entradas por persona",
-    ejemplo: String(LIMITE_POR_USUARIO_POR_DEFECTO),
+    invalido: `Tiene que ser un número entero de 1 en adelante, por ejemplo ${LIMITE_POR_USUARIO_POR_DEFECTO}.`,
   },
 }
 
 function errorDeNumero(campo: keyof typeof CAMPOS_NUMERICOS, texto: string) {
-  const { nombre, ejemplo } = CAMPOS_NUMERICOS[campo]
-  if (texto.trim() === "") return `Completá el ${nombre}.`
-  return `No es un número válido. Escribilo sin puntos de miles, por ejemplo ${ejemplo}.`
+  const { nombre, invalido } = CAMPOS_NUMERICOS[campo]
+  return texto.trim() === "" ? `Completá el ${nombre}.` : invalido
 }

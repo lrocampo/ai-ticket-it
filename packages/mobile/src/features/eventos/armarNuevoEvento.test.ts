@@ -199,7 +199,7 @@ test("el máximo de entradas por persona arranca en 6 y viaja como número", () 
 })
 
 const SIN_NUMERO =
-  "No es un número válido. Escribilo sin puntos de miles, por ejemplo 6."
+  "Tiene que ser un número entero de 1 en adelante, por ejemplo 6."
 
 test.each([
   ["", "Completá el máximo de entradas por persona."],
