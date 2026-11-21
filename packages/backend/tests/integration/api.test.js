@@ -763,6 +763,109 @@ describe("compras", () => {
   })
 })
 
+describe("recorrido de compra", () => {
+  const pedir = (metodo, ruta, usuario) =>
+    request(app)[metodo](ruta).set(como(usuario))
+
+  test("Nicolás completa su cupo, la compra se confirma, se cancela y se reembolsa", async () => {
+    const sesion = await request(app)
+      .post("/sesiones")
+      .send({ usuarioId: nicolas.id })
+      .expect(201)
+    const token = sesion.body.token
+    const yo = await request(app)
+      .get("/sesion")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+    expect(yo.body.email).toBe(nicolas.email)
+
+    const busqueda = await pedir("get", "/eventos?texto=rock", nicolas).expect(
+      200,
+    )
+    const encontrado = busqueda.body.find(
+      (e) => e.nombre === "Noche de rock en el Gran Rex",
+    )
+    expect(encontrado.organizador.email).toBe(lucia.email)
+    const rutaEvento = `/eventos/${encontrado.id}`
+
+    const detalle = async (usuario = nicolas) =>
+      (await pedir("get", rutaEvento, usuario).expect(200)).body
+    const pullmanDe = (evento) =>
+      evento.tiposEntrada.find((t) => t.nombre === "Pullman")
+
+    const inicial = await detalle()
+    const pullman = pullmanDe(inicial)
+    expect(inicial.limitePorUsuario).toBe(4)
+    expect(inicial.entradasDelUsuario).toBe(2)
+
+    const comprar = (cantidad) =>
+      pedir("post", "/compras", nicolas).send({
+        eventoId: inicial.id,
+        tipoEntradaId: pullman.id,
+        cantidad,
+      })
+
+    const excedida = await comprar(3).expect(409)
+    expect(excedida.body.message).toContain("Hasta 4 entradas por persona")
+    expect(pullmanDe(await detalle()).disponibles).toBe(pullman.disponibles)
+
+    const compra = (await comprar(2).expect(201)).body
+    expect(compra).toMatchObject({
+      estado: "PENDIENTE",
+      cantidad: 2,
+      total: 2 * pullman.precio,
+      acciones: ["confirmarPago", "cancelar"],
+    })
+
+    const confirmada = await pedir(
+      "post",
+      `/compras/${compra.id}/confirmacion`,
+      nicolas,
+    ).expect(200)
+    expect(confirmada.body).toMatchObject({
+      estado: "CONFIRMADA",
+      acciones: ["cancelar"],
+    })
+    expect(confirmada.body.diasParaElEvento).toBeGreaterThan(0)
+    expect(confirmada.body.historial.map((h) => h.estado)).toEqual([
+      "PENDIENTE",
+      "CONFIRMADA",
+    ])
+
+    const conCompra = await detalle()
+    expect(conCompra.entradasDelUsuario).toBe(4)
+    expect(pullmanDe(conCompra).disponibles).toBe(pullman.disponibles - 2)
+
+    const comprasDelEvento = await pedir(
+      "get",
+      `${rutaEvento}/compras`,
+      lucia,
+    ).expect(200)
+    expect(comprasDelEvento.body.compras).toContainEqual(
+      expect.objectContaining({ id: compra.id, estado: "CONFIRMADA" }),
+    )
+    await pedir("get", `${rutaEvento}/compras`, nicolas).expect(403)
+
+    const cancelada = await pedir(
+      "post",
+      `/compras/${compra.id}/cancelacion`,
+      nicolas,
+    ).expect(200)
+    expect(cancelada.body.estado).toBe("CANCELADA")
+
+    const reembolsada = await pedir(
+      "post",
+      `/compras/${compra.id}/reembolso`,
+      lucia,
+    ).expect(200)
+    expect(reembolsada.body.estado).toBe("REEMBOLSADA")
+
+    const final = await detalle()
+    expect(final.entradasDelUsuario).toBe(2)
+    expect(pullmanDe(final).disponibles).toBe(pullman.disponibles)
+  })
+})
+
 test("una ruta desconocida responde 404", async () => {
   const { body } = await request(app).get("/no-existe").expect(404)
   expect(body).toEqual({ message: "Ruta no encontrada", details: [] })
