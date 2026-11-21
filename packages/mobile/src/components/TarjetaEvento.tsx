@@ -1,10 +1,10 @@
-import { Ionicons } from "@expo/vector-icons"
 import { Image, StyleSheet, Text, View } from "react-native"
 
 import { theme } from "../theme"
 import type { Evento } from "../types"
 import { formatearFecha, formatearPesos } from "../utils/fechas"
 import { Puntaje } from "./Puntaje"
+import { SinImagen } from "./SinImagen"
 import { Tarjeta } from "./Tarjeta"
 
 type Props = {
@@ -20,13 +20,7 @@ export function TarjetaEvento({ evento, onPress }: Props) {
       {imagen ? (
         <Image source={{ uri: imagen }} style={styles.imagen} />
       ) : (
-        <View style={[styles.imagen, styles.sinImagen]}>
-          <Ionicons
-            name="ticket-outline"
-            size={40}
-            color={theme.colores.primario}
-          />
-        </View>
+        <SinImagen style={styles.imagen} />
       )}
       <View style={styles.cuerpo}>
         <Text style={styles.categoria}>{evento.categoria.nombre}</Text>
@@ -60,10 +54,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 160,
     backgroundColor: theme.colores.primarioSuave,
-  },
-  sinImagen: {
-    alignItems: "center",
-    justifyContent: "center",
   },
   cuerpo: {
     padding: theme.espacios.l,

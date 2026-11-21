@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons"
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 
+import { BotonQuitar } from "../../components/BotonQuitar"
 import { Campo } from "../../components/Campo"
 import { theme } from "../../theme"
 import { confirmar } from "../../utils/confirmar"
@@ -9,8 +9,6 @@ import {
   type TipoEntradaFormulario,
   tipoTieneDatos,
 } from "./armarNuevoEvento"
-
-const ICONO_QUITAR = 20
 
 type Props = {
   tipo: TipoEntradaFormulario
@@ -54,18 +52,10 @@ export function FormularioTipoEntrada({
           {tipo.nombre.trim() || "Tipo de entrada"}
         </Text>
         {onQuitar && (
-          <Pressable
+          <BotonQuitar
+            etiqueta="Quitar tipo de entrada"
             onPress={() => quitarSiConfirma(tipo, onQuitar)}
-            hitSlop={theme.margenTactil(ICONO_QUITAR)}
-            accessibilityRole="button"
-            accessibilityLabel="Quitar tipo de entrada"
-          >
-            <Ionicons
-              name="trash-outline"
-              size={ICONO_QUITAR}
-              color={theme.colores.error}
-            />
-          </Pressable>
+          />
         )}
       </View>
       <Campo

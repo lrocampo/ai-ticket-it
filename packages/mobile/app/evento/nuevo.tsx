@@ -12,6 +12,7 @@ import {
 } from "react-native"
 
 import { Boton } from "../../src/components/Boton"
+import { BotonQuitar } from "../../src/components/BotonQuitar"
 import { Campo } from "../../src/components/Campo"
 import { Cargable } from "../../src/components/Cargable"
 import { Chip } from "../../src/components/Chip"
@@ -19,10 +20,12 @@ import { Seccion } from "../../src/components/Seccion"
 import {
   armarNuevoEvento,
   type CampoDelEvento,
+  type ErrorDeImagen,
   type ErrorDelFormulario,
   type FormularioEvento,
   formularioTieneDatos,
   formularioVacio,
+  imagenVacia,
   TIPO_VACIO,
   type TipoEntradaFormulario,
 } from "../../src/features/eventos/armarNuevoEvento"
@@ -43,7 +46,7 @@ export default function CrearEvento() {
   )
   const [creado, setCreado] = useState(false)
   const [error, setError] = useState<ErrorDelFormulario | null>(null)
-  const { tiposEntrada } = formulario
+  const { tiposEntrada, imagenes } = formulario
 
   const permitirSalir = usePreventRemove(
     formularioTieneDatos(formulario) && !creado,
@@ -73,9 +76,17 @@ export default function CrearEvento() {
     return error?.campo === "tipo" && error.indice === indice ? error : null
   }
 
+  function errorDeImagen(indice: number) {
+    return error?.campo === "imagen" && error.indice === indice
+      ? error.mensaje
+      : undefined
+  }
+
   function mostrarError(nuevo: ErrorDelFormulario) {
     setError(nuevo)
-    AccessibilityInfo.announceForAccessibility(nuevo.mensaje)
+    AccessibilityInfo.announceForAccessibility(
+      nuevo.campo === "imagen" ? textoDeImagen(nuevo) : nuevo.mensaje,
+    )
   }
 
   function cambiarTipo(indice: number, tipo: TipoEntradaFormulario) {
@@ -90,6 +101,21 @@ export default function CrearEvento() {
       "tiposEntrada",
       tiposEntrada.filter((_, i) => i !== indice),
     )
+  }
+
+  function cambiarImagen(indice: number, url: string) {
+    actualizar(
+      "imagenes",
+      imagenes.map((actual, i) => (i === indice ? { ...actual, url } : actual)),
+    )
+  }
+
+  function quitarImagen(indice: number) {
+    actualizar(
+      "imagenes",
+      imagenes.filter((_, i) => i !== indice),
+    )
+    AccessibilityInfo.announceForAccessibility(`Imagen ${indice + 1} quitada`)
   }
 
   function crear() {
@@ -161,15 +187,37 @@ export default function CrearEvento() {
               {errorDe("categoriaId") && (
                 <Text style={theme.texto.error}>{errorDe("categoriaId")}</Text>
               )}
-              <Campo
-                etiqueta="URL de una imagen (opcional)"
-                value={formulario.imagen}
-                onChangeText={(imagen) => actualizar("imagen", imagen)}
-                placeholder="https://"
-                keyboardType="url"
-                autoCapitalize="none"
-                autoCorrect={false}
-                error={errorDe("imagen")}
+              <Text style={theme.texto.destacado}>Imágenes</Text>
+              <Text style={theme.texto.secundario}>
+                Opcional. La primera es la portada.
+              </Text>
+              {imagenes.map(({ id, url }, indice) => (
+                <Campo
+                  key={id}
+                  etiqueta={`Imagen ${indice + 1}`}
+                  value={url}
+                  onChangeText={(nueva) => cambiarImagen(indice, nueva)}
+                  placeholder="https://"
+                  keyboardType="url"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  error={errorDeImagen(indice)}
+                  accesorio={
+                    imagenes.length > 1 && (
+                      <BotonQuitar
+                        etiqueta={`Quitar imagen ${indice + 1}`}
+                        onPress={() => quitarImagen(indice)}
+                      />
+                    )
+                  }
+                />
+              ))}
+              <Boton
+                texto="Agregar otra imagen"
+                tono="secundario"
+                onPress={() =>
+                  actualizar("imagenes", [...imagenes, imagenVacia()])
+                }
               />
               <Campo
                 etiqueta="Máximo de entradas por persona"
@@ -265,10 +313,15 @@ export default function CrearEvento() {
   )
 }
 
+function textoDeImagen(error: ErrorDeImagen) {
+  return `Imagen ${error.indice + 1}: ${error.mensaje}`
+}
+
 function resumenDelError(
   error: ErrorDelFormulario,
   tipos: TipoEntradaFormulario[],
 ) {
+  if (error.campo === "imagen") return textoDeImagen(error)
   if (error.campo !== "tipo") return error.mensaje
   const nombre = tipos[error.indice]?.nombre.trim()
   return nombre ? `«${nombre}»: ${error.mensaje}` : error.mensaje

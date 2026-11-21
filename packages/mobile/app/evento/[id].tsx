@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams } from "expo-router"
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native"
+import { ScrollView, StyleSheet, Text, View } from "react-native"
 
 import { Cargable } from "../../src/components/Cargable"
 import { Estrellas } from "../../src/components/Estrellas"
+import { GaleriaDeImagenes } from "../../src/components/GaleriaDeImagenes"
 import { Puntaje } from "../../src/components/Puntaje"
 import { Seccion } from "../../src/components/Seccion"
 import { BloqueCompra } from "../../src/features/compras/BloqueCompra"
@@ -23,12 +24,10 @@ export default function DetalleEvento() {
           contentContainerStyle={styles.pantalla}
         >
           <Stack.Screen options={{ title: evento.nombre }} />
-          {evento.multimedia[0] && (
-            <Image
-              source={{ uri: evento.multimedia[0] }}
-              style={styles.imagen}
-            />
-          )}
+          <GaleriaDeImagenes
+            urls={evento.multimedia}
+            nombreDelEvento={evento.nombre}
+          />
 
           <View style={styles.contenido}>
             <View style={styles.encabezado}>
@@ -80,11 +79,6 @@ const styles = StyleSheet.create({
   contenido: {
     padding: theme.espacios.l,
     gap: theme.espacios.l,
-  },
-  imagen: {
-    width: "100%",
-    height: 220,
-    backgroundColor: theme.colores.primarioSuave,
   },
   encabezado: {
     gap: theme.espacios.xs,

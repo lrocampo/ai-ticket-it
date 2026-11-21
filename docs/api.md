@@ -89,7 +89,7 @@ Body de `POST /eventos`:
 }
 ```
 
-Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento (sin distinguir mayúsculas ni espacios alrededor). `multimedia` solo admite URLs `http` o `https`. `limitePorUsuario` es opcional (6 por defecto) y tiene que ser un entero positivo.
+Reglas: fecha futura, al menos un tipo de entrada, precios no negativos, cupo entero positivo, nombres de tipo únicos dentro del evento (sin distinguir mayúsculas ni espacios alrededor). `multimedia` solo admite URLs `http` o `https`. El orden importa: la primera es la portada. `limitePorUsuario` es opcional (6 por defecto) y tiene que ser un entero positivo.
 
 ### Compras
 
