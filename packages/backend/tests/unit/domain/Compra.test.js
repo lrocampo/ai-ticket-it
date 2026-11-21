@@ -206,9 +206,11 @@ describe("Compra", () => {
 
     test("la reseña tampoco se puede pisar desde afuera", () => {
       const compra = llevarA[UTILIZADA]()
+      const resena = compra.resenar(5, "Muy bueno", HOY)
       expect(() => {
         compra.resena = null
       }).toThrow(TypeError)
+      expect(compra.resena).toBe(resena)
     })
   })
 

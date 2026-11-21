@@ -47,8 +47,9 @@ export default class CompraService {
   cancelar = (usuario, id, ahora) => {
     const compra = this.#autorizada(usuario, id, "cancelar")
     compra.cancelar(usuario, ahora)
+    const guardada = this.compras.guardar(compra)
     this.eventos.guardar(compra.evento)
-    return this.compras.guardar(compra)
+    return guardada
   }
 
   reembolsar = (usuario, id, ahora) => {
