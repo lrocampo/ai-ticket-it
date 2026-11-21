@@ -5,12 +5,14 @@ import { Cargable } from "../src/components/Cargable"
 import { Tarjeta } from "../src/components/Tarjeta"
 import { useUsuario } from "../src/context/UsuarioContext"
 import { useCarga } from "../src/hooks/useCarga"
+import { useEnvio } from "../src/hooks/useEnvio"
 import { listarUsuarios } from "../src/services/api"
 import { theme } from "../src/theme"
 
 export default function QuienSoy() {
   const { elegirUsuario } = useUsuario()
   const usuarios = useCarga(listarUsuarios, [])
+  const { enviar } = useEnvio()
 
   return (
     <Cargable carga={usuarios}>
@@ -28,7 +30,12 @@ export default function QuienSoy() {
             </Text>
           }
           renderItem={({ item }) => (
-            <Tarjeta style={styles.fila} onPress={() => elegirUsuario(item)}>
+            <Tarjeta
+              style={styles.fila}
+              onPress={() =>
+                enviar("No se pudo entrar", () => elegirUsuario(item))
+              }
+            >
               <View style={styles.avatar}>
                 <Text style={styles.iniciales}>
                   {item.nombre[0]}

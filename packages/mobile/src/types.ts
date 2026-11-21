@@ -5,6 +5,11 @@ export type Usuario = {
   email: string
 }
 
+export type Sesion = {
+  token: string
+  usuario: Usuario
+}
+
 export type Categoria = {
   id: string
   nombre: string

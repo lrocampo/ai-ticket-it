@@ -11,6 +11,7 @@ import type {
   NuevaCompra,
   NuevaResena,
   NuevoEvento,
+  Sesion,
   Usuario,
 } from "../types"
 
@@ -25,17 +26,32 @@ function urlDelBackend(): string {
 
 const api = axios.create({ baseURL: urlDelBackend(), timeout: 10000 })
 
-let usuarioActualId: string | null = null
+let token: string | null = null
+let alVencerLaSesion: (() => void) | null = null
 
-export function setUsuarioActualId(id: string | null) {
-  usuarioActualId = id
+export function setToken(nuevo: string | null) {
+  token = nuevo
+}
+
+// Lo registra UsuarioContext para volver a "¿Quién sos?" cuando el backend
+// rechaza el token (por ejemplo, porque venció).
+export function onSesionVencida(callback: (() => void) | null) {
+  alVencerLaSesion = callback
 }
 
 api.interceptors.request.use((config) => {
-  if (usuarioActualId) {
-    config.headers.set("x-usuario-id", usuarioActualId)
+  if (token) {
+    config.headers.set("Authorization", `Bearer ${token}`)
   }
   return config
+})
+
+api.interceptors.response.use(undefined, (error: unknown) => {
+  if (token && isAxiosError(error) && error.response?.status === 401) {
+    token = null
+    alVencerLaSesion?.()
+  }
+  return Promise.reject(error)
 })
 
 type DetalleDeValidacion = { path: (string | number)[]; message: string }
@@ -65,6 +81,14 @@ function lineaDelDetalle({ path, message }: DetalleDeValidacion) {
 
 export async function listarUsuarios() {
   return (await api.get<Usuario[]>("/usuarios")).data
+}
+
+export async function crearSesion(usuarioId: string) {
+  return (await api.post<Sesion>("/sesiones", { usuarioId })).data
+}
+
+export async function obtenerSesion() {
+  return (await api.get<Usuario>("/sesion")).data
 }
 
 export async function listarCategorias() {
