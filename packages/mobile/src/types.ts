@@ -36,6 +36,7 @@ export type Evento = {
   tiposEntrada: TipoEntrada[]
   precioDesde: number
   yaOcurrio: boolean
+  limitePorUsuario: number
 }
 
 export type Resena = {
@@ -49,6 +50,7 @@ export type Resena = {
 
 export type EventoDetalle = Evento & {
   resenasDelOrganizador: Resena[]
+  entradasDelUsuario: number
 }
 
 export type EstadoCompra =
@@ -118,6 +120,7 @@ export type NuevoEvento = {
   categoriaId: string
   fecha: string
   multimedia: string[]
+  limitePorUsuario: number
   tiposEntrada: Omit<TipoEntrada, "id" | "disponibles">[]
 }
 

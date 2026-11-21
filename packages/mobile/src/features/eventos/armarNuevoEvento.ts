@@ -13,6 +13,7 @@ export type FormularioEvento = {
   categoriaId: string | null
   fecha: Date
   imagen: string
+  limitePorUsuario: string
   tiposEntrada: TipoEntradaFormulario[]
 }
 
@@ -37,6 +38,7 @@ export const TIPO_VACIO: TipoEntradaFormulario = {
 }
 
 const NOMBRE_SUGERIDO = "General"
+const LIMITE_POR_USUARIO_POR_DEFECTO = 6
 
 export function formularioVacio(): FormularioEvento {
   const fecha = new Date()
@@ -48,6 +50,7 @@ export function formularioVacio(): FormularioEvento {
     categoriaId: null,
     fecha,
     imagen: "",
+    limitePorUsuario: String(LIMITE_POR_USUARIO_POR_DEFECTO),
     tiposEntrada: [{ ...TIPO_VACIO, nombre: NOMBRE_SUGERIDO }],
   }
 }
@@ -106,6 +109,20 @@ export function armarNuevoEvento(
     )
   }
 
+  const limitePorUsuario = formulario.limitePorUsuario.trim()
+  if (limitePorUsuario === "") {
+    return falta(
+      "limitePorUsuario",
+      "Completá el máximo de entradas por persona.",
+    )
+  }
+  if (!/^\d+$/.test(limitePorUsuario) || Number(limitePorUsuario) < 1) {
+    return falta(
+      "limitePorUsuario",
+      "Escribí un número entero de 1 en adelante, por ejemplo 6.",
+    )
+  }
+
   const tipos: NuevoEvento["tiposEntrada"] = []
   for (const [indice, tipo] of tiposEntrada.entries()) {
     const nombreTipo = tipo.nombre.trim()
@@ -139,6 +156,7 @@ export function armarNuevoEvento(
       categoriaId,
       fecha: fecha.toISOString(),
       multimedia: imagen === "" ? [] : [imagen],
+      limitePorUsuario: Number(limitePorUsuario),
       tiposEntrada: tipos,
     },
   }

@@ -15,6 +15,7 @@ function formulario(cambios: Partial<FormularioEvento> = {}): FormularioEvento {
     categoriaId: "musica",
     fecha,
     imagen: "",
+    limitePorUsuario: "6",
     tiposEntrada: [
       { nombre: "General", descripcion: "", precio: "15000", cupo: "200" },
     ],
@@ -32,6 +33,7 @@ test("convierte los textos del formulario en el body de POST /eventos", () => {
       categoriaId: "musica",
       fecha: "2026-12-20T21:00:00.000Z",
       multimedia: ["https://ejemplo.com/a.jpg"],
+      limitePorUsuario: 6,
       tiposEntrada: [
         { nombre: "General", descripcion: "", precio: 15000, cupo: 200 },
       ],
@@ -186,4 +188,23 @@ test.each<[string, Partial<FormularioEvento>]>([
   ["un tipo renombrado", { tiposEntrada: [{ ...TIPO_VACIO, nombre: "VIP" }] }],
 ])("con %s hay algo que descartar", (_, cambios) => {
   expect(formularioTieneDatos({ ...formularioVacio(), ...cambios })).toBe(true)
+})
+
+test("el máximo de entradas por persona arranca en 6 y viaja como número", () => {
+  expect(formularioVacio().limitePorUsuario).toBe("6")
+  expect(armar(formulario({ limitePorUsuario: " 4 " }))).toMatchObject({
+    evento: { limitePorUsuario: 4 },
+  })
+})
+
+test.each([
+  ["", "Completá el máximo de entradas por persona."],
+  ["0", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
+  ["2,5", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
+  ["-3", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
+  ["seis", "Escribí un número entero de 1 en adelante, por ejemplo 6."],
+])("el máximo por persona %p se corrige en su campo", (valor, mensaje) => {
+  expect(armar(formulario({ limitePorUsuario: valor }))).toEqual({
+    error: { campo: "limitePorUsuario", mensaje },
+  })
 })
