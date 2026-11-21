@@ -1,0 +1,54 @@
+# Flujo de punta a punta: la app real en Expo Go contra el backend real.
+# Requiere el backend recién levantado (seed limpio), Expo en el puerto 8082
+# y el "Tools button" de Expo Go apagado (su engranaje tapa el botón de
+# cambiar de usuario).
+appId: host.exp.Exponent
+name: Comprar entradas respetando el límite por persona
+---
+- launchApp
+- openLink: exp://127.0.0.1:8082
+- extendedWaitUntil:
+    visible: "Eventos|¿Quién sos\\?"
+    timeout: 60000
+# Expo Go abre su menú de desarrollo unos segundos después de cargar el proyecto.
+- extendedWaitUntil:
+    visible:
+      id: "xmark"
+    timeout: 5000
+    optional: true
+- tapOn:
+    id: "xmark"
+    optional: true
+# El token queda en el llavero aunque se borren los datos de la app:
+# si hay una sesión abierta, se cierra para arrancar desde "¿Quién sos?".
+- runFlow:
+    when:
+      visible: ".*cambiar de usuario"
+    commands:
+      - tapOn: ".*cambiar de usuario"
+- extendedWaitUntil:
+    visible: "¿Quién sos\\?"
+    timeout: 30000
+- tapOn: ".*Nicolás Acosta.*"
+- tapOn: "Buscar eventos"
+- inputText: "rock"
+- tapOn: ".*Noche de rock en el Gran Rex.*"
+- scrollUntilVisible:
+    element: "Hasta 4 por persona · ya tenés 2"
+- tapOn: ".*Pullman.*"
+- tapOn: "Agregar una entrada"
+- tapOn: "Agregar una entrada"
+- tapOn: "Agregar una entrada"
+- assertVisible: "\\$ 30.000"
+- tapOn: "Comprá tus entradas"
+- tapOn: "OK"
+- assertVisible: "Mis compras"
+- tapOn:
+    text: ".*Noche de rock en el Gran Rex.*"
+    index: 0
+- tapOn: "Confirmar pago"
+- tapOn:
+    text: "Confirmar pago"
+    below: "Pagar .*"
+- assertVisible: "Confirmada"
+- assertVisible: "Faltan .* días"

@@ -13,7 +13,8 @@
     "test": "npm test --workspaces",
     "lint": "eslint .",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "e2e": "npm run e2e --workspace=mobile"
   },
   "license": "MIT",
   "devDependencies": {
