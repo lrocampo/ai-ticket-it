@@ -71,6 +71,9 @@ const acciones = {
 }
 
 export default class Compra {
+  #estado
+  #resena = null
+
   constructor(
     { comprador, evento, tipoEntrada, cantidad },
     ahora = new Date(),
@@ -94,10 +97,9 @@ export default class Compra {
     this.tipoEntrada = tipoEntrada
     this.cantidad = cantidad
     this.total = tipoEntrada.precio * cantidad
-    this.estado = PENDIENTE
+    this.#estado = PENDIENTE
     this.historial = [new CambioEstadoCompra(PENDIENTE, comprador, ahora)]
     this.mensajes = []
-    this.resena = null
   }
 
   confirmarPago(quien, ahora = new Date()) {
@@ -114,6 +116,14 @@ export default class Compra {
 
   reembolsar(quien, ahora = new Date()) {
     this.#transicionar("reembolsar", quien, ahora)
+  }
+
+  get estado() {
+    return this.#estado
+  }
+
+  get resena() {
+    return this.#resena
   }
 
   get creada() {
@@ -152,14 +162,14 @@ export default class Compra {
     if (impedimento) {
       throw new DomainRuleError(impedimento)
     }
-    this.resena = new Resena({
+    this.#resena = new Resena({
       id: this.id,
       compra: this,
       puntuacion,
       detalle,
       fecha: ahora,
     })
-    return this.resena
+    return this.#resena
   }
 
   esParte(usuario) {
@@ -210,7 +220,7 @@ export default class Compra {
       throw new DomainRuleError(impedimento)
     }
     const transicion = transiciones[accion]
-    this.estado = transicion.hacia
+    this.#estado = transicion.hacia
     this.historial.push(new CambioEstadoCompra(transicion.hacia, quien, ahora))
     transicion.alAplicar?.(this)
   }
