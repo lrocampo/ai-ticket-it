@@ -82,6 +82,7 @@ export type Mensaje = {
 
 export type Compra = {
   id: string
+  creada: string
   estado: EstadoCompra
   cantidad: number
   total: number
@@ -99,6 +100,8 @@ export type ComprasDeEvento = {
   evento: Evento
   compras: Compra[]
 }
+
+export type OrdenCompras = "recientes" | "antiguas"
 
 export type OrdenEventos = "precio" | "fecha" | "puntaje"
 

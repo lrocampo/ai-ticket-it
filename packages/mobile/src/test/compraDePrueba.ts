@@ -17,6 +17,7 @@ const organizador: Usuario = {
 export function compraDePrueba(cambios: Partial<Compra> = {}): Compra {
   return {
     id: "c1",
+    creada: "2026-11-01T12:00:00.000Z",
     estado: "PENDIENTE",
     cantidad: 2,
     total: 18000,
