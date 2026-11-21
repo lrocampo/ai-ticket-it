@@ -16,6 +16,8 @@ Responde `201 { token, usuario }`. El token es un JWT firmado (HS256) que vence 
 Authorization: Bearer <token>
 ```
 
+Como no hay contraseña, cualquiera que conozca el `id` de un usuario puede pedir su token: el token identifica al usuario pero no lo autentica. Agregar un login solo cambiaría cómo se emite el token, no cómo se usa.
+
 `GET /sesion` devuelve el `Usuario` del token, y la app lo usa para recuperar la sesión al abrirse. Si `usuarioId` no corresponde a un usuario, `POST /sesiones` responde `404`.
 
 Responde `401` si falta el header o no tiene la forma `Bearer <token>`, si el token no tiene una firma válida o venció, o si su usuario ya no existe. Las rutas `GET /usuarios`, `GET /categorias` y `POST /sesiones` no necesitan token.

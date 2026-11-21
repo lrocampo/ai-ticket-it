@@ -1,10 +1,10 @@
 import app from "./app.js"
-import { repositorios } from "./dependencias.js"
+import { repositorios, usaSecretoDeDesarrollo } from "./dependencias.js"
 import cargarSeed from "./seeds/cargarSeed.js"
 
 const port = process.env.PORT ?? 3000
 
-if (!process.env.JWT_SECRET) {
+if (usaSecretoDeDesarrollo) {
   console.warn(
     "JWT_SECRET no está definido: se usa un secreto de desarrollo. Definilo antes de exponer el backend.",
   )

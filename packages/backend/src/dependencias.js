@@ -19,9 +19,10 @@ const categoriaService = new CategoriaService(categorias)
 const eventoService = new EventoService(eventos, categorias, compras)
 const compraService = new CompraService(compras, eventos)
 
-export const tokens = crearTokens({
-  secreto: process.env.JWT_SECRET ?? SECRETO_DE_DESARROLLO,
-})
+const secreto = process.env.JWT_SECRET || SECRETO_DE_DESARROLLO
+export const usaSecretoDeDesarrollo = secreto === SECRETO_DE_DESARROLLO
+
+export const tokens = crearTokens({ secreto })
 export const identificar = crearIdentificar(usuarios, tokens)
 
 export const usuarioController = new UsuarioController(usuarioService)

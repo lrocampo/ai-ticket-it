@@ -64,13 +64,13 @@ test("con token guardado restaura al usuario", async () => {
   expect(setToken).toHaveBeenCalledWith("abc")
 })
 
-test("si el token ya no sirve, lo descarta y queda sin usuario", async () => {
+test("si no puede recuperar la sesión, queda sin usuario pero conserva el token guardado", async () => {
   jest.mocked(SecureStore.getItemAsync).mockResolvedValue("viejo")
-  jest.mocked(obtenerSesion).mockRejectedValue(new Error("401"))
+  jest.mocked(obtenerSesion).mockRejectedValue(new Error("sin conexión"))
   await montar()
 
   await screen.findByText("sin usuario")
-  expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("sesion")
+  expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled()
   expect(setToken).toHaveBeenLastCalledWith(null)
 })
 

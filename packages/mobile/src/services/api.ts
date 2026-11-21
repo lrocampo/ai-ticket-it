@@ -47,7 +47,12 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use(undefined, (error: unknown) => {
-  if (token && isAxiosError(error) && error.response?.status === 401) {
+  if (
+    token &&
+    isAxiosError(error) &&
+    error.response?.status === 401 &&
+    error.config?.headers?.Authorization === `Bearer ${token}`
+  ) {
     token = null
     alVencerLaSesion?.()
   }

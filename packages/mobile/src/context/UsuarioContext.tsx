@@ -34,7 +34,6 @@ async function recuperarUsuario(): Promise<Usuario | null> {
     return await obtenerSesion()
   } catch {
     setToken(null)
-    await SecureStore.deleteItemAsync(CLAVE).catch(() => {})
     return null
   }
 }
@@ -57,9 +56,9 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
 
   async function elegirUsuario(elegido: Usuario) {
     const sesion = await crearSesion(elegido.id)
+    await SecureStore.setItemAsync(CLAVE, sesion.token).catch(() => {})
     setToken(sesion.token)
     setUsuario(sesion.usuario)
-    await SecureStore.setItemAsync(CLAVE, sesion.token)
   }
 
   async function salir() {
