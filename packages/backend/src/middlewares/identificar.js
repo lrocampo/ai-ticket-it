@@ -1,16 +1,21 @@
 import { NoAutenticado } from "../errors/ApplicationErrors.js"
 
-export default function identificar(usuarioRepository) {
+export default function identificar(usuarioRepository, tokens) {
   return (req, _res, next) => {
-    const id = req.headers["x-usuario-id"]
-    if (!id) {
-      return next(new NoAutenticado("Falta el header x-usuario-id."))
+    const [, token] =
+      /^Bearer (\S+)$/i.exec(req.headers.authorization ?? "") ?? []
+    if (!token) {
+      return next(new NoAutenticado("Falta el token de sesión."))
     }
-    const usuario = usuarioRepository.buscarPorId(id)
-    if (!usuario) {
-      return next(new NoAutenticado("El usuario de x-usuario-id no existe."))
+    try {
+      const usuario = usuarioRepository.buscarPorId(tokens.verificar(token))
+      if (!usuario) {
+        throw new NoAutenticado("La sesión no es válida o venció.")
+      }
+      req.usuario = usuario
+      next()
+    } catch (error) {
+      next(error)
     }
-    req.usuario = usuario
-    next()
   }
 }

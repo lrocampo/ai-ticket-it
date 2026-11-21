@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import * as SecureStore from "expo-secure-store"
 import {
   createContext,
   type ReactNode,
@@ -7,10 +7,15 @@ import {
   useState,
 } from "react"
 
-import { listarUsuarios, setUsuarioActualId } from "../services/api"
+import {
+  crearSesion,
+  obtenerSesion,
+  onSesionVencida,
+  setToken,
+} from "../services/api"
 import type { Usuario } from "../types"
 
-const CLAVE = "usuarioActualId"
+const CLAVE = "sesion"
 
 type UsuarioContextValue = {
   usuario: Usuario | null
@@ -23,11 +28,12 @@ const UsuarioContext = createContext<UsuarioContextValue | null>(null)
 
 async function recuperarUsuario(): Promise<Usuario | null> {
   try {
-    const id = await AsyncStorage.getItem(CLAVE)
-    if (!id) return null
-    const usuarios = await listarUsuarios()
-    return usuarios.find((u) => u.id === id) ?? null
+    const token = await SecureStore.getItemAsync(CLAVE)
+    if (!token) return null
+    setToken(token)
+    return await obtenerSesion()
   } catch {
+    setToken(null)
     return null
   }
 }
@@ -37,23 +43,28 @@ export function UsuarioProvider({ children }: { children: ReactNode }) {
   const [recuperando, setRecuperando] = useState(true)
 
   useEffect(() => {
+    onSesionVencida(() => {
+      setUsuario(null)
+      SecureStore.deleteItemAsync(CLAVE).catch(() => {})
+    })
     recuperarUsuario().then((recuperado) => {
-      setUsuarioActualId(recuperado?.id ?? null)
       setUsuario(recuperado)
       setRecuperando(false)
     })
+    return () => onSesionVencida(null)
   }, [])
 
   async function elegirUsuario(elegido: Usuario) {
-    setUsuarioActualId(elegido.id)
-    setUsuario(elegido)
-    await AsyncStorage.setItem(CLAVE, elegido.id)
+    const sesion = await crearSesion(elegido.id)
+    await SecureStore.setItemAsync(CLAVE, sesion.token).catch(() => {})
+    setToken(sesion.token)
+    setUsuario(sesion.usuario)
   }
 
   async function salir() {
-    setUsuarioActualId(null)
+    setToken(null)
     setUsuario(null)
-    await AsyncStorage.removeItem(CLAVE)
+    await SecureStore.deleteItemAsync(CLAVE)
   }
 
   return (

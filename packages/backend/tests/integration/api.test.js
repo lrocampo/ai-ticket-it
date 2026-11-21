@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, test } from "@jest/globals"
 import request from "supertest"
 import app from "../../src/app.js"
-import { repositorios } from "../../src/dependencias.js"
+import crearTokens from "../../src/auth/tokens.js"
+import { repositorios, tokens } from "../../src/dependencias.js"
 import cargarSeed from "../../src/seeds/cargarSeed.js"
 
 const seed = cargarSeed(repositorios)
@@ -19,7 +20,9 @@ const usuarioForma = {
   email: expect.any(String),
 }
 
-const como = (usuario) => ({ "x-usuario-id": usuario.id })
+const como = (usuario) => ({
+  Authorization: `Bearer ${tokens.emitir(usuario)}`,
+})
 
 describe("identificación", () => {
   test("GET /usuarios y /categorias no la necesitan", async () => {
@@ -40,19 +43,100 @@ describe("identificación", () => {
     expect(body.map((u) => u.id)).toEqual(["1", "2", "3", "4", "5", "6"])
   })
 
-  test("sin x-usuario-id responde 401", async () => {
+  test("sin token responde 401", async () => {
     const respuesta = await request(app).get("/eventos").expect(401)
     expect(respuesta.body).toEqual({
-      message: expect.any(String),
+      message: "Falta el token de sesión.",
       details: [],
     })
   })
 
-  test("con un x-usuario-id inexistente responde 401", async () => {
+  test.each(["Basic abc", "Bearer", "Bearer ", "abc"])(
+    "con el header Authorization %j responde 401",
+    async (autorizacion) => {
+      const respuesta = await request(app)
+        .get("/eventos")
+        .set("Authorization", autorizacion)
+        .expect(401)
+      expect(respuesta.body.message).toBe("Falta el token de sesión.")
+    },
+  )
+
+  test("con un token que no es válido responde 401", async () => {
+    const respuesta = await request(app)
+      .get("/eventos")
+      .set("Authorization", "Bearer cualquier-cosa")
+      .expect(401)
+    expect(respuesta.body.message).toBe("La sesión no es válida o venció.")
+  })
+
+  test("con un token vencido responde 401", async () => {
+    const vencido = crearTokens({ secreto: "x", expiraEn: -1 }).emitir(lucia)
     await request(app)
       .get("/eventos")
-      .set({ "x-usuario-id": "999" })
+      .set("Authorization", `Bearer ${vencido}`)
       .expect(401)
+  })
+
+  test("con un token de un usuario que ya no existe responde 401", async () => {
+    await request(app)
+      .get("/eventos")
+      .set(como({ id: "999" }))
+      .expect(401)
+  })
+})
+
+describe("sesiones", () => {
+  test("POST /sesiones con un usuario existente devuelve su token y sus datos", async () => {
+    const { body } = await request(app)
+      .post("/sesiones")
+      .send({ usuarioId: nicolas.id })
+      .expect(201)
+
+    expect(body).toEqual({
+      token: expect.any(String),
+      usuario: {
+        id: nicolas.id,
+        nombre: nicolas.nombre,
+        apellido: nicolas.apellido,
+        email: nicolas.email,
+      },
+    })
+    await request(app)
+      .get("/eventos")
+      .set("Authorization", `Bearer ${body.token}`)
+      .expect(200)
+  })
+
+  test("POST /sesiones con un usuario inexistente responde 404", async () => {
+    await request(app).post("/sesiones").send({ usuarioId: "999" }).expect(404)
+  })
+
+  test.each([
+    {},
+    { usuarioId: "" },
+    { usuarioId: 1 },
+    { usuarioId: "1", x: 1 },
+  ])("POST /sesiones con el body %j responde 400", async (cuerpo) => {
+    await request(app).post("/sesiones").send(cuerpo).expect(400)
+  })
+
+  test("GET /sesion devuelve el usuario del token", async () => {
+    const { body } = await request(app)
+      .get("/sesion")
+      .set(como(valentina))
+      .expect(200)
+
+    expect(body).toEqual({
+      id: valentina.id,
+      nombre: valentina.nombre,
+      apellido: valentina.apellido,
+      email: valentina.email,
+    })
+  })
+
+  test("GET /sesion sin token responde 401", async () => {
+    await request(app).get("/sesion").expect(401)
   })
 })
 

@@ -4,7 +4,25 @@ Backend Express en `http://localhost:3000`. Todo es JSON. La persistencia es en 
 
 ## Identificación
 
-No hay login. El cliente manda el header `x-usuario-id` con el id del usuario que está usando la app. Si falta o no existe, el backend responde `401`. Las rutas `GET /usuarios` y `GET /categorias` no lo necesitan.
+No hay login ni registro. Para identificarse, el cliente pide un token con `POST /sesiones` y el `id` de uno de los usuarios de `GET /usuarios`:
+
+```json
+{ "usuarioId": "1" }
+```
+
+Responde `201 { token, usuario }`. El token es un JWT firmado (HS256) que vence a las 8 horas. El cliente lo manda en cada pedido:
+
+```
+Authorization: Bearer <token>
+```
+
+Como no hay contraseña, cualquiera que conozca el `id` de un usuario puede pedir su token: el token identifica al usuario pero no lo autentica. Agregar un login solo cambiaría cómo se emite el token, no cómo se usa.
+
+`GET /sesion` devuelve el `Usuario` del token, y la app lo usa para recuperar la sesión al abrirse. Si `usuarioId` no corresponde a un usuario, `POST /sesiones` responde `404`.
+
+Responde `401` si falta el header o no tiene la forma `Bearer <token>`, si el token no tiene una firma válida o venció, o si su usuario ya no existe. Las rutas `GET /usuarios`, `GET /categorias` y `POST /sesiones` no necesitan token.
+
+El secreto de la firma sale de la variable de entorno `JWT_SECRET`. Si no está definida, el backend usa uno de desarrollo y avisa al arrancar.
 
 ## Errores
 
@@ -15,7 +33,7 @@ No hay login. El cliente manda el header `x-usuario-id` con el id del usuario qu
 | Código | Cuándo                                                                                                                                     |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | 400    | body o query inválidos (zod); `details` lista los campos                                                                                   |
-| 401    | falta `x-usuario-id` o no corresponde a un usuario                                                                                         |
+| 401    | falta el token de sesión, no es válido o venció                                                                                            |
 | 403    | el usuario no es quien puede hacer la acción                                                                                               |
 | 404    | entidad inexistente                                                                                                                        |
 | 409    | regla de negocio (sin cupo, pasarse del máximo por persona, transición inválida, reseña duplicada, el organizador compra su propio evento) |
@@ -57,7 +75,7 @@ Compra = {
 
 `estado` es uno de `PENDIENTE`, `CONFIRMADA`, `UTILIZADA`, `CANCELADA`, `REEMBOLSADA`.
 
-`Accion` es uno de `confirmarPago`, `utilizar`, `cancelar`, `reembolsar`, `resenar`. `acciones` se calcula para el usuario del header: son las acciones que ese usuario puede ejecutar sobre esa compra en su estado actual, según la tabla de `docs/dominio.md`. La app muestra un botón (o el formulario de reseña) por cada una y no vuelve a evaluar las reglas. Si el usuario intenta una acción que no está en la lista, el backend responde 403 o 409 igual.
+`Accion` es uno de `confirmarPago`, `utilizar`, `cancelar`, `reembolsar`, `resenar`. `acciones` se calcula para el usuario del token: son las acciones que ese usuario puede ejecutar sobre esa compra en su estado actual, según la tabla de `docs/dominio.md`. La app muestra un botón (o el formulario de reseña) por cada una y no vuelve a evaluar las reglas. Si el usuario intenta una acción que no está en la lista, el backend responde 403 o 409 igual.
 
 ## Rutas
 
@@ -66,6 +84,8 @@ Compra = {
 | Método | Ruta                   | Quién       | Body / query                                        | Respuesta                                         |
 | ------ | ---------------------- | ----------- | --------------------------------------------------- | ------------------------------------------------- |
 | GET    | `/usuarios`            | nadie       |                                                     | `Usuario[]` (para elegir quién soy)               |
+| POST   | `/sesiones`            | nadie       | `{ usuarioId }`                                     | `201 { token, usuario }`                          |
+| GET    | `/sesion`              | cualquiera  |                                                     | `Usuario` del token                               |
 | GET    | `/categorias`          | nadie       |                                                     | `Categoria[]`                                     |
 | GET    | `/eventos`             | cualquiera  | `?texto=&categoriaId=&orden=precio\|fecha\|puntaje` | `Evento[]`, solo los que todavía no ocurrieron    |
 | GET    | `/eventos/:id`         | cualquiera  |                                                     | `EventoDetalle`                                   |
