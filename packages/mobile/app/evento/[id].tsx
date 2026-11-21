@@ -32,7 +32,9 @@ export default function DetalleEvento() {
           <View style={styles.contenido}>
             <View style={styles.encabezado}>
               <Text style={styles.categoria}>{evento.categoria.nombre}</Text>
-              <Text style={theme.texto.titulo}>{evento.nombre}</Text>
+              <Text style={theme.texto.titulo} accessibilityRole="header">
+                {evento.nombre}
+              </Text>
               <Text style={styles.fecha}>{formatearFecha(evento.fecha)}</Text>
               <View style={styles.organizador}>
                 <Text style={styles.textoOrganizador}>

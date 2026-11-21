@@ -12,6 +12,7 @@ export function Chip({ texto, activo, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
+      hitSlop={{ top: theme.margenTactil(36), bottom: theme.margenTactil(36) }}
       style={[styles.chip, activo && styles.chipActivo]}
       accessibilityRole="button"
       accessibilityState={{ selected: activo }}

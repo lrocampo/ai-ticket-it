@@ -24,19 +24,21 @@ export function Stepper({ valor, minimo, maximo, onCambio }: Props) {
         disabled={!puedeBajar}
         onPress={() => onCambio(valor - 1)}
         accessibilityRole="button"
-        accessibilityLabel="Restar uno"
+        accessibilityLabel="Quitar una entrada"
         accessibilityState={{ disabled: !puedeBajar }}
       >
         <Ionicons name="remove" size={20} color={theme.colores.primario} />
       </Pressable>
-      <Text style={styles.valor}>{valor}</Text>
+      <Text style={styles.valor} accessibilityLiveRegion="polite">
+        {valor}
+      </Text>
       <Pressable
         style={[styles.boton, !puedeSubir && styles.deshabilitado]}
         hitSlop={theme.margenTactil(TAMANO)}
         disabled={!puedeSubir}
         onPress={() => onCambio(valor + 1)}
         accessibilityRole="button"
-        accessibilityLabel="Sumar uno"
+        accessibilityLabel="Agregar una entrada"
         accessibilityState={{ disabled: !puedeSubir }}
       >
         <Ionicons name="add" size={20} color={theme.colores.primario} />

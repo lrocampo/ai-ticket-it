@@ -34,7 +34,9 @@ export default function DetalleCompra() {
         >
           <View style={styles.encabezado}>
             <BadgeEstado estado={compra.estado} />
-            <Text style={styles.titulo}>{compra.evento.nombre}</Text>
+            <Text style={styles.titulo} accessibilityRole="header">
+              {compra.evento.nombre}
+            </Text>
             <Text style={theme.texto.secundario}>
               {formatearFecha(compra.evento.fecha)}
             </Text>

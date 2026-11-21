@@ -36,7 +36,12 @@ export default function ComprasDelEvento() {
               <Stack.Screen options={{ title: evento.nombre }} />
               <Seccion titulo="Disponibilidad">
                 {evento.tiposEntrada.map((tipo) => (
-                  <View key={tipo.id} style={styles.tipo}>
+                  <View
+                    key={tipo.id}
+                    style={styles.tipo}
+                    accessible
+                    accessibilityLabel={`${tipo.nombre}, ${tipo.disponibles} disponibles de ${tipo.cupo}`}
+                  >
                     <Text style={theme.texto.cuerpo}>{tipo.nombre}</Text>
                     <Text style={styles.cupo}>
                       {tipo.disponibles} / {tipo.cupo}
@@ -45,7 +50,9 @@ export default function ComprasDelEvento() {
                 ))}
               </Seccion>
               <View style={styles.compras}>
-                <Text style={theme.texto.subtitulo}>Compras</Text>
+                <Text style={theme.texto.subtitulo} accessibilityRole="header">
+                  Compras
+                </Text>
                 {compras.length > 0 && (
                   <SelectorOrden
                     opciones={ORDENES_COMPRAS}

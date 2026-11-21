@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native"
+import { AccessibilityInfo, StyleSheet, View } from "react-native"
 
 import { Boton, type Tono } from "../../components/Boton"
 import { useEnvio } from "../../hooks/useEnvio"
@@ -19,6 +19,7 @@ const ACCIONES: Record<
   AccionConBoton,
   {
     etiqueta: string
+    exito: string
     error: string
     tono: Tono
     confirmacion: (compra: Compra) => string
@@ -27,6 +28,7 @@ const ACCIONES: Record<
 > = {
   confirmarPago: {
     etiqueta: "Confirmar pago",
+    exito: "Pago confirmado",
     error: "No se pudo confirmar el pago",
     tono: "primario",
     confirmacion: (compra) =>
@@ -35,6 +37,7 @@ const ACCIONES: Record<
   },
   utilizar: {
     etiqueta: "Marcar como utilizada",
+    exito: "Entrada marcada como utilizada",
     error: "No se pudo marcar como utilizada",
     tono: "primario",
     confirmacion: () => "Marcar la entrada como utilizada.",
@@ -42,6 +45,7 @@ const ACCIONES: Record<
   },
   cancelar: {
     etiqueta: "Cancelar compra",
+    exito: "Compra cancelada",
     error: "No se pudo cancelar la compra",
     tono: "peligro",
     confirmacion: () => "La compra queda cancelada y se libera el cupo.",
@@ -49,6 +53,7 @@ const ACCIONES: Record<
   },
   reembolsar: {
     etiqueta: "Registrar reembolso",
+    exito: "Reembolso registrado",
     error: "No se pudo registrar el reembolso",
     tono: "secundario",
     confirmacion: (compra) =>
@@ -73,14 +78,18 @@ export function AccionesDeCompra({ compra, onCompraActualizada }: Props) {
   if (acciones.length === 0) return null
 
   function hacer(accion: AccionConBoton) {
-    const { etiqueta, error, tono, confirmacion, ejecutar } = ACCIONES[accion]
+    const { etiqueta, exito, error, tono, confirmacion, ejecutar } =
+      ACCIONES[accion]
     enviar(error, async () => {
       const confirmada = await confirmar(
         etiqueta,
         confirmacion(compra),
         tono === "peligro",
       )
-      if (confirmada) onCompraActualizada(await ejecutar(compra.id))
+      if (confirmada) {
+        onCompraActualizada(await ejecutar(compra.id))
+        AccessibilityInfo.announceForAccessibility(exito)
+      }
     })
   }
 

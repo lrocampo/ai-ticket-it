@@ -40,6 +40,7 @@ export function SelectorOrden<T extends string>({
 const styles = StyleSheet.create({
   orden: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     gap: theme.espacios.s,
   },

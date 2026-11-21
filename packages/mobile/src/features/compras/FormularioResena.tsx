@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Text } from "react-native"
+import { AccessibilityInfo, Text } from "react-native"
 
 import { Boton } from "../../components/Boton"
 import { Campo } from "../../components/Campo"
@@ -26,11 +26,15 @@ export function FormularioResena({ compra, onCompraActualizada }: Props) {
   function enviarResena() {
     if (puntuacion === 0 || detalle.trim() === "") {
       setIntentoEnviar(true)
+      AccessibilityInfo.announceForAccessibility(
+        puntuacion === 0 ? "Elegí una puntuación" : "Contanos algo del evento",
+      )
       return
     }
     enviar("No se pudo guardar la reseña", async () => {
       const resena = { puntuacion, detalle: detalle.trim() }
       onCompraActualizada(await resenarCompra(compra.id, resena))
+      AccessibilityInfo.announceForAccessibility("Reseña publicada")
     })
   }
 

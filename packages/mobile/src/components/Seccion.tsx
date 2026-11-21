@@ -11,7 +11,9 @@ type Props = {
 export function Seccion({ titulo, children }: Props) {
   return (
     <View style={styles.seccion}>
-      <Text style={theme.texto.subtitulo}>{titulo}</Text>
+      <Text style={theme.texto.subtitulo} accessibilityRole="header">
+        {titulo}
+      </Text>
       {children}
     </View>
   )
