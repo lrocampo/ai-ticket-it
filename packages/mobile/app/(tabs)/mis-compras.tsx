@@ -4,13 +4,13 @@ import { FlatList, StyleSheet } from "react-native"
 
 import { Cargable } from "../../src/components/Cargable"
 import { EstadoVacio } from "../../src/components/EstadoVacio"
-import { SelectorOrdenCompras } from "../../src/components/SelectorOrdenCompras"
+import { SelectorOrden } from "../../src/components/SelectorOrden"
 import { TarjetaCompra } from "../../src/components/TarjetaCompra"
 import { useCarga } from "../../src/hooks/useCarga"
 import { listarMisCompras } from "../../src/services/api"
 import { theme } from "../../src/theme"
 import type { OrdenCompras } from "../../src/types"
-import { ordenarCompras } from "../../src/utils/ordenarCompras"
+import { ORDENES_COMPRAS, ordenarCompras } from "../../src/utils/ordenarCompras"
 
 export default function MisCompras() {
   const compras = useCarga(listarMisCompras, [])
@@ -27,7 +27,11 @@ export default function MisCompras() {
           onRefresh={compras.refrescar}
           ListHeaderComponent={
             datos.length > 0 ? (
-              <SelectorOrdenCompras orden={orden} onCambio={setOrden} />
+              <SelectorOrden
+                opciones={ORDENES_COMPRAS}
+                orden={orden}
+                onCambio={setOrden}
+              />
             ) : undefined
           }
           ListEmptyComponent={

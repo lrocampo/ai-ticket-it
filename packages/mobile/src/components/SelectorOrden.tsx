@@ -1,24 +1,31 @@
-import { StyleSheet, Text, View } from "react-native"
+import {
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native"
 
 import { theme } from "../theme"
-import type { OrdenCompras } from "../types"
 import { Chip } from "./Chip"
 
-const ORDENES: { valor: OrdenCompras; etiqueta: string }[] = [
-  { valor: "recientes", etiqueta: "Más recientes" },
-  { valor: "antiguas", etiqueta: "Más antiguas" },
-]
-
-type Props = {
-  orden: OrdenCompras
-  onCambio: (orden: OrdenCompras) => void
+type Props<T extends string> = {
+  opciones: { valor: T; etiqueta: string }[]
+  orden: T
+  onCambio: (orden: T) => void
+  style?: StyleProp<ViewStyle>
 }
 
-export function SelectorOrdenCompras({ orden, onCambio }: Props) {
+export function SelectorOrden<T extends string>({
+  opciones,
+  orden,
+  onCambio,
+  style,
+}: Props<T>) {
   return (
-    <View style={styles.orden}>
+    <View style={[styles.orden, style]}>
       <Text style={theme.texto.secundario}>Ordenar por</Text>
-      {ORDENES.map((opcion) => (
+      {opciones.map((opcion) => (
         <Chip
           key={opcion.valor}
           texto={opcion.etiqueta}

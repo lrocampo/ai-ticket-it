@@ -5,13 +5,16 @@ import { FlatList, StyleSheet, Text, View } from "react-native"
 import { Cargable } from "../../../src/components/Cargable"
 import { EstadoVacio } from "../../../src/components/EstadoVacio"
 import { Seccion } from "../../../src/components/Seccion"
-import { SelectorOrdenCompras } from "../../../src/components/SelectorOrdenCompras"
+import { SelectorOrden } from "../../../src/components/SelectorOrden"
 import { TarjetaCompra } from "../../../src/components/TarjetaCompra"
 import { useCarga } from "../../../src/hooks/useCarga"
 import { listarComprasDeEvento } from "../../../src/services/api"
 import { theme } from "../../../src/theme"
 import type { OrdenCompras } from "../../../src/types"
-import { ordenarCompras } from "../../../src/utils/ordenarCompras"
+import {
+  ORDENES_COMPRAS,
+  ordenarCompras,
+} from "../../../src/utils/ordenarCompras"
 
 export default function ComprasDelEvento() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -44,7 +47,11 @@ export default function ComprasDelEvento() {
               <View style={styles.compras}>
                 <Text style={theme.texto.subtitulo}>Compras</Text>
                 {compras.length > 0 && (
-                  <SelectorOrdenCompras orden={orden} onCambio={setOrden} />
+                  <SelectorOrden
+                    opciones={ORDENES_COMPRAS}
+                    orden={orden}
+                    onCambio={setOrden}
+                  />
                 )}
               </View>
             </View>
