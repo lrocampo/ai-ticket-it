@@ -57,6 +57,7 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
       categoria: categoria.Recitales,
       fecha: enDias(12),
       organizador: lucia,
+      limitePorUsuario: 4,
       semilla: "rock-gran-rex",
       tiposEntrada: tipos([
         ["Platea", 25000, 300, "Butaca numerada en planta baja"],

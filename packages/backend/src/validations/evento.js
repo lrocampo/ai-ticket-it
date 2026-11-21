@@ -40,6 +40,11 @@ export const eventoSchema = objetoEstricto({
   tiposEntrada: z
     .array(tipoEntradaSchema, { error: sinTiposDeEntrada })
     .min(1, { error: sinTiposDeEntrada }),
+  limitePorUsuario: z
+    .number({
+      error: "El máximo de entradas por persona tiene que ser un número",
+    })
+    .optional(),
 })
 
 export const busquedaEventosSchema = z.object({

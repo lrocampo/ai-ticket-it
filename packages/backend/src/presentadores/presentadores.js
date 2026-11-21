@@ -37,10 +37,16 @@ export const presentarEvento = (evento, reputacion) => ({
   tiposEntrada: evento.tiposEntrada.map(presentarTipoEntrada),
   precioDesde: evento.precioDesde(),
   yaOcurrio: evento.yaOcurrio(),
+  limitePorUsuario: evento.limitePorUsuario,
 })
 
-export const presentarEventoDetalle = (evento, reputacion) => ({
+export const presentarEventoDetalle = (
+  evento,
+  reputacion,
+  entradasDelUsuario,
+) => ({
   ...presentarEvento(evento, reputacion),
+  entradasDelUsuario,
   resenasDelOrganizador: reputacion.resenas.map(presentarResena),
 })
 
@@ -68,6 +74,7 @@ const presentarMensaje = (mensaje) => ({
 
 export const presentarCompra = (compra, usuario) => ({
   id: compra.id,
+  creada: compra.creada.toISOString(),
   estado: compra.estado,
   cantidad: compra.cantidad,
   total: compra.total,
