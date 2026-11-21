@@ -121,7 +121,7 @@ describe("EventoService", () => {
     })
 
     test("por categoría", () => {
-      expect(nombres(service.buscar({ categoriaId: teatro.id }))).toEqual([
+      expect(nombres(service.buscar({ categoriaId: teatro.id }, HOY))).toEqual([
         "Obra: La Nona",
       ])
     })
@@ -134,7 +134,7 @@ describe("EventoService", () => {
     })
 
     test("por fecha ascendente por defecto", () => {
-      expect(nombres(service.buscar())).toEqual([
+      expect(nombres(service.buscar({}, HOY))).toEqual([
         "Obra: La Nona",
         "Jam de jazz",
         "Recital de Fito Páez",
@@ -142,7 +142,7 @@ describe("EventoService", () => {
     })
 
     test("por precio desde, ascendente", () => {
-      expect(nombres(service.buscar({ orden: "precio" }))).toEqual([
+      expect(nombres(service.buscar({ orden: "precio" }, HOY))).toEqual([
         "Obra: La Nona",
         "Jam de jazz",
         "Recital de Fito Páez",
@@ -174,7 +174,7 @@ describe("EventoService", () => {
       resenar(beto, ana, 5)
       resenar(ana, carla, 2)
 
-      expect(nombres(service.buscar({ orden: "puntaje" }))).toEqual([
+      expect(nombres(service.buscar({ orden: "puntaje" }, HOY))).toEqual([
         "Recital de Fito Páez",
         "Jam de jazz",
         "Obra: La Nona",
