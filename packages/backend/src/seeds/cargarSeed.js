@@ -46,7 +46,13 @@ export default function cargarSeed({ usuarios, categorias, eventos, compras }) {
 
   const evento = (datos, creado = enDias(-1)) =>
     eventos.guardar(
-      new Evento({ ...datos, multimedia: [imagen(datos.semilla)] }, creado),
+      new Evento(
+        {
+          ...datos,
+          multimedia: [1, 2, 3].map((n) => imagen(`${datos.semilla}-${n}`)),
+        },
+        creado,
+      ),
     )
 
   const futuros = {
