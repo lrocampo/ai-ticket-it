@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons"
 import { router } from "expo-router"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
+  AccessibilityInfo,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -50,6 +51,20 @@ export default function Eventos() {
   const categoriaElegida = categorias.datos?.find((c) => c.id === categoriaId)
   const buscado = textoBuscado.trim()
   const hayFiltros = buscado !== "" || categoriaId !== null
+
+  const yaCargo = useRef(false)
+  useEffect(() => {
+    if (!eventos.datos) return
+    if (yaCargo.current) {
+      const cantidad = eventos.datos.length
+      AccessibilityInfo.announceForAccessibility(
+        cantidad === 0
+          ? "No hay eventos"
+          : `${cantidad} ${cantidad === 1 ? "evento" : "eventos"}`,
+      )
+    }
+    yaCargo.current = true
+  }, [eventos.datos])
 
   function limpiarFiltros() {
     setTexto("")

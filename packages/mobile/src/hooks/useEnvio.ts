@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Alert } from "react-native"
+import { AccessibilityInfo, Alert } from "react-native"
 
 import { mensajeDe } from "../services/api"
 
@@ -11,7 +11,11 @@ export function useEnvio() {
     try {
       await pedido()
     } catch (e) {
-      Alert.alert(tituloDelError, mensajeDe(e))
+      const mensaje = mensajeDe(e)
+      AccessibilityInfo.announceForAccessibility(
+        `${tituloDelError}. ${mensaje}`,
+      )
+      Alert.alert(tituloDelError, mensaje)
     } finally {
       setEnviando(false)
     }

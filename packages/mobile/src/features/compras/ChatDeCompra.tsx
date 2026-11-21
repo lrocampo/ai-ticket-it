@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.radios.m,
   },
   enviar: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: theme.radios.pill,
     alignItems: "center",
     justifyContent: "center",

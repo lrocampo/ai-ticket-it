@@ -78,41 +78,49 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
 
   return (
     <Seccion titulo="Entradas">
-      {evento.tiposEntrada.map((tipo) => {
-        const agotado = tipo.disponibles === 0
-        const deshabilitado = agotado || motivo !== null
-        const elegido = tipo.id === tipoElegido?.id
-        return (
-          <Pressable
-            key={tipo.id}
-            style={[
-              styles.tipo,
-              elegido && styles.tipoElegido,
-              deshabilitado && styles.tipoDeshabilitado,
-            ]}
-            disabled={deshabilitado}
-            onPress={() => elegirTipo(tipo)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: elegido }}
-          >
-            <Ionicons
-              name={elegido ? "radio-button-on" : "radio-button-off"}
-              size={20}
-              color={theme.colores.primario}
-            />
-            <View style={styles.datosTipo}>
-              <Text style={styles.nombreTipo}>{tipo.nombre}</Text>
-              {tipo.descripcion ? (
-                <Text style={theme.texto.secundario}>{tipo.descripcion}</Text>
-              ) : null}
-              <Text style={styles.disponibles}>
-                {agotado ? "Agotadas" : `${tipo.disponibles} disponibles`}
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel="Tipo de entrada"
+        style={styles.tipos}
+      >
+        {evento.tiposEntrada.map((tipo) => {
+          const agotado = tipo.disponibles === 0
+          const deshabilitado = agotado || motivo !== null
+          const elegido = tipo.id === tipoElegido?.id
+          return (
+            <Pressable
+              key={tipo.id}
+              style={[
+                styles.tipo,
+                elegido && styles.tipoElegido,
+                deshabilitado && styles.tipoDeshabilitado,
+              ]}
+              disabled={deshabilitado}
+              onPress={() => elegirTipo(tipo)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: elegido }}
+            >
+              <Ionicons
+                name={elegido ? "radio-button-on" : "radio-button-off"}
+                size={20}
+                color={theme.colores.primario}
+              />
+              <View style={styles.datosTipo}>
+                <Text style={styles.nombreTipo}>{tipo.nombre}</Text>
+                {tipo.descripcion ? (
+                  <Text style={theme.texto.secundario}>{tipo.descripcion}</Text>
+                ) : null}
+                <Text style={styles.disponibles}>
+                  {agotado ? "Agotadas" : `${tipo.disponibles} disponibles`}
+                </Text>
+              </View>
+              <Text style={styles.precioTipo}>
+                {formatearPesos(tipo.precio)}
               </Text>
-            </View>
-            <Text style={styles.precioTipo}>{formatearPesos(tipo.precio)}</Text>
-          </Pressable>
-        )
-      })}
+            </Pressable>
+          )
+        })}
+      </View>
 
       {motivo ? (
         <Text style={styles.aviso}>{motivo}</Text>
@@ -158,6 +166,9 @@ export function BloqueCompra({ evento }: { evento: EventoDetalle }) {
 }
 
 const styles = StyleSheet.create({
+  tipos: {
+    gap: theme.espacios.m,
+  },
   tipo: {
     flexDirection: "row",
     alignItems: "center",
