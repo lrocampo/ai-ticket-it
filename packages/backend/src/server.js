@@ -4,6 +4,12 @@ import cargarSeed from "./seeds/cargarSeed.js"
 
 const port = process.env.PORT ?? 3000
 
+if (!process.env.JWT_SECRET) {
+  console.warn(
+    "JWT_SECRET no está definido: se usa un secreto de desarrollo. Definilo antes de exponer el backend.",
+  )
+}
+
 cargarSeed(repositorios)
 
 app.listen(port, () => {

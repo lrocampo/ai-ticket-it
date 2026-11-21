@@ -4,4 +4,6 @@ export default class UsuarioService {
   }
 
   todos = () => this.usuarios.todos()
+
+  porId = (id) => this.usuarios.porId(id)
 }
