@@ -12,12 +12,15 @@ export type FormularioEvento = {
   descripcion: string
   categoriaId: string | null
   fecha: Date
-  imagen: string
+  imagenes: string[]
   limitePorUsuario: string
   tiposEntrada: TipoEntradaFormulario[]
 }
 
-export type CampoDelEvento = Exclude<keyof FormularioEvento, "tiposEntrada">
+export type CampoDelEvento = Exclude<
+  keyof FormularioEvento,
+  "tiposEntrada" | "imagenes"
+>
 
 export type ErrorDelTipo = {
   campo: "tipo"
@@ -26,9 +29,16 @@ export type ErrorDelTipo = {
   mensaje: string
 }
 
+export type ErrorDeImagen = {
+  campo: "imagen"
+  indice: number
+  mensaje: string
+}
+
 export type ErrorDelFormulario =
   | { campo: CampoDelEvento; mensaje: string }
   | ErrorDelTipo
+  | ErrorDeImagen
 
 export const TIPO_VACIO: TipoEntradaFormulario = {
   nombre: "",
@@ -49,7 +59,7 @@ export function formularioVacio(): FormularioEvento {
     descripcion: "",
     categoriaId: null,
     fecha,
-    imagen: "",
+    imagenes: [""],
     limitePorUsuario: String(LIMITE_POR_USUARIO_POR_DEFECTO),
     tiposEntrada: [{ ...TIPO_VACIO, nombre: NOMBRE_SUGERIDO }],
   }
@@ -66,9 +76,10 @@ export function tipoTieneDatos(tipo: TipoEntradaFormulario) {
 }
 
 export function formularioTieneDatos(formulario: FormularioEvento) {
-  const { nombre, descripcion, categoriaId, imagen, tiposEntrada } = formulario
+  const { nombre, descripcion, categoriaId, imagenes, tiposEntrada } =
+    formulario
   return (
-    [nombre, descripcion, imagen].some((campo) => campo.trim() !== "") ||
+    [nombre, descripcion, ...imagenes].some((campo) => campo.trim() !== "") ||
     categoriaId !== null ||
     formulario.limitePorUsuario.trim() !==
       String(LIMITE_POR_USUARIO_POR_DEFECTO) ||
@@ -93,7 +104,6 @@ export function armarNuevoEvento(
   ahora = new Date(),
 ): { evento: NuevoEvento } | { error: ErrorDelFormulario } {
   const { nombre, descripcion, categoriaId, fecha, tiposEntrada } = formulario
-  const imagen = formulario.imagen.trim()
   if (nombre.trim() === "") {
     return falta("nombre", "Ponele un nombre al evento.")
   }
@@ -104,11 +114,22 @@ export function armarNuevoEvento(
   if (fecha <= ahora) {
     return falta("fecha", "Elegí una fecha que todavía no pasó.")
   }
-  if (imagen !== "" && !/^https?:\/\/\S+$/i.test(imagen)) {
-    return falta(
-      "imagen",
-      "La URL de la imagen tiene que empezar con http:// o https://.",
-    )
+
+  const multimedia: string[] = []
+  for (const [indice, texto] of formulario.imagenes.entries()) {
+    const url = texto.trim()
+    if (url === "") continue
+    if (!/^https?:\/\/\S+$/i.test(url)) {
+      return {
+        error: {
+          campo: "imagen",
+          indice,
+          mensaje:
+            "La URL de la imagen tiene que empezar con http:// o https://.",
+        },
+      }
+    }
+    multimedia.push(url)
   }
 
   const limitePorUsuario = aEntero(formulario.limitePorUsuario)
@@ -151,7 +172,7 @@ export function armarNuevoEvento(
       descripcion: descripcion.trim(),
       categoriaId,
       fecha: fecha.toISOString(),
-      multimedia: imagen === "" ? [] : [imagen],
+      multimedia,
       limitePorUsuario,
       tiposEntrada: tipos,
     },

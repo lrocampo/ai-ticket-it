@@ -14,7 +14,7 @@ function formulario(cambios: Partial<FormularioEvento> = {}): FormularioEvento {
     descripcion: "Banda en vivo",
     categoriaId: "musica",
     fecha,
-    imagen: "",
+    imagenes: [""],
     limitePorUsuario: "6",
     tiposEntrada: [
       { nombre: "General", descripcion: "", precio: "15000", cupo: "200" },
@@ -24,7 +24,9 @@ function formulario(cambios: Partial<FormularioEvento> = {}): FormularioEvento {
 }
 
 test("convierte los textos del formulario en el body de POST /eventos", () => {
-  const resultado = armar(formulario({ imagen: " https://ejemplo.com/a.jpg " }))
+  const resultado = armar(
+    formulario({ imagenes: [" https://ejemplo.com/a.jpg "] }),
+  )
 
   expect(resultado).toEqual({
     evento: {
@@ -42,9 +44,47 @@ test("convierte los textos del formulario en el body de POST /eventos", () => {
 })
 
 test("sin imagen manda multimedia vacío", () => {
-  const resultado = armar(formulario({ imagen: "  " }))
+  const resultado = armar(formulario({ imagenes: ["  "] }))
 
   expect(resultado).toMatchObject({ evento: { multimedia: [] } })
+})
+
+test("manda las imágenes en el orden del formulario y ignora las filas vacías", () => {
+  const resultado = armar(
+    formulario({
+      imagenes: [
+        "https://ejemplo.com/portada.jpg",
+        " ",
+        " http://ejemplo.com/b.jpg ",
+        "",
+      ],
+    }),
+  )
+
+  expect(resultado).toMatchObject({
+    evento: {
+      multimedia: [
+        "https://ejemplo.com/portada.jpg",
+        "http://ejemplo.com/b.jpg",
+      ],
+    },
+  })
+})
+
+test("una URL inválida señala la fila de esa imagen", () => {
+  const resultado = armar(
+    formulario({
+      imagenes: ["https://ejemplo.com/a.jpg", "ftp://ejemplo.com/b.jpg"],
+    }),
+  )
+
+  expect(resultado).toEqual({
+    error: {
+      campo: "imagen",
+      indice: 1,
+      mensaje: "La URL de la imagen tiene que empezar con http:// o https://.",
+    },
+  })
 })
 
 function conTipo(precio: string, cupo = "200") {
@@ -122,7 +162,6 @@ test.each<[string, Partial<FormularioEvento>, unknown]>([
   ["la descripción", { descripcion: "" }, "descripcion"],
   ["la categoría", { categoriaId: null }, "categoriaId"],
   ["una fecha que ya pasó", { fecha: ahora }, "fecha"],
-  ["una URL que no es http", { imagen: "ftp://ejemplo.com/a.jpg" }, "imagen"],
 ])("señala %s como el campo a corregir", (_, cambios, campo) => {
   expect(armar(formulario(cambios))).toMatchObject({ error: { campo } })
 })
@@ -180,7 +219,8 @@ test("el formulario recién abierto no tiene nada que descartar", () => {
 test.each<[string, Partial<FormularioEvento>]>([
   ["un nombre", { nombre: "Recital" }],
   ["una categoría", { categoriaId: "musica" }],
-  ["una URL", { imagen: "https://" }],
+  ["una URL", { imagenes: ["https://"] }],
+  ["una URL en la segunda fila", { imagenes: ["", "https://"] }],
   ["otro máximo por persona", { limitePorUsuario: "2" }],
   [
     "un precio en un tipo",

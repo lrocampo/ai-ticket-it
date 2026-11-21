@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons"
 import DateTimePicker from "@react-native-community/datetimepicker"
 import { router, Stack, usePreventRemove } from "expo-router"
 import { useState } from "react"
@@ -34,6 +35,8 @@ import { theme } from "../../src/theme"
 import { confirmar } from "../../src/utils/confirmar"
 import { formatearFecha } from "../../src/utils/fechas"
 
+const ICONO_QUITAR = 20
+
 export default function CrearEvento() {
   const categorias = useCarga(listarCategorias, [])
   const [formulario, setFormulario] = useState(formularioVacio)
@@ -43,7 +46,7 @@ export default function CrearEvento() {
   )
   const [creado, setCreado] = useState(false)
   const [error, setError] = useState<ErrorDelFormulario | null>(null)
-  const { tiposEntrada } = formulario
+  const { tiposEntrada, imagenes } = formulario
 
   const permitirSalir = usePreventRemove(
     formularioTieneDatos(formulario) && !creado,
@@ -73,6 +76,12 @@ export default function CrearEvento() {
     return error?.campo === "tipo" && error.indice === indice ? error : null
   }
 
+  function errorDeImagen(indice: number) {
+    return error?.campo === "imagen" && error.indice === indice
+      ? error.mensaje
+      : undefined
+  }
+
   function mostrarError(nuevo: ErrorDelFormulario) {
     setError(nuevo)
     AccessibilityInfo.announceForAccessibility(nuevo.mensaje)
@@ -89,6 +98,20 @@ export default function CrearEvento() {
     actualizar(
       "tiposEntrada",
       tiposEntrada.filter((_, i) => i !== indice),
+    )
+  }
+
+  function cambiarImagen(indice: number, url: string) {
+    actualizar(
+      "imagenes",
+      imagenes.map((actual, i) => (i === indice ? url : actual)),
+    )
+  }
+
+  function quitarImagen(indice: number) {
+    actualizar(
+      "imagenes",
+      imagenes.filter((_, i) => i !== indice),
     )
   }
 
@@ -161,15 +184,44 @@ export default function CrearEvento() {
               {errorDe("categoriaId") && (
                 <Text style={theme.texto.error}>{errorDe("categoriaId")}</Text>
               )}
-              <Campo
-                etiqueta="URL de una imagen (opcional)"
-                value={formulario.imagen}
-                onChangeText={(imagen) => actualizar("imagen", imagen)}
-                placeholder="https://"
-                keyboardType="url"
-                autoCapitalize="none"
-                autoCorrect={false}
-                error={errorDe("imagen")}
+              <Text style={theme.texto.secundario}>
+                Opcional. La primera es la portada.
+              </Text>
+              {imagenes.map((url, indice) => (
+                <View key={indice} style={styles.filaDeImagen}>
+                  <View style={styles.columnaDeImagen}>
+                    <Campo
+                      etiqueta={`Imagen ${indice + 1}`}
+                      value={url}
+                      onChangeText={(nueva) => cambiarImagen(indice, nueva)}
+                      placeholder="https://"
+                      keyboardType="url"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      error={errorDeImagen(indice)}
+                    />
+                  </View>
+                  {imagenes.length > 1 && (
+                    <Pressable
+                      onPress={() => quitarImagen(indice)}
+                      hitSlop={theme.margenTactil(ICONO_QUITAR)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Quitar imagen ${indice + 1}`}
+                      style={styles.quitarImagen}
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={ICONO_QUITAR}
+                        color={theme.colores.error}
+                      />
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+              <Boton
+                texto="Agregar otra imagen"
+                tono="secundario"
+                onPress={() => actualizar("imagenes", [...imagenes, ""])}
               />
               <Campo
                 etiqueta="Máximo de entradas por persona"
@@ -283,6 +335,19 @@ const styles = StyleSheet.create({
     padding: theme.espacios.l,
     paddingBottom: theme.espacios.xl * 2,
     gap: theme.espacios.l,
+  },
+  filaDeImagen: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: theme.espacios.m,
+  },
+  columnaDeImagen: {
+    flex: 1,
+  },
+  // Baja el ícono hasta el centro del input, debajo de la etiqueta del Campo.
+  quitarImagen: {
+    marginTop:
+      theme.texto.destacado.lineHeight + theme.espacios.xs + theme.espacios.s,
   },
   chips: {
     flexDirection: "row",
